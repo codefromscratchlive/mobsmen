@@ -1,0 +1,25 @@
+{
+  "name": "web",
+  "module": "src/web.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"nodemon --watch src/ --ext ts,html --exec 'bun build.ts'\" \"live-server --open=./build --watch=./build --port=8090\"",
+    "build": "bun build.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1",
+    "live-server": "^1.2.2",
+    "nodemon": "^3.1.10"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "pixi-viewport": "^6.0.3",
+    "pixi.js": "^8.13.0",
+    "valibot": "^1.1.0"
+  }
+}
