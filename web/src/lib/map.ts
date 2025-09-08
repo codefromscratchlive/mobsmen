@@ -3,6 +3,13 @@ import { Viewport } from "pixi-viewport";
 import { building_create } from "./building";
 
 export async function map_1_create(viewport: Viewport): Promise<void> {
+  /*
+  const background_texture = await PIXI.Assets.load("/build/images/background.jpg");
+  const background = new PIXI.TilingSprite({
+    texture: background_texture
+  });
+  viewport.addChild(background);
+  */
   map_1_roads_create(viewport);
   await map_1_buildings_create(viewport);
 }

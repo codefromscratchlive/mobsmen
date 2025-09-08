@@ -61,7 +61,7 @@ body {
   left: 0;
   right: 0;
   height: 200px;
-  background-color: #858585;
+  /* background-color: #858585; */
   opacity: 1;
   color: #ffffff;
   display: flex;
