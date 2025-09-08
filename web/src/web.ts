@@ -2,7 +2,7 @@ import { should_never_happen } from "../../lib/src/should";
 import { app_canvas_setup, app_create, app_viewport_create } from "./lib/app";
 import { map_1_create } from "./lib/map";
 import { hud_create } from "./lib/hud";
-import { time_start } from "./lib/time";
+import { time_pause_toggle, time_start } from "./lib/time";
 import { notifications_init, notifications_create } from "./lib/notifications";
 
 async function main() {
@@ -30,7 +30,15 @@ async function main() {
 
   time_start(new Date("1918-11-11T00:00:00.000Z"));
 
-  notifications_create("The time has started!");
+  notifications_create(
+    `
+    The time has been paused!<br>
+    You have one week to get $1000 in cash.<br>
+    <span style="color: red;">Good Luck!</span>
+    `
+  );
+
+  time_pause_toggle();
 }
 
 main();

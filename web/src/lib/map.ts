@@ -69,5 +69,9 @@ function map_rectangle_create(
       color: stroke_color,
       alpha: stroke_alpha
     });
+
+  graphics.cursor = "pointer";
+  graphics.interactive = true;
+
   return graphics;
 }

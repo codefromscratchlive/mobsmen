@@ -9,7 +9,7 @@ export function notifications_init(): HTMLDivElement {
 }
 
 export function notifications_create(
-  message: string,
+  html: string,
   type: string = 'success',
   duration: number = 0
 ): void {
@@ -27,7 +27,12 @@ export function notifications_create(
   notification.classList.add('notification');
   notification.classList.add(type);
   notification.appendChild(delete_button);
-  notification.appendChild(document.createTextNode(message));
+
+  const message_html = document.createElement('div');
+  message_html.classList.add('notification-message');
+  message_html.innerHTML = html;
+
+  notification.appendChild(message_html);
 
   notifications_wrapper.appendChild(notification);
   delete_button.addEventListener('click', () => {

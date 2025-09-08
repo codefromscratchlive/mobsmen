@@ -31912,6 +31912,8 @@ function map_rectangle_create(x3, y2, width, height, fill_color = 14606046, fill
     color: stroke_color,
     alpha: stroke_alpha
   });
+  graphics.cursor = "pointer";
+  graphics.interactive = true;
   return graphics;
 }
 
@@ -32644,7 +32646,7 @@ function notifications_init() {
   notifications.id = "notifications";
   return notifications;
 }
-function notifications_create(message, type = "success", duration = 0) {
+function notifications_create(html, type = "success", duration = 0) {
   const notifications_wrapper = document.getElementById("notifications");
   if (!notifications_wrapper) {
     should_never_happen("Notifications wrapper not found");
@@ -32656,7 +32658,10 @@ function notifications_create(message, type = "success", duration = 0) {
   notification.classList.add("notification");
   notification.classList.add(type);
   notification.appendChild(delete_button);
-  notification.appendChild(document.createTextNode(message));
+  const message_html = document.createElement("div");
+  message_html.classList.add("notification-message");
+  message_html.innerHTML = html;
+  notification.appendChild(message_html);
   notifications_wrapper.appendChild(notification);
   delete_button.addEventListener("click", () => {
     try {
@@ -32692,8 +32697,13 @@ async function main() {
   app.stage.addChild(viewport);
   map_1_create(viewport);
   time_start(new Date("1918-11-11T00:00:00.000Z"));
-  notifications_create("The time has started!");
+  notifications_create(`
+    The time has been paused!<br>
+    You have one week to get $1000 in cash.<br>
+    <span style="color: red;">Good Luck!</span>
+    `);
+  time_pause_toggle();
 }
 main();
 
-//# debugId=058D129D6D8D6B0064756E2164756E21
+//# debugId=CF267C8152575BCE64756E2164756E21
