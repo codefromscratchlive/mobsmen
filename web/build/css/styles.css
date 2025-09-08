@@ -82,6 +82,20 @@ body {
   font-size: 18px;
 }
 
+.hud-resources {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  min-width: 400px;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  line-height: 24px;
+  gap: 10px;
+  padding: 0 10px 0 10px;
+  font-size: 24px;
+}
+
 .hud-time,
 .hud-time-message,
 .btn-time {

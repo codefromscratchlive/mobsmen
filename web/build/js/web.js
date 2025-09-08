@@ -33594,6 +33594,10 @@ function hud_create() {
 function hud_create_header() {
   const header = document.createElement("div");
   header.classList.add("hud-header");
+  const resources = document.createElement("div");
+  resources.classList.add("hud-resources");
+  resources.id = "hud-resources";
+  header.appendChild(resources);
   const date = document.createElement("div");
   date.classList.add("hud-date");
   date.id = "hud-date";
@@ -34267,6 +34271,20 @@ function notifications_create(html, type = "success", duration = 0) {
 }
 var init_notifications = () => {};
 
+// src/lib/resources.ts
+function resources_init(cash) {
+  const resources_container = document.getElementById("hud-resources");
+  if (!resources_container) {
+    should_never_happen("Resources container not found");
+    return;
+  }
+  resources_container.innerHTML = `
+    <i class="fa-solid fa-sack-dollar"></i>
+    <span id="hud-resources-cash">${cash}</span>
+  `;
+}
+var init_resources = () => {};
+
 // src/lib/util.ts
 function util_event_handler(handler_item) {
   const result = safeParse(UtilEventHandlerItemSchema, handler_item);
@@ -34321,7 +34339,7 @@ var init_util = __esm(() => {
 });
 
 // src/lib/time.ts
-function time_start(start_date, speed = 5) {
+function time_start(start_date, speed = 25) {
   current_speed = speed;
   current_date = start_date;
   const time_container = document.getElementById("hud-time");
@@ -34334,6 +34352,11 @@ function time_start(start_date, speed = 5) {
   ticker.add((time) => {
     current_date.setSeconds(current_date.getSeconds() + time.deltaTime * current_speed);
     time_container.textContent = current_date.toDateString() + " " + String(current_date.getHours()).padStart(2, "0") + ":" + String(current_date.getMinutes()).padStart(2, "0");
+    if (current_date >= end_date) {
+      notifications_create("Game Over!");
+      ticker.stop();
+      paused = true;
+    }
   });
   time_handlers_setup();
   ticker.start();
@@ -34469,13 +34492,16 @@ var current_date, speed_factor, current_speed = 0, paused = true, ticker, end_da
 var init_time = __esm(() => {
   init_lib();
   init_util();
+  init_notifications();
   current_date = new Date;
   speed_factor = [
     1,
     2,
     5,
-    10,
-    20
+    25,
+    50,
+    100,
+    500
   ];
   ticker = new Ticker;
   end_date = new Date("1800-11-11T00:00:00.000Z");
@@ -34506,6 +34532,7 @@ async function init2() {
   map_1_create(viewport);
   time_start(new Date("1918-11-11T00:00:00.000Z"));
   time_end(new Date("1918-11-18T00:00:00.000Z"));
+  resources_init(100);
   notifications_create(`
     The time has been paused!<br>
     You have one week to get $1000 in cash.<br>
@@ -34517,6 +34544,7 @@ var init_001 = __esm(() => {
   init_app();
   init_map();
   init_notifications();
+  init_resources();
   init_time();
 });
 
@@ -34545,4 +34573,4 @@ async function main() {
 }
 main();
 
-//# debugId=6B6E6FD74FCAC3EF64756E2164756E21
+//# debugId=E0C0043AF5545F1D64756E2164756E21

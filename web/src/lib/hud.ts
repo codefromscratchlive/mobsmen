@@ -11,6 +11,11 @@ function hud_create_header(): HTMLDivElement {
   const header = document.createElement('div');
   header.classList.add('hud-header');
 
+  const resources = document.createElement('div');
+  resources.classList.add('hud-resources');
+  resources.id = 'hud-resources';
+  header.appendChild(resources);
+
   const date = document.createElement('div');
   date.classList.add('hud-date');
   date.id = 'hud-date';

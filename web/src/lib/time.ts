@@ -1,14 +1,17 @@
 import * as PIXI from "pixi.js";
 import { should_never_happen } from "../../../lib/src/should";
 import { util_event_handler } from "./util";
+import { notifications_create } from "./notifications";
 
 let current_date = new Date();
 let speed_factor = [
   1,
   2,
   5,
-  10,
-  20
+  25,
+  50,
+  100,
+  500
 ];
 let current_speed = 0;
 let paused = true;
@@ -16,7 +19,7 @@ let ticker: PIXI.Ticker = new PIXI.Ticker();
 
 let end_date: Date = new Date("1800-11-11T00:00:00.000Z");
 
-export function time_start(start_date: Date, speed: number = 5): PIXI.Ticker {
+export function time_start(start_date: Date, speed: number = 25): PIXI.Ticker {
   current_speed = speed;
   current_date = start_date;
   const time_container = document.getElementById("hud-time");
@@ -35,6 +38,12 @@ export function time_start(start_date: Date, speed: number = 5): PIXI.Ticker {
     String(current_date.getHours()).padStart(2, "0") +
     ":" +
     String(current_date.getMinutes()).padStart(2, "0");
+
+    if (current_date >= end_date) {
+      notifications_create("Game Over!");
+      ticker.stop();
+      paused = true;
+    }
   });
 
   time_handlers_setup();
