@@ -30377,12 +30377,1621 @@ _Application._plugins = [];
 var Application = _Application;
 extensions.handleByList(ExtensionType.Application, Application._plugins);
 extensions.add(ApplicationInitHook);
+
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_Extensions();
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/loadBitmapFont.mjs
+init_LoaderParser();
+init_copySearchParams();
+init_adapter();
+init_Extensions();
+init_path();
+
+// node_modules/pixi.js/lib/scene/text-bitmap/BitmapFont.mjs
+init_groupD8();
+init_Rectangle();
+init_Texture();
+init_AbstractBitmapFont();
+init_BitmapFontManager();
+
+class BitmapFont extends AbstractBitmapFont {
+  constructor(options, url) {
+    super();
+    const { textures, data } = options;
+    Object.keys(data.pages).forEach((key) => {
+      const pageData = data.pages[parseInt(key, 10)];
+      const texture = textures[pageData.id];
+      this.pages.push({ texture });
+    });
+    Object.keys(data.chars).forEach((key) => {
+      const charData = data.chars[key];
+      const {
+        frame: textureFrame,
+        source: textureSource,
+        rotate: textureRotate
+      } = textures[charData.page];
+      const frame = groupD8.transformRectCoords(charData, textureFrame, textureRotate, new Rectangle);
+      const texture = new Texture({
+        frame,
+        orig: new Rectangle(0, 0, charData.width, charData.height),
+        source: textureSource,
+        rotate: textureRotate
+      });
+      this.chars[key] = {
+        id: key.codePointAt(0),
+        xOffset: charData.xOffset,
+        yOffset: charData.yOffset,
+        xAdvance: charData.xAdvance,
+        kerning: charData.kerning ?? {},
+        texture
+      };
+    });
+    this.baseRenderedFontSize = data.fontSize;
+    this.baseMeasurementFontSize = data.fontSize;
+    this.fontMetrics = {
+      ascent: 0,
+      descent: 0,
+      fontSize: data.fontSize
+    };
+    this.baseLineOffset = data.baseLineOffset;
+    this.lineHeight = data.lineHeight;
+    this.fontFamily = data.fontFamily;
+    this.distanceField = data.distanceField ?? {
+      type: "none",
+      range: 0
+    };
+    this.url = url;
+  }
+  destroy() {
+    super.destroy();
+    for (let i2 = 0;i2 < this.pages.length; i2++) {
+      const { texture } = this.pages[i2];
+      texture.destroy(true);
+    }
+    this.pages = null;
+  }
+  static install(options) {
+    BitmapFontManager.install(options);
+  }
+  static uninstall(name) {
+    BitmapFontManager.uninstall(name);
+  }
+}
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontTextParser.mjs
+var bitmapFontTextParser = {
+  test(data) {
+    return typeof data === "string" && data.startsWith("info face=");
+  },
+  parse(txt) {
+    const items = txt.match(/^[a-z]+\s+.+$/gm);
+    const rawData = {
+      info: [],
+      common: [],
+      page: [],
+      char: [],
+      chars: [],
+      kerning: [],
+      kernings: [],
+      distanceField: []
+    };
+    for (const i2 in items) {
+      const name = items[i2].match(/^[a-z]+/gm)[0];
+      const attributeList = items[i2].match(/[a-zA-Z]+=([^\s"']+|"([^"]*)")/gm);
+      const itemData = {};
+      for (const i22 in attributeList) {
+        const split = attributeList[i22].split("=");
+        const key = split[0];
+        const strValue = split[1].replace(/"/gm, "");
+        const floatValue = parseFloat(strValue);
+        const value = isNaN(floatValue) ? strValue : floatValue;
+        itemData[key] = value;
+      }
+      rawData[name].push(itemData);
+    }
+    const font = {
+      chars: {},
+      pages: [],
+      lineHeight: 0,
+      fontSize: 0,
+      fontFamily: "",
+      distanceField: null,
+      baseLineOffset: 0
+    };
+    const [info] = rawData.info;
+    const [common] = rawData.common;
+    const [distanceField] = rawData.distanceField ?? [];
+    if (distanceField) {
+      font.distanceField = {
+        range: parseInt(distanceField.distanceRange, 10),
+        type: distanceField.fieldType
+      };
+    }
+    font.fontSize = parseInt(info.size, 10);
+    font.fontFamily = info.face;
+    font.lineHeight = parseInt(common.lineHeight, 10);
+    const page = rawData.page;
+    for (let i2 = 0;i2 < page.length; i2++) {
+      font.pages.push({
+        id: parseInt(page[i2].id, 10) || 0,
+        file: page[i2].file
+      });
+    }
+    const map = {};
+    font.baseLineOffset = font.lineHeight - parseInt(common.base, 10);
+    const char = rawData.char;
+    for (let i2 = 0;i2 < char.length; i2++) {
+      const charNode = char[i2];
+      const id = parseInt(charNode.id, 10);
+      let letter = charNode.letter ?? charNode.char ?? String.fromCharCode(id);
+      if (letter === "space")
+        letter = " ";
+      map[id] = letter;
+      font.chars[letter] = {
+        id,
+        page: parseInt(charNode.page, 10) || 0,
+        x: parseInt(charNode.x, 10),
+        y: parseInt(charNode.y, 10),
+        width: parseInt(charNode.width, 10),
+        height: parseInt(charNode.height, 10),
+        xOffset: parseInt(charNode.xoffset, 10),
+        yOffset: parseInt(charNode.yoffset, 10),
+        xAdvance: parseInt(charNode.xadvance, 10),
+        kerning: {}
+      };
+    }
+    const kerning = rawData.kerning || [];
+    for (let i2 = 0;i2 < kerning.length; i2++) {
+      const first = parseInt(kerning[i2].first, 10);
+      const second = parseInt(kerning[i2].second, 10);
+      const amount = parseInt(kerning[i2].amount, 10);
+      font.chars[map[second]].kerning[map[first]] = amount;
+    }
+    return font;
+  }
+};
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLStringParser.mjs
+init_adapter();
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLParser.mjs
+var bitmapFontXMLParser = {
+  test(data) {
+    const xml = data;
+    return typeof xml !== "string" && "getElementsByTagName" in xml && xml.getElementsByTagName("page").length && xml.getElementsByTagName("info")[0].getAttribute("face") !== null;
+  },
+  parse(xml) {
+    const data = {
+      chars: {},
+      pages: [],
+      lineHeight: 0,
+      fontSize: 0,
+      fontFamily: "",
+      distanceField: null,
+      baseLineOffset: 0
+    };
+    const info = xml.getElementsByTagName("info")[0];
+    const common = xml.getElementsByTagName("common")[0];
+    const distanceField = xml.getElementsByTagName("distanceField")[0];
+    if (distanceField) {
+      data.distanceField = {
+        type: distanceField.getAttribute("fieldType"),
+        range: parseInt(distanceField.getAttribute("distanceRange"), 10)
+      };
+    }
+    const page = xml.getElementsByTagName("page");
+    const char = xml.getElementsByTagName("char");
+    const kerning = xml.getElementsByTagName("kerning");
+    data.fontSize = parseInt(info.getAttribute("size"), 10);
+    data.fontFamily = info.getAttribute("face");
+    data.lineHeight = parseInt(common.getAttribute("lineHeight"), 10);
+    for (let i2 = 0;i2 < page.length; i2++) {
+      data.pages.push({
+        id: parseInt(page[i2].getAttribute("id"), 10) || 0,
+        file: page[i2].getAttribute("file")
+      });
+    }
+    const map = {};
+    data.baseLineOffset = data.lineHeight - parseInt(common.getAttribute("base"), 10);
+    for (let i2 = 0;i2 < char.length; i2++) {
+      const charNode = char[i2];
+      const id = parseInt(charNode.getAttribute("id"), 10);
+      let letter = charNode.getAttribute("letter") ?? charNode.getAttribute("char") ?? String.fromCharCode(id);
+      if (letter === "space")
+        letter = " ";
+      map[id] = letter;
+      data.chars[letter] = {
+        id,
+        page: parseInt(charNode.getAttribute("page"), 10) || 0,
+        x: parseInt(charNode.getAttribute("x"), 10),
+        y: parseInt(charNode.getAttribute("y"), 10),
+        width: parseInt(charNode.getAttribute("width"), 10),
+        height: parseInt(charNode.getAttribute("height"), 10),
+        xOffset: parseInt(charNode.getAttribute("xoffset"), 10),
+        yOffset: parseInt(charNode.getAttribute("yoffset"), 10),
+        xAdvance: parseInt(charNode.getAttribute("xadvance"), 10),
+        kerning: {}
+      };
+    }
+    for (let i2 = 0;i2 < kerning.length; i2++) {
+      const first = parseInt(kerning[i2].getAttribute("first"), 10);
+      const second = parseInt(kerning[i2].getAttribute("second"), 10);
+      const amount = parseInt(kerning[i2].getAttribute("amount"), 10);
+      data.chars[map[second]].kerning[map[first]] = amount;
+    }
+    return data;
+  }
+};
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLStringParser.mjs
+var bitmapFontXMLStringParser = {
+  test(data) {
+    if (typeof data === "string" && data.includes("<font>")) {
+      return bitmapFontXMLParser.test(DOMAdapter.get().parseXML(data));
+    }
+    return false;
+  },
+  parse(data) {
+    return bitmapFontXMLParser.parse(DOMAdapter.get().parseXML(data));
+  }
+};
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/loadBitmapFont.mjs
+var validExtensions = [".xml", ".fnt"];
+var bitmapFontCachePlugin = {
+  extension: {
+    type: ExtensionType.CacheParser,
+    name: "cacheBitmapFont"
+  },
+  test: (asset) => asset instanceof BitmapFont,
+  getCacheableAssets(keys, asset) {
+    const out2 = {};
+    keys.forEach((key) => {
+      out2[key] = asset;
+      out2[`${key}-bitmap`] = asset;
+    });
+    out2[`${asset.fontFamily}-bitmap`] = asset;
+    return out2;
+  }
+};
+var loadBitmapFont = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Normal
+  },
+  name: "loadBitmapFont",
+  id: "bitmap-font",
+  test(url) {
+    return validExtensions.includes(path.extname(url).toLowerCase());
+  },
+  async testParse(data) {
+    return bitmapFontTextParser.test(data) || bitmapFontXMLStringParser.test(data);
+  },
+  async parse(asset, data, loader) {
+    const bitmapFontData = bitmapFontTextParser.test(asset) ? bitmapFontTextParser.parse(asset) : bitmapFontXMLStringParser.parse(asset);
+    const { src } = data;
+    const { pages } = bitmapFontData;
+    const textureUrls = [];
+    const textureOptions = bitmapFontData.distanceField ? {
+      scaleMode: "linear",
+      alphaMode: "premultiply-alpha-on-upload",
+      autoGenerateMipmaps: false,
+      resolution: 1
+    } : {};
+    for (let i2 = 0;i2 < pages.length; ++i2) {
+      const pageFile = pages[i2].file;
+      let imagePath = path.join(path.dirname(src), pageFile);
+      imagePath = copySearchParams(imagePath, src);
+      textureUrls.push({
+        src: imagePath,
+        data: textureOptions
+      });
+    }
+    const loadedTextures = await loader.load(textureUrls);
+    const textures = textureUrls.map((url) => loadedTextures[url.src]);
+    const bitmapFont = new BitmapFont({
+      data: bitmapFontData,
+      textures
+    }, src);
+    return bitmapFont;
+  },
+  async load(url, _options) {
+    const response = await DOMAdapter.get().fetch(url);
+    return await response.text();
+  },
+  async unload(bitmapFont, _resolvedAsset, loader) {
+    await Promise.all(bitmapFont.pages.map((page) => loader.unload(page.texture.source._sourceOrigin)));
+    bitmapFont.destroy();
+  }
+};
+
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_warn();
+
+// node_modules/pixi.js/lib/assets/BackgroundLoader.mjs
+class BackgroundLoader {
+  constructor(loader, verbose = false) {
+    this._loader = loader;
+    this._assetList = [];
+    this._isLoading = false;
+    this._maxConcurrent = 1;
+    this.verbose = verbose;
+  }
+  add(assetUrls) {
+    assetUrls.forEach((a2) => {
+      this._assetList.push(a2);
+    });
+    if (this.verbose) {
+      console.log("[BackgroundLoader] assets: ", this._assetList);
+    }
+    if (this._isActive && !this._isLoading) {
+      this._next();
+    }
+  }
+  async _next() {
+    if (this._assetList.length && this._isActive) {
+      this._isLoading = true;
+      const toLoad = [];
+      const toLoadAmount = Math.min(this._assetList.length, this._maxConcurrent);
+      for (let i2 = 0;i2 < toLoadAmount; i2++) {
+        toLoad.push(this._assetList.pop());
+      }
+      await this._loader.load(toLoad);
+      this._isLoading = false;
+      this._next();
+    }
+  }
+  get active() {
+    return this._isActive;
+  }
+  set active(value) {
+    if (this._isActive === value)
+      return;
+    this._isActive = value;
+    if (value && !this._isLoading) {
+      this._next();
+    }
+  }
+}
+
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_Cache();
+
+// node_modules/pixi.js/lib/assets/cache/parsers/cacheTextureArray.mjs
+init_Extensions();
+init_Texture();
+var cacheTextureArray = {
+  extension: {
+    type: ExtensionType.CacheParser,
+    name: "cacheTextureArray"
+  },
+  test: (asset) => Array.isArray(asset) && asset.every((t2) => t2 instanceof Texture),
+  getCacheableAssets: (keys, asset) => {
+    const out2 = {};
+    keys.forEach((key) => {
+      asset.forEach((item, i2) => {
+        out2[key + (i2 === 0 ? "" : i2 + 1)] = item;
+      });
+    });
+    return out2;
+  }
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectAvif.mjs
+init_Extensions();
+
+// node_modules/pixi.js/lib/assets/detections/utils/testImageFormat.mjs
+async function testImageFormat(imageData) {
+  if ("Image" in globalThis) {
+    return new Promise((resolve) => {
+      const image = new Image;
+      image.onload = () => {
+        resolve(true);
+      };
+      image.onerror = () => {
+        resolve(false);
+      };
+      image.src = imageData;
+    });
+  }
+  if ("createImageBitmap" in globalThis && "fetch" in globalThis) {
+    try {
+      const blob = await (await fetch(imageData)).blob();
+      await createImageBitmap(blob);
+    } catch (_e) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectAvif.mjs
+var detectAvif = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 1
+  },
+  test: async () => testImageFormat("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A="),
+  add: async (formats) => [...formats, "avif"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "avif")
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectDefaults.mjs
+init_Extensions();
+var imageFormats = ["png", "jpg", "jpeg"];
+var detectDefaults = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: -1
+  },
+  test: () => Promise.resolve(true),
+  add: async (formats) => [...formats, ...imageFormats],
+  remove: async (formats) => formats.filter((f2) => !imageFormats.includes(f2))
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectMp4.mjs
+init_Extensions();
+
+// node_modules/pixi.js/lib/assets/detections/utils/testVideoFormat.mjs
+var inWorker = "WorkerGlobalScope" in globalThis && globalThis instanceof globalThis.WorkerGlobalScope;
+function testVideoFormat(mimeType) {
+  if (inWorker) {
+    return false;
+  }
+  const video = document.createElement("video");
+  return video.canPlayType(mimeType) !== "";
+}
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectMp4.mjs
+var detectMp4 = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testVideoFormat("video/mp4"),
+  add: async (formats) => [...formats, "mp4", "m4v"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "mp4" && f2 !== "m4v")
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectOgv.mjs
+init_Extensions();
+var detectOgv = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testVideoFormat("video/ogg"),
+  add: async (formats) => [...formats, "ogv"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "ogv")
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectWebm.mjs
+init_Extensions();
+var detectWebm = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testVideoFormat("video/webm"),
+  add: async (formats) => [...formats, "webm"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "webm")
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectWebp.mjs
+init_Extensions();
+var detectWebp = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testImageFormat("data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA="),
+  add: async (formats) => [...formats, "webp"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "webp")
+};
+
+// node_modules/pixi.js/lib/assets/loader/Loader.mjs
+init_warn();
+init_path();
+init_convertToList();
+init_isSingleItem();
+
+class Loader {
+  constructor() {
+    this._parsers = [];
+    this._parsersValidated = false;
+    this.parsers = new Proxy(this._parsers, {
+      set: (target, key, value) => {
+        this._parsersValidated = false;
+        target[key] = value;
+        return true;
+      }
+    });
+    this.promiseCache = {};
+  }
+  reset() {
+    this._parsersValidated = false;
+    this.promiseCache = {};
+  }
+  _getLoadPromiseAndParser(url, data) {
+    const result = {
+      promise: null,
+      parser: null
+    };
+    result.promise = (async () => {
+      let asset = null;
+      let parser = null;
+      if (data.parser || data.loadParser) {
+        parser = this._parserHash[data.parser || data.loadParser];
+        if (data.loadParser) {
+          warn(`[Assets] "loadParser" is deprecated, use "parser" instead for ${url}`);
+        }
+        if (!parser) {
+          warn(`[Assets] specified load parser "${data.parser || data.loadParser}" not found while loading ${url}`);
+        }
+      }
+      if (!parser) {
+        for (let i2 = 0;i2 < this.parsers.length; i2++) {
+          const parserX = this.parsers[i2];
+          if (parserX.load && parserX.test?.(url, data, this)) {
+            parser = parserX;
+            break;
+          }
+        }
+        if (!parser) {
+          warn(`[Assets] ${url} could not be loaded as we don't know how to parse it, ensure the correct parser has been added`);
+          return null;
+        }
+      }
+      asset = await parser.load(url, data, this);
+      result.parser = parser;
+      for (let i2 = 0;i2 < this.parsers.length; i2++) {
+        const parser2 = this.parsers[i2];
+        if (parser2.parse) {
+          if (parser2.parse && await parser2.testParse?.(asset, data, this)) {
+            asset = await parser2.parse(asset, data, this) || asset;
+            result.parser = parser2;
+          }
+        }
+      }
+      return asset;
+    })();
+    return result;
+  }
+  async load(assetsToLoadIn, onProgress) {
+    if (!this._parsersValidated) {
+      this._validateParsers();
+    }
+    let count2 = 0;
+    const assets = {};
+    const singleAsset = isSingleItem(assetsToLoadIn);
+    const assetsToLoad = convertToList(assetsToLoadIn, (item) => ({
+      alias: [item],
+      src: item,
+      data: {}
+    }));
+    const total = assetsToLoad.length;
+    const promises = assetsToLoad.map(async (asset) => {
+      const url = path.toAbsolute(asset.src);
+      if (!assets[asset.src]) {
+        try {
+          if (!this.promiseCache[url]) {
+            this.promiseCache[url] = this._getLoadPromiseAndParser(url, asset);
+          }
+          assets[asset.src] = await this.promiseCache[url].promise;
+          if (onProgress)
+            onProgress(++count2 / total);
+        } catch (e2) {
+          delete this.promiseCache[url];
+          delete assets[asset.src];
+          throw new Error(`[Loader.load] Failed to load ${url}.
+${e2}`);
+        }
+      }
+    });
+    await Promise.all(promises);
+    return singleAsset ? assets[assetsToLoad[0].src] : assets;
+  }
+  async unload(assetsToUnloadIn) {
+    const assetsToUnload = convertToList(assetsToUnloadIn, (item) => ({
+      alias: [item],
+      src: item
+    }));
+    const promises = assetsToUnload.map(async (asset) => {
+      const url = path.toAbsolute(asset.src);
+      const loadPromise = this.promiseCache[url];
+      if (loadPromise) {
+        const loadedAsset = await loadPromise.promise;
+        delete this.promiseCache[url];
+        await loadPromise.parser?.unload?.(loadedAsset, asset, this);
+      }
+    });
+    await Promise.all(promises);
+  }
+  _validateParsers() {
+    this._parsersValidated = true;
+    this._parserHash = this._parsers.filter((parser) => parser.name || parser.id).reduce((hash, parser) => {
+      if (!parser.name && !parser.id) {
+        warn(`[Assets] parser should have an id`);
+      } else if (hash[parser.name] || hash[parser.id]) {
+        warn(`[Assets] parser id conflict "${parser.id}"`);
+      }
+      hash[parser.name] = parser;
+      if (parser.id)
+        hash[parser.id] = parser;
+      return hash;
+    }, {});
+  }
+}
+
+// node_modules/pixi.js/lib/assets/loader/parsers/loadJson.mjs
+init_adapter();
+init_Extensions();
+
+// node_modules/pixi.js/lib/assets/utils/checkDataUrl.mjs
+function checkDataUrl(url, mimes) {
+  if (Array.isArray(mimes)) {
+    for (const mime of mimes) {
+      if (url.startsWith(`data:${mime}`))
+        return true;
+    }
+    return false;
+  }
+  return url.startsWith(`data:${mimes}`);
+}
+
+// node_modules/pixi.js/lib/assets/utils/checkExtension.mjs
+init_path();
+function checkExtension(url, extension) {
+  const tempURL = url.split("?")[0];
+  const ext = path.extname(tempURL).toLowerCase();
+  if (Array.isArray(extension)) {
+    return extension.includes(ext);
+  }
+  return ext === extension;
+}
+
+// node_modules/pixi.js/lib/assets/loader/parsers/loadJson.mjs
+init_LoaderParser();
+var validJSONExtension = ".json";
+var validJSONMIME = "application/json";
+var loadJson = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low
+  },
+  name: "loadJson",
+  id: "json",
+  test(url) {
+    return checkDataUrl(url, validJSONMIME) || checkExtension(url, validJSONExtension);
+  },
+  async load(url) {
+    const response = await DOMAdapter.get().fetch(url);
+    const json = await response.json();
+    return json;
+  }
+};
+
+// node_modules/pixi.js/lib/assets/loader/parsers/loadTxt.mjs
+init_adapter();
+init_Extensions();
+init_LoaderParser();
+var validTXTExtension = ".txt";
+var validTXTMIME = "text/plain";
+var loadTxt = {
+  name: "loadTxt",
+  id: "text",
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low,
+    name: "loadTxt"
+  },
+  test(url) {
+    return checkDataUrl(url, validTXTMIME) || checkExtension(url, validTXTExtension);
+  },
+  async load(url) {
+    const response = await DOMAdapter.get().fetch(url);
+    const txt = await response.text();
+    return txt;
+  }
+};
+
+// node_modules/pixi.js/lib/assets/loader/parsers/loadWebFont.mjs
+init_adapter();
+init_Extensions();
+init_warn();
+init_path();
+init_Cache();
+init_LoaderParser();
+var validWeights = [
+  "normal",
+  "bold",
+  "100",
+  "200",
+  "300",
+  "400",
+  "500",
+  "600",
+  "700",
+  "800",
+  "900"
+];
+var validFontExtensions = [".ttf", ".otf", ".woff", ".woff2"];
+var validFontMIMEs = [
+  "font/ttf",
+  "font/otf",
+  "font/woff",
+  "font/woff2"
+];
+var CSS_IDENT_TOKEN_REGEX = /^(--|-?[A-Z_])[0-9A-Z_-]*$/i;
+function getFontFamilyName(url) {
+  const ext = path.extname(url);
+  const name = path.basename(url, ext);
+  const nameWithSpaces = name.replace(/(-|_)/g, " ");
+  const nameTokens = nameWithSpaces.toLowerCase().split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+  let valid = nameTokens.length > 0;
+  for (const token of nameTokens) {
+    if (!token.match(CSS_IDENT_TOKEN_REGEX)) {
+      valid = false;
+      break;
+    }
+  }
+  let fontFamilyName = nameTokens.join(" ");
+  if (!valid) {
+    fontFamilyName = `"${fontFamilyName.replace(/[\\"]/g, "\\$&")}"`;
+  }
+  return fontFamilyName;
+}
+var validURICharactersRegex = /^[0-9A-Za-z%:/?#\[\]@!\$&'()\*\+,;=\-._~]*$/;
+function encodeURIWhenNeeded(uri) {
+  if (validURICharactersRegex.test(uri)) {
+    return uri;
+  }
+  return encodeURI(uri);
+}
+var loadWebFont = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low
+  },
+  name: "loadWebFont",
+  id: "web-font",
+  test(url) {
+    return checkDataUrl(url, validFontMIMEs) || checkExtension(url, validFontExtensions);
+  },
+  async load(url, options) {
+    const fonts = DOMAdapter.get().getFontFaceSet();
+    if (fonts) {
+      const fontFaces = [];
+      const name = options.data?.family ?? getFontFamilyName(url);
+      const weights = options.data?.weights?.filter((weight) => validWeights.includes(weight)) ?? ["normal"];
+      const data = options.data ?? {};
+      for (let i2 = 0;i2 < weights.length; i2++) {
+        const weight = weights[i2];
+        const font = new FontFace(name, `url(${encodeURIWhenNeeded(url)})`, {
+          ...data,
+          weight
+        });
+        await font.load();
+        fonts.add(font);
+        fontFaces.push(font);
+      }
+      if (Cache.has(`${name}-and-url`)) {
+        const cached = Cache.get(`${name}-and-url`);
+        cached.entries.push({ url, faces: fontFaces });
+      } else {
+        Cache.set(`${name}-and-url`, {
+          entries: [{ url, faces: fontFaces }]
+        });
+      }
+      return fontFaces.length === 1 ? fontFaces[0] : fontFaces;
+    }
+    warn("[loadWebFont] FontFace API is not supported. Skipping loading font");
+    return null;
+  },
+  unload(font) {
+    const fonts = Array.isArray(font) ? font : [font];
+    const fontFamily = fonts[0].family;
+    const cached = Cache.get(`${fontFamily}-and-url`);
+    const entry = cached.entries.find((f2) => f2.faces.some((t2) => fonts.indexOf(t2) !== -1));
+    entry.faces = entry.faces.filter((f2) => fonts.indexOf(f2) === -1);
+    if (entry.faces.length === 0) {
+      cached.entries = cached.entries.filter((f2) => f2 !== entry);
+    }
+    fonts.forEach((t2) => {
+      DOMAdapter.get().getFontFaceSet().delete(t2);
+    });
+    if (cached.entries.length === 0) {
+      Cache.remove(`${fontFamily}-and-url`);
+    }
+  }
+};
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadSVG.mjs
+init_adapter();
+init_Extensions();
+init_ImageSource();
+init_GraphicsContext();
+
+// node_modules/pixi.js/lib/utils/network/getResolutionOfUrl.mjs
+init_Resolver();
+function getResolutionOfUrl(url, defaultValue2 = 1) {
+  const resolution = Resolver.RETINA_PREFIX?.exec(url);
+  if (resolution) {
+    return parseFloat(resolution[1]);
+  }
+  return defaultValue2;
+}
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadSVG.mjs
+init_LoaderParser();
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/utils/createTexture.mjs
+init_Texture();
+init_warn();
+init_Cache();
+function createTexture(source2, loader, url) {
+  source2.label = url;
+  source2._sourceOrigin = url;
+  const texture = new Texture({
+    source: source2,
+    label: url
+  });
+  const unload = () => {
+    delete loader.promiseCache[url];
+    if (Cache.has(url)) {
+      Cache.remove(url);
+    }
+  };
+  texture.source.once("destroy", () => {
+    if (loader.promiseCache[url]) {
+      warn("[Assets] A TextureSource managed by Assets was destroyed instead of unloaded! Use Assets.unload() instead of destroying the TextureSource.");
+      unload();
+    }
+  });
+  texture.once("destroy", () => {
+    if (!source2.destroyed) {
+      warn("[Assets] A Texture managed by Assets was destroyed instead of unloaded! Use Assets.unload() instead of destroying the Texture.");
+      unload();
+    }
+  });
+  return texture;
+}
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadSVG.mjs
+var validSVGExtension = ".svg";
+var validSVGMIME = "image/svg+xml";
+var loadSvg = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low,
+    name: "loadSVG"
+  },
+  name: "loadSVG",
+  id: "svg",
+  config: {
+    crossOrigin: "anonymous",
+    parseAsGraphicsContext: false
+  },
+  test(url) {
+    return checkDataUrl(url, validSVGMIME) || checkExtension(url, validSVGExtension);
+  },
+  async load(url, asset, loader) {
+    if (asset.data?.parseAsGraphicsContext ?? this.config.parseAsGraphicsContext) {
+      return loadAsGraphics(url);
+    }
+    return loadAsTexture(url, asset, loader, this.config.crossOrigin);
+  },
+  unload(asset) {
+    asset.destroy(true);
+  }
+};
+async function loadAsTexture(url, asset, loader, crossOrigin) {
+  const response = await DOMAdapter.get().fetch(url);
+  const image = DOMAdapter.get().createImage();
+  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(await response.text())}`;
+  image.crossOrigin = crossOrigin;
+  await image.decode();
+  const width = asset.data?.width ?? image.width;
+  const height = asset.data?.height ?? image.height;
+  const resolution = asset.data?.resolution || getResolutionOfUrl(url);
+  const canvasWidth = Math.ceil(width * resolution);
+  const canvasHeight = Math.ceil(height * resolution);
+  const canvas = DOMAdapter.get().createCanvas(canvasWidth, canvasHeight);
+  const context2 = canvas.getContext("2d");
+  context2.imageSmoothingEnabled = true;
+  context2.imageSmoothingQuality = "high";
+  context2.drawImage(image, 0, 0, width * resolution, height * resolution);
+  const { parseAsGraphicsContext: _p, ...rest } = asset.data ?? {};
+  const base = new ImageSource({
+    resource: canvas,
+    alphaMode: "premultiply-alpha-on-upload",
+    resolution,
+    ...rest
+  });
+  return createTexture(base, loader, url);
+}
+async function loadAsGraphics(url) {
+  const response = await DOMAdapter.get().fetch(url);
+  const svgSource = await response.text();
+  const context2 = new GraphicsContext;
+  context2.svg(svgSource);
+  return context2;
+}
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadTextures.mjs
+init_adapter();
+init_Extensions();
+init_ImageSource();
+
+// node_modules/pixi.js/lib/_virtual/checkImageBitmap.worker.mjs
+var WORKER_CODE = `(function () {
+    'use strict';
+
+    const WHITE_PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+    async function checkImageBitmap() {
+      try {
+        if (typeof createImageBitmap !== "function")
+          return false;
+        const response = await fetch(WHITE_PNG);
+        const imageBlob = await response.blob();
+        const imageBitmap = await createImageBitmap(imageBlob);
+        return imageBitmap.width === 1 && imageBitmap.height === 1;
+      } catch (_e) {
+        return false;
+      }
+    }
+    void checkImageBitmap().then((result) => {
+      self.postMessage(result);
+    });
+
+})();
+`;
+var WORKER_URL = null;
+
+class WorkerInstance {
+  constructor() {
+    if (!WORKER_URL) {
+      WORKER_URL = URL.createObjectURL(new Blob([WORKER_CODE], { type: "application/javascript" }));
+    }
+    this.worker = new Worker(WORKER_URL);
+  }
+}
+WorkerInstance.revokeObjectURL = function revokeObjectURL() {
+  if (WORKER_URL) {
+    URL.revokeObjectURL(WORKER_URL);
+    WORKER_URL = null;
+  }
+};
+
+// node_modules/pixi.js/lib/_virtual/loadImageBitmap.worker.mjs
+var WORKER_CODE2 = `(function () {
+    'use strict';
+
+    async function loadImageBitmap(url, alphaMode) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(\`[WorkerManager.loadImageBitmap] Failed to fetch \${url}: \${response.status} \${response.statusText}\`);
+      }
+      const imageBlob = await response.blob();
+      return alphaMode === "premultiplied-alpha" ? createImageBitmap(imageBlob, { premultiplyAlpha: "none" }) : createImageBitmap(imageBlob);
+    }
+    self.onmessage = async (event) => {
+      try {
+        const imageBitmap = await loadImageBitmap(event.data.data[0], event.data.data[1]);
+        self.postMessage({
+          data: imageBitmap,
+          uuid: event.data.uuid,
+          id: event.data.id
+        }, [imageBitmap]);
+      } catch (e) {
+        self.postMessage({
+          error: e,
+          uuid: event.data.uuid,
+          id: event.data.id
+        });
+      }
+    };
+
+})();
+`;
+var WORKER_URL2 = null;
+
+class WorkerInstance2 {
+  constructor() {
+    if (!WORKER_URL2) {
+      WORKER_URL2 = URL.createObjectURL(new Blob([WORKER_CODE2], { type: "application/javascript" }));
+    }
+    this.worker = new Worker(WORKER_URL2);
+  }
+}
+WorkerInstance2.revokeObjectURL = function revokeObjectURL2() {
+  if (WORKER_URL2) {
+    URL.revokeObjectURL(WORKER_URL2);
+    WORKER_URL2 = null;
+  }
+};
+
+// node_modules/pixi.js/lib/assets/loader/workers/WorkerManager.mjs
+var UUID = 0;
+var MAX_WORKERS;
+
+class WorkerManagerClass {
+  constructor() {
+    this._initialized = false;
+    this._createdWorkers = 0;
+    this._workerPool = [];
+    this._queue = [];
+    this._resolveHash = {};
+  }
+  isImageBitmapSupported() {
+    if (this._isImageBitmapSupported !== undefined)
+      return this._isImageBitmapSupported;
+    this._isImageBitmapSupported = new Promise((resolve) => {
+      const { worker } = new WorkerInstance;
+      worker.addEventListener("message", (event) => {
+        worker.terminate();
+        WorkerInstance.revokeObjectURL();
+        resolve(event.data);
+      });
+    });
+    return this._isImageBitmapSupported;
+  }
+  loadImageBitmap(src, asset) {
+    return this._run("loadImageBitmap", [src, asset?.data?.alphaMode]);
+  }
+  async _initWorkers() {
+    if (this._initialized)
+      return;
+    this._initialized = true;
+  }
+  _getWorker() {
+    if (MAX_WORKERS === undefined) {
+      MAX_WORKERS = navigator.hardwareConcurrency || 4;
+    }
+    let worker = this._workerPool.pop();
+    if (!worker && this._createdWorkers < MAX_WORKERS) {
+      this._createdWorkers++;
+      worker = new WorkerInstance2().worker;
+      worker.addEventListener("message", (event) => {
+        this._complete(event.data);
+        this._returnWorker(event.target);
+        this._next();
+      });
+    }
+    return worker;
+  }
+  _returnWorker(worker) {
+    this._workerPool.push(worker);
+  }
+  _complete(data) {
+    if (data.error !== undefined) {
+      this._resolveHash[data.uuid].reject(data.error);
+    } else {
+      this._resolveHash[data.uuid].resolve(data.data);
+    }
+    this._resolveHash[data.uuid] = null;
+  }
+  async _run(id, args) {
+    await this._initWorkers();
+    const promise2 = new Promise((resolve, reject) => {
+      this._queue.push({ id, arguments: args, resolve, reject });
+    });
+    this._next();
+    return promise2;
+  }
+  _next() {
+    if (!this._queue.length)
+      return;
+    const worker = this._getWorker();
+    if (!worker) {
+      return;
+    }
+    const toDo = this._queue.pop();
+    const id = toDo.id;
+    this._resolveHash[UUID] = { resolve: toDo.resolve, reject: toDo.reject };
+    worker.postMessage({
+      data: toDo.arguments,
+      uuid: UUID++,
+      id
+    });
+  }
+  reset() {
+    this._workerPool.forEach((worker) => worker.terminate());
+    this._workerPool.length = 0;
+    Object.values(this._resolveHash).forEach(({ reject }) => {
+      reject?.(new Error("WorkerManager destroyed"));
+    });
+    this._resolveHash = {};
+    this._queue.length = 0;
+    this._initialized = false;
+    this._createdWorkers = 0;
+  }
+}
+var WorkerManager = new WorkerManagerClass;
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadTextures.mjs
+init_LoaderParser();
+var validImageExtensions = [".jpeg", ".jpg", ".png", ".webp", ".avif"];
+var validImageMIMEs = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif"
+];
+async function loadImageBitmap(url, asset) {
+  const response = await DOMAdapter.get().fetch(url);
+  if (!response.ok) {
+    throw new Error(`[loadImageBitmap] Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+  }
+  const imageBlob = await response.blob();
+  return asset?.data?.alphaMode === "premultiplied-alpha" ? createImageBitmap(imageBlob, { premultiplyAlpha: "none" }) : createImageBitmap(imageBlob);
+}
+var loadTextures = {
+  name: "loadTextures",
+  id: "texture",
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.High,
+    name: "loadTextures"
+  },
+  config: {
+    preferWorkers: true,
+    preferCreateImageBitmap: true,
+    crossOrigin: "anonymous"
+  },
+  test(url) {
+    return checkDataUrl(url, validImageMIMEs) || checkExtension(url, validImageExtensions);
+  },
+  async load(url, asset, loader) {
+    let src = null;
+    if (globalThis.createImageBitmap && this.config.preferCreateImageBitmap) {
+      if (this.config.preferWorkers && await WorkerManager.isImageBitmapSupported()) {
+        src = await WorkerManager.loadImageBitmap(url, asset);
+      } else {
+        src = await loadImageBitmap(url, asset);
+      }
+    } else {
+      src = await new Promise((resolve, reject) => {
+        src = DOMAdapter.get().createImage();
+        src.crossOrigin = this.config.crossOrigin;
+        src.src = url;
+        if (src.complete) {
+          resolve(src);
+        } else {
+          src.onload = () => {
+            resolve(src);
+          };
+          src.onerror = reject;
+        }
+      });
+    }
+    const base = new ImageSource({
+      resource: src,
+      alphaMode: "premultiply-alpha-on-upload",
+      resolution: asset.data?.resolution || getResolutionOfUrl(url),
+      ...asset.data
+    });
+    return createTexture(base, loader, url);
+  },
+  unload(texture) {
+    texture.destroy(true);
+  }
+};
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadVideoTextures.mjs
+init_Extensions();
+init_VideoSource();
+init_detectVideoAlphaMode();
+var potentialVideoExtensions = [".mp4", ".m4v", ".webm", ".ogg", ".ogv", ".h264", ".avi", ".mov"];
+var validVideoExtensions;
+var validVideoMIMEs;
+function crossOrigin(element, url, crossorigin) {
+  if (crossorigin === undefined && !url.startsWith("data:")) {
+    element.crossOrigin = determineCrossOrigin(url);
+  } else if (crossorigin !== false) {
+    element.crossOrigin = typeof crossorigin === "string" ? crossorigin : "anonymous";
+  }
+}
+function preloadVideo(element) {
+  return new Promise((resolve, reject) => {
+    element.addEventListener("canplaythrough", loaded);
+    element.addEventListener("error", error);
+    element.load();
+    function loaded() {
+      cleanup();
+      resolve();
+    }
+    function error(err) {
+      cleanup();
+      reject(err);
+    }
+    function cleanup() {
+      element.removeEventListener("canplaythrough", loaded);
+      element.removeEventListener("error", error);
+    }
+  });
+}
+function determineCrossOrigin(url, loc = globalThis.location) {
+  if (url.startsWith("data:")) {
+    return "";
+  }
+  loc || (loc = globalThis.location);
+  const parsedUrl = new URL(url, document.baseURI);
+  if (parsedUrl.hostname !== loc.hostname || parsedUrl.port !== loc.port || parsedUrl.protocol !== loc.protocol) {
+    return "anonymous";
+  }
+  return "";
+}
+function getBrowserSupportedVideoExtensions() {
+  const supportedExtensions = [];
+  const supportedMimes = [];
+  for (const ext of potentialVideoExtensions) {
+    const mimeType = VideoSource.MIME_TYPES[ext.substring(1)] || `video/${ext.substring(1)}`;
+    if (testVideoFormat(mimeType)) {
+      supportedExtensions.push(ext);
+      if (!supportedMimes.includes(mimeType)) {
+        supportedMimes.push(mimeType);
+      }
+    }
+  }
+  return {
+    validVideoExtensions: supportedExtensions,
+    validVideoMime: supportedMimes
+  };
+}
+var loadVideoTextures = {
+  name: "loadVideo",
+  id: "video",
+  extension: {
+    type: ExtensionType.LoadParser,
+    name: "loadVideo"
+  },
+  test(url) {
+    if (!validVideoExtensions || !validVideoMIMEs) {
+      const { validVideoExtensions: ve, validVideoMime: vm } = getBrowserSupportedVideoExtensions();
+      validVideoExtensions = ve;
+      validVideoMIMEs = vm;
+    }
+    const isValidDataUrl = checkDataUrl(url, validVideoMIMEs);
+    const isValidExtension = checkExtension(url, validVideoExtensions);
+    return isValidDataUrl || isValidExtension;
+  },
+  async load(url, asset, loader) {
+    const options = {
+      ...VideoSource.defaultOptions,
+      resolution: asset.data?.resolution || getResolutionOfUrl(url),
+      alphaMode: asset.data?.alphaMode || await detectVideoAlphaMode(),
+      ...asset.data
+    };
+    const videoElement = document.createElement("video");
+    const attributeMap = {
+      preload: options.autoLoad !== false ? "auto" : undefined,
+      "webkit-playsinline": options.playsinline !== false ? "" : undefined,
+      playsinline: options.playsinline !== false ? "" : undefined,
+      muted: options.muted === true ? "" : undefined,
+      loop: options.loop === true ? "" : undefined,
+      autoplay: options.autoPlay !== false ? "" : undefined
+    };
+    Object.keys(attributeMap).forEach((key) => {
+      const value = attributeMap[key];
+      if (value !== undefined)
+        videoElement.setAttribute(key, value);
+    });
+    if (options.muted === true) {
+      videoElement.muted = true;
+    }
+    crossOrigin(videoElement, url, options.crossorigin);
+    const sourceElement = document.createElement("source");
+    let mime;
+    if (options.mime) {
+      mime = options.mime;
+    } else if (url.startsWith("data:")) {
+      mime = url.slice(5, url.indexOf(";"));
+    } else if (!url.startsWith("blob:")) {
+      const ext = url.split("?")[0].slice(url.lastIndexOf(".") + 1).toLowerCase();
+      mime = VideoSource.MIME_TYPES[ext] || `video/${ext}`;
+    }
+    sourceElement.src = url;
+    if (mime) {
+      sourceElement.type = mime;
+    }
+    return new Promise((resolve) => {
+      const onCanPlay = async () => {
+        const base = new VideoSource({ ...options, resource: videoElement });
+        videoElement.removeEventListener("canplay", onCanPlay);
+        if (asset.data.preload) {
+          await preloadVideo(videoElement);
+        }
+        resolve(createTexture(base, loader, url));
+      };
+      if (options.preload && !options.autoPlay) {
+        videoElement.load();
+      }
+      videoElement.addEventListener("canplay", onCanPlay);
+      videoElement.appendChild(sourceElement);
+    });
+  },
+  unload(texture) {
+    texture.destroy(true);
+  }
+};
+
+// node_modules/pixi.js/lib/assets/resolver/parsers/resolveJsonUrl.mjs
+init_Extensions();
+init_Resolver();
+
+// node_modules/pixi.js/lib/assets/resolver/parsers/resolveTextureUrl.mjs
+init_Extensions();
+init_Resolver();
+var resolveTextureUrl = {
+  extension: {
+    type: ExtensionType.ResolveParser,
+    name: "resolveTexture"
+  },
+  test: loadTextures.test,
+  parse: (value) => ({
+    resolution: parseFloat(Resolver.RETINA_PREFIX.exec(value)?.[1] ?? "1"),
+    format: value.split(".").pop(),
+    src: value
+  })
+};
+
+// node_modules/pixi.js/lib/assets/resolver/parsers/resolveJsonUrl.mjs
+var resolveJsonUrl = {
+  extension: {
+    type: ExtensionType.ResolveParser,
+    priority: -2,
+    name: "resolveJson"
+  },
+  test: (value) => Resolver.RETINA_PREFIX.test(value) && value.endsWith(".json"),
+  parse: resolveTextureUrl.parse
+};
+
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_Resolver();
+init_convertToList();
+init_isSingleItem();
+
+class AssetsClass {
+  constructor() {
+    this._detections = [];
+    this._initialized = false;
+    this.resolver = new Resolver;
+    this.loader = new Loader;
+    this.cache = Cache;
+    this._backgroundLoader = new BackgroundLoader(this.loader);
+    this._backgroundLoader.active = true;
+    this.reset();
+  }
+  async init(options = {}) {
+    if (this._initialized) {
+      warn("[Assets]AssetManager already initialized, did you load before calling this Assets.init()?");
+      return;
+    }
+    this._initialized = true;
+    if (options.defaultSearchParams) {
+      this.resolver.setDefaultSearchParams(options.defaultSearchParams);
+    }
+    if (options.basePath) {
+      this.resolver.basePath = options.basePath;
+    }
+    if (options.bundleIdentifier) {
+      this.resolver.setBundleIdentifier(options.bundleIdentifier);
+    }
+    if (options.manifest) {
+      let manifest = options.manifest;
+      if (typeof manifest === "string") {
+        manifest = await this.load(manifest);
+      }
+      this.resolver.addManifest(manifest);
+    }
+    const resolutionPref = options.texturePreference?.resolution ?? 1;
+    const resolution = typeof resolutionPref === "number" ? [resolutionPref] : resolutionPref;
+    const formats = await this._detectFormats({
+      preferredFormats: options.texturePreference?.format,
+      skipDetections: options.skipDetections,
+      detections: this._detections
+    });
+    this.resolver.prefer({
+      params: {
+        format: formats,
+        resolution
+      }
+    });
+    if (options.preferences) {
+      this.setPreferences(options.preferences);
+    }
+  }
+  add(assets) {
+    this.resolver.add(assets);
+  }
+  async load(urls, onProgress) {
+    if (!this._initialized) {
+      await this.init();
+    }
+    const singleAsset = isSingleItem(urls);
+    const urlArray = convertToList(urls).map((url) => {
+      if (typeof url !== "string") {
+        const aliases = this.resolver.getAlias(url);
+        if (aliases.some((alias) => !this.resolver.hasKey(alias))) {
+          this.add(url);
+        }
+        return Array.isArray(aliases) ? aliases[0] : aliases;
+      }
+      if (!this.resolver.hasKey(url))
+        this.add({ alias: url, src: url });
+      return url;
+    });
+    const resolveResults = this.resolver.resolve(urlArray);
+    const out2 = await this._mapLoadToResolve(resolveResults, onProgress);
+    return singleAsset ? out2[urlArray[0]] : out2;
+  }
+  addBundle(bundleId, assets) {
+    this.resolver.addBundle(bundleId, assets);
+  }
+  async loadBundle(bundleIds, onProgress) {
+    if (!this._initialized) {
+      await this.init();
+    }
+    let singleAsset = false;
+    if (typeof bundleIds === "string") {
+      singleAsset = true;
+      bundleIds = [bundleIds];
+    }
+    const resolveResults = this.resolver.resolveBundle(bundleIds);
+    const out2 = {};
+    const keys = Object.keys(resolveResults);
+    let count2 = 0;
+    let total = 0;
+    const _onProgress = () => {
+      onProgress?.(++count2 / total);
+    };
+    const promises = keys.map((bundleId) => {
+      const resolveResult = resolveResults[bundleId];
+      const values = Object.values(resolveResult);
+      const totalAssetsToLoad = [...new Set(values.flat())];
+      total += totalAssetsToLoad.length;
+      return this._mapLoadToResolve(resolveResult, _onProgress).then((resolveResult2) => {
+        out2[bundleId] = resolveResult2;
+      });
+    });
+    await Promise.all(promises);
+    return singleAsset ? out2[bundleIds[0]] : out2;
+  }
+  async backgroundLoad(urls) {
+    if (!this._initialized) {
+      await this.init();
+    }
+    if (typeof urls === "string") {
+      urls = [urls];
+    }
+    const resolveResults = this.resolver.resolve(urls);
+    this._backgroundLoader.add(Object.values(resolveResults));
+  }
+  async backgroundLoadBundle(bundleIds) {
+    if (!this._initialized) {
+      await this.init();
+    }
+    if (typeof bundleIds === "string") {
+      bundleIds = [bundleIds];
+    }
+    const resolveResults = this.resolver.resolveBundle(bundleIds);
+    Object.values(resolveResults).forEach((resolveResult) => {
+      this._backgroundLoader.add(Object.values(resolveResult));
+    });
+  }
+  reset() {
+    this.resolver.reset();
+    this.loader.reset();
+    this.cache.reset();
+    this._initialized = false;
+  }
+  get(keys) {
+    if (typeof keys === "string") {
+      return Cache.get(keys);
+    }
+    const assets = {};
+    for (let i2 = 0;i2 < keys.length; i2++) {
+      assets[i2] = Cache.get(keys[i2]);
+    }
+    return assets;
+  }
+  async _mapLoadToResolve(resolveResults, onProgress) {
+    const resolveArray = [...new Set(Object.values(resolveResults))];
+    this._backgroundLoader.active = false;
+    const loadedAssets = await this.loader.load(resolveArray, onProgress);
+    this._backgroundLoader.active = true;
+    const out2 = {};
+    resolveArray.forEach((resolveResult) => {
+      const asset = loadedAssets[resolveResult.src];
+      const keys = [resolveResult.src];
+      if (resolveResult.alias) {
+        keys.push(...resolveResult.alias);
+      }
+      keys.forEach((key) => {
+        out2[key] = asset;
+      });
+      Cache.set(keys, asset);
+    });
+    return out2;
+  }
+  async unload(urls) {
+    if (!this._initialized) {
+      await this.init();
+    }
+    const urlArray = convertToList(urls).map((url) => typeof url !== "string" ? url.src : url);
+    const resolveResults = this.resolver.resolve(urlArray);
+    await this._unloadFromResolved(resolveResults);
+  }
+  async unloadBundle(bundleIds) {
+    if (!this._initialized) {
+      await this.init();
+    }
+    bundleIds = convertToList(bundleIds);
+    const resolveResults = this.resolver.resolveBundle(bundleIds);
+    const promises = Object.keys(resolveResults).map((bundleId) => this._unloadFromResolved(resolveResults[bundleId]));
+    await Promise.all(promises);
+  }
+  async _unloadFromResolved(resolveResult) {
+    const resolveArray = Object.values(resolveResult);
+    resolveArray.forEach((resolveResult2) => {
+      Cache.remove(resolveResult2.src);
+    });
+    await this.loader.unload(resolveArray);
+  }
+  async _detectFormats(options) {
+    let formats = [];
+    if (options.preferredFormats) {
+      formats = Array.isArray(options.preferredFormats) ? options.preferredFormats : [options.preferredFormats];
+    }
+    for (const detection of options.detections) {
+      if (options.skipDetections || await detection.test()) {
+        formats = await detection.add(formats);
+      } else if (!options.skipDetections) {
+        formats = await detection.remove(formats);
+      }
+    }
+    formats = formats.filter((format, index) => formats.indexOf(format) === index);
+    return formats;
+  }
+  get detections() {
+    return this._detections;
+  }
+  setPreferences(preferences) {
+    this.loader.parsers.forEach((parser) => {
+      if (!parser.config)
+        return;
+      Object.keys(parser.config).filter((key) => (key in preferences)).forEach((key) => {
+        parser.config[key] = preferences[key];
+      });
+    });
+  }
+}
+var Assets = new AssetsClass;
+extensions.handleByList(ExtensionType.LoadParser, Assets.loader.parsers).handleByList(ExtensionType.ResolveParser, Assets.resolver.parsers).handleByList(ExtensionType.CacheParser, Assets.cache.parsers).handleByList(ExtensionType.DetectionParser, Assets.detections);
+extensions.add(cacheTextureArray, detectDefaults, detectAvif, detectWebp, detectMp4, detectOgv, detectWebm, loadJson, loadTxt, loadWebFont, loadSvg, loadTextures, loadVideoTextures, loadBitmapFont, bitmapFontCachePlugin, resolveTextureUrl, resolveJsonUrl);
+var assetKeyMap = {
+  loader: ExtensionType.LoadParser,
+  resolver: ExtensionType.ResolveParser,
+  cache: ExtensionType.CacheParser,
+  detection: ExtensionType.DetectionParser
+};
+extensions.handle(ExtensionType.Asset, (extension) => {
+  const ref = extension.ref;
+  Object.entries(assetKeyMap).filter(([key]) => !!ref[key]).forEach(([key, type]) => extensions.add(Object.assign(ref[key], { extension: ref[key].extension ?? type })));
+}, (extension) => {
+  const ref = extension.ref;
+  Object.keys(assetKeyMap).filter((key) => !!ref[key]).forEach((key) => extensions.remove(ref[key]));
+});
 // node_modules/pixi.js/lib/index.mjs
 init_Point();
 init_Rectangle();
 init_textureFrom();
 init_Container();
 init_Graphics();
+init_Sprite();
 init_Ticker();
 init_eventemitter3();
 extensions.add(browserExt, webworkerExt);
@@ -31865,118 +33474,6 @@ async function app_viewport_create(app) {
   return viewport;
 }
 
-// src/lib/map.ts
-function map_1_create(viewport) {
-  map_1_roads_create(viewport);
-  map_1_buildings_create(viewport);
-}
-function map_1_buildings_create(viewport) {
-  const buildings_container = map_container_create("buildings");
-  const building_1 = map_rectangle_create(100, 100, 300, 100, 16711680, 0.5);
-  const building_2 = map_rectangle_create(200, 300, 200, 100, 65280, 0.5);
-  const building_3 = map_rectangle_create(300, 500, 100, 100, 16711680, 0.5);
-  const building_4 = map_rectangle_create(100, 700, 300, 100, 255, 0.5);
-  const building_5 = map_rectangle_create(600, 100, 200, 100, 16711680, 0.5);
-  const building_6 = map_rectangle_create(600, 300, 100, 100, 65280, 0.5);
-  const building_7 = map_rectangle_create(600, 500, 200, 100, 16711680, 0.5);
-  const building_8 = map_rectangle_create(600, 700, 200, 100, 255, 0.5);
-  buildings_container.addChild(building_1);
-  buildings_container.addChild(building_2);
-  buildings_container.addChild(building_3);
-  buildings_container.addChild(building_4);
-  buildings_container.addChild(building_5);
-  buildings_container.addChild(building_6);
-  buildings_container.addChild(building_7);
-  buildings_container.addChild(building_8);
-  viewport.addChild(buildings_container);
-}
-function map_1_roads_create(viewport) {
-  const roads_container = map_container_create("roads");
-  const road_1 = map_rectangle_create(500, 0, 50, 900, 11184810, 0.85);
-  const road_2 = map_rectangle_create(0, 900, 1000, 50, 11184810, 0.85);
-  roads_container.addChild(road_1);
-  roads_container.addChild(road_2);
-  viewport.addChild(roads_container);
-}
-function map_container_create(label) {
-  const container = new Container;
-  container.label = label;
-  return container;
-}
-function map_rectangle_create(x3, y2, width, height, fill_color = 14606046, fill_alpha = 1, stroke_color = 0, stroke_alpha = 0) {
-  const graphics = new Graphics;
-  graphics.rect(x3, y2, width, height).fill({
-    color: fill_color,
-    alpha: fill_alpha
-  }).stroke({
-    color: stroke_color,
-    alpha: stroke_alpha
-  });
-  graphics.cursor = "pointer";
-  graphics.interactive = true;
-  return graphics;
-}
-
-// src/lib/hud.ts
-function hud_create() {
-  const hud = [];
-  hud.push(hud_create_header());
-  hud.push(hud_create_side_left());
-  hud.push(hud_create_side_right());
-  hud.push(hud_create_footer());
-  return hud;
-}
-function hud_create_header() {
-  const header = document.createElement("div");
-  header.classList.add("hud-header");
-  const date = document.createElement("div");
-  date.classList.add("hud-date");
-  date.id = "hud-date";
-  const time = document.createElement("div");
-  time.classList.add("hud-time");
-  time.id = "hud-time";
-  const time_before = document.createElement("div");
-  time_before.classList.add("hud-time");
-  time_before.id = "hud-time-before";
-  time_before.innerHTML = `
-    <i id="btn-time-slow-max" class="fa-solid fa-backward-fast btn-time"></i>
-    &nbsp;
-    <i id="btn-time-slow-single" class="fa-solid fa-backward-step btn-time"></i>
-  `;
-  const time_after = document.createElement("div");
-  time_after.classList.add("hud-time");
-  time_after.id = "hud-time-after";
-  time_after.innerHTML = `
-    <i id="btn-time-fast-single" class="fa-solid fa-forward-step btn-time"></i>
-    &nbsp;
-    <i id="btn-time-fast-max" class="fa-solid fa-forward-fast btn-time"></i>
-  `;
-  const time_message = document.createElement("div");
-  time_message.classList.add("hud-time-message");
-  time_message.id = "hud-time-message";
-  date.appendChild(time_before);
-  date.appendChild(time);
-  date.appendChild(time_after);
-  date.appendChild(time_message);
-  header.appendChild(date);
-  return header;
-}
-function hud_create_footer() {
-  const footer = document.createElement("div");
-  footer.classList.add("hud-footer");
-  return footer;
-}
-function hud_create_side_left() {
-  const side_left = document.createElement("div");
-  side_left.classList.add("hud-side-left");
-  return side_left;
-}
-function hud_create_side_right() {
-  const side_right = document.createElement("div");
-  side_right.classList.add("hud-side-right");
-  return side_right;
-}
-
 // node_modules/valibot/dist/index.js
 var store;
 function getGlobalConfig(config2) {
@@ -32139,6 +33636,27 @@ function custom(check2, message2) {
     },
     "~run"(dataset, config2) {
       if (this.check(dataset.value)) {
+        dataset.typed = true;
+      } else {
+        _addIssue(this, "type", dataset, config2);
+      }
+      return dataset;
+    }
+  };
+}
+function number(message2) {
+  return {
+    kind: "schema",
+    type: "number",
+    reference: number,
+    expects: "number",
+    async: false,
+    message: message2,
+    get "~standard"() {
+      return _getStandardProps(this);
+    },
+    "~run"(dataset, config2) {
+      if (typeof dataset.value === "number" && !isNaN(dataset.value)) {
         dataset.typed = true;
       } else {
         _addIssue(this, "type", dataset, config2);
@@ -32436,6 +33954,165 @@ function safeParse(schema, input, config2) {
   };
 }
 
+// src/lib/building.ts
+async function building_create(options) {
+  const building_container = new Container;
+  building_container.label = options.name + "_container";
+  building_container.x = options.x;
+  building_container.y = options.y;
+  const building_texture = await Assets.load("/build/images/house.png");
+  const building = new Sprite(building_texture);
+  building.label = options.name;
+  building.interactive = true;
+  building.cursor = "pointer";
+  building_container.addChild(building);
+  return building_container;
+}
+var BuildingOptionsSchema = object({
+  name: string(),
+  description: optional(string()),
+  cash: number(),
+  x: number(),
+  y: number(),
+  texture: optional(string())
+});
+
+// src/lib/map.ts
+async function map_1_create(viewport) {
+  map_1_roads_create(viewport);
+  await map_1_buildings_create(viewport);
+}
+async function map_1_buildings_create(viewport) {
+  const buildings_container = map_container_create("buildings");
+  const building_1 = await building_create({
+    name: "building_1",
+    x: 200,
+    y: 0,
+    cash: 1000
+  });
+  const building_2 = await building_create({
+    name: "building_2",
+    x: 200,
+    y: 300,
+    cash: 1000
+  });
+  const building_3 = await building_create({
+    name: "building_3",
+    x: 200,
+    y: 600,
+    cash: 1000
+  });
+  const building_4 = await building_create({
+    name: "building_4",
+    x: 550,
+    y: 0,
+    cash: 1000
+  });
+  const building_5 = await building_create({
+    name: "building_5",
+    x: 550,
+    y: 300,
+    cash: 1000
+  });
+  const building_6 = await building_create({
+    name: "building_6",
+    x: 550,
+    y: 600,
+    cash: 1000
+  });
+  buildings_container.addChild(building_1);
+  buildings_container.addChild(building_2);
+  buildings_container.addChild(building_3);
+  buildings_container.addChild(building_4);
+  buildings_container.addChild(building_5);
+  buildings_container.addChild(building_6);
+  viewport.addChild(buildings_container);
+}
+function map_1_roads_create(viewport) {
+  const roads_container = map_container_create("roads");
+  const road_1 = map_rectangle_create(500, 0, 50, 900, 11184810, 0.85);
+  const road_2 = map_rectangle_create(0, 900, 1000, 50, 11184810, 0.85);
+  roads_container.addChild(road_1);
+  roads_container.addChild(road_2);
+  viewport.addChild(roads_container);
+}
+function map_container_create(label) {
+  const container = new Container;
+  container.label = label;
+  return container;
+}
+function map_rectangle_create(x3, y2, width, height, fill_color = 14606046, fill_alpha = 1, stroke_color = 0, stroke_alpha = 0) {
+  const graphics = new Graphics;
+  graphics.rect(x3, y2, width, height).fill({
+    color: fill_color,
+    alpha: fill_alpha
+  }).stroke({
+    color: stroke_color,
+    alpha: stroke_alpha
+  });
+  return graphics;
+}
+
+// src/lib/hud.ts
+function hud_create() {
+  const hud = [];
+  hud.push(hud_create_header());
+  hud.push(hud_create_side_left());
+  hud.push(hud_create_side_right());
+  hud.push(hud_create_footer());
+  return hud;
+}
+function hud_create_header() {
+  const header = document.createElement("div");
+  header.classList.add("hud-header");
+  const date = document.createElement("div");
+  date.classList.add("hud-date");
+  date.id = "hud-date";
+  const time = document.createElement("div");
+  time.classList.add("hud-time");
+  time.id = "hud-time";
+  const time_before = document.createElement("div");
+  time_before.classList.add("hud-time");
+  time_before.id = "hud-time-before";
+  time_before.innerHTML = `
+    <i id="btn-time-slow-max" class="fa-solid fa-backward-fast btn-time"></i>
+    &nbsp;
+    <i id="btn-time-slow-single" class="fa-solid fa-backward-step btn-time"></i>
+  `;
+  const time_after = document.createElement("div");
+  time_after.classList.add("hud-time");
+  time_after.id = "hud-time-after";
+  time_after.innerHTML = `
+    <i id="btn-time-fast-single" class="fa-solid fa-forward-step btn-time"></i>
+    &nbsp;
+    <i id="btn-time-fast-max" class="fa-solid fa-forward-fast btn-time"></i>
+  `;
+  const time_message = document.createElement("div");
+  time_message.classList.add("hud-time-message");
+  time_message.id = "hud-time-message";
+  date.appendChild(time_before);
+  date.appendChild(time);
+  date.appendChild(time_after);
+  date.appendChild(time_message);
+  header.appendChild(date);
+  return header;
+}
+function hud_create_footer() {
+  const footer = document.createElement("div");
+  footer.classList.add("hud-footer");
+  return footer;
+}
+function hud_create_side_left() {
+  const side_left = document.createElement("div");
+  side_left.classList.add("hud-side-left");
+  return side_left;
+}
+function hud_create_side_right() {
+  const side_right = document.createElement("div");
+  side_right.classList.add("hud-side-right");
+  return side_right;
+}
+
 // src/lib/util.ts
 var util_handlers_cache = {};
 function util_event_handler(handler_item) {
@@ -32706,4 +34383,4 @@ async function main() {
 }
 main();
 
-//# debugId=CF267C8152575BCE64756E2164756E21
+//# debugId=9F4C99A6B11D30C764756E2164756E21

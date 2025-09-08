@@ -1,32 +1,61 @@
 import * as PIXI from "pixi.js";
 import { Viewport } from "pixi-viewport";
+import { building_create } from "./building";
 
-export function map_1_create(viewport: Viewport): void {
+export async function map_1_create(viewport: Viewport): Promise<void> {
   map_1_roads_create(viewport);
-  map_1_buildings_create(viewport);
+  await map_1_buildings_create(viewport);
 }
 
-function map_1_buildings_create(viewport: Viewport): void {
+async function map_1_buildings_create(viewport: Viewport): Promise<void> {
   const buildings_container = map_container_create("buildings");
-  const building_1 = map_rectangle_create(100, 100, 300, 100, 0xff0000, 0.5);
-  const building_2 = map_rectangle_create(200, 300, 200, 100, 0x00ff00, 0.5);
-  const building_3 = map_rectangle_create(300, 500, 100, 100, 0xff0000, 0.5);
-  const building_4 = map_rectangle_create(100, 700, 300, 100, 0x0000ff, 0.5);
+  const building_1 = await building_create({
+    name: "building_1",
+    x: 200,
+    y: 0,
+    cash: 1000
+  });
+  const building_2 = await building_create({
+    name: "building_2",
+    x: 200,
+    y: 300,
+    cash: 1000
+  });
+  const building_3 = await building_create({
+    name: "building_3",
+    x: 200,
+    y: 600,
+    cash: 1000
+  });
 
-  const building_5 = map_rectangle_create(600, 100, 200, 100, 0xff0000, 0.5);
-  const building_6 = map_rectangle_create(600, 300, 100, 100, 0x00ff00, 0.5);
-  const building_7 = map_rectangle_create(600, 500, 200, 100, 0xff0000, 0.5);
-  const building_8 = map_rectangle_create(600, 700, 200, 100, 0x0000ff, 0.5);
+  const building_4 = await building_create({
+    name: "building_4",
+    x: 550,
+    y: 0,
+    cash: 1000
+  });
+
+  const building_5 = await building_create({
+    name: "building_5",
+    x: 550,
+    y: 300,
+    cash: 1000
+  });
+
+  const building_6 = await building_create({
+    name: "building_6",
+    x: 550,
+    y: 600,
+    cash: 1000
+  });
 
   buildings_container.addChild(building_1);
   buildings_container.addChild(building_2);
   buildings_container.addChild(building_3);
-  buildings_container.addChild(building_4);
 
+  buildings_container.addChild(building_4);
   buildings_container.addChild(building_5);
   buildings_container.addChild(building_6);
-  buildings_container.addChild(building_7);
-  buildings_container.addChild(building_8);
 
   viewport.addChild(buildings_container);
 }
@@ -69,9 +98,6 @@ function map_rectangle_create(
       color: stroke_color,
       alpha: stroke_alpha
     });
-
-  graphics.cursor = "pointer";
-  graphics.interactive = true;
 
   return graphics;
 }
