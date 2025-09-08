@@ -32,7 +32,18 @@ export async function init(): Promise<void> {
   time_start(new Date("1918-11-11T00:00:00.000Z"));
   time_end(new Date("1918-11-18T00:00:00.000Z"));
 
-  resources_init(100);
+  resources_init(0);
+
+  // Bring the viewport to the center
+  viewport.animate({
+    scale: 0.75,
+    time: 1000,
+    position: {
+      x: 500,
+      y: 500
+    },
+    ease: "easeInOutQuad"
+  })
 
   notifications_create(
     `

@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import { Viewport } from "pixi-viewport";
 import { building_create } from "./building";
+import { roads_create } from "./roads";
 
 export async function map_1_create(viewport: Viewport): Promise<void> {
   /*
@@ -10,7 +11,7 @@ export async function map_1_create(viewport: Viewport): Promise<void> {
   });
   viewport.addChild(background);
   */
-  map_1_roads_create(viewport);
+  await map_1_roads_create(viewport);
   await map_1_buildings_create(viewport);
 }
 
@@ -67,13 +68,19 @@ async function map_1_buildings_create(viewport: Viewport): Promise<void> {
   viewport.addChild(buildings_container);
 }
 
-function map_1_roads_create(viewport: Viewport): void {
+async function map_1_roads_create(viewport: Viewport): Promise<void> {
   const roads_container = map_container_create("roads");
-  const road_1 = map_rectangle_create(500, 0, 50, 900, 0xaaaaaa, 0.85);
-  const road_2 = map_rectangle_create(0, 900, 1000, 50, 0xaaaaaa, 0.85);
+  const road_1 = await roads_create(500, 0, 50, 900);
+  const road_2 = await roads_create(100, 900, 850, 50);
+  const road_3 = await roads_create(100, 0, 50, 900);
+  const road_4 = await roads_create(900, 0, 50, 900);
+  const road_5 = await roads_create(100, 0, 850, 50);
 
   roads_container.addChild(road_1);
   roads_container.addChild(road_2);
+  roads_container.addChild(road_3);
+  roads_container.addChild(road_4);
+  roads_container.addChild(road_5);
 
   viewport.addChild(roads_container);
 }
@@ -82,29 +89,4 @@ function map_container_create(label: string): PIXI.Container {
   const container = new PIXI.Container();
   container.label = label;
   return container;
-}
-
-function map_rectangle_create(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  fill_color: number = 0xDEDEDE,
-  fill_alpha: number = 1,
-  stroke_color: number = 0x000000,
-  stroke_alpha: number = 0
-): PIXI.Graphics {
-  const graphics = new PIXI.Graphics();
-  graphics
-    .rect(x, y, width, height)
-    .fill({
-      color: fill_color,
-      alpha: fill_alpha 
-    })
-    .stroke({
-      color: stroke_color,
-      alpha: stroke_alpha
-    });
-
-  return graphics;
 }

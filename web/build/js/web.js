@@ -32090,6 +32090,275 @@ var init_Assets = __esm(() => {
   });
 });
 
+// node_modules/pixi.js/lib/utils/misc/Transform.mjs
+class Transform {
+  constructor({ matrix, observer } = {}) {
+    this.dirty = true;
+    this._matrix = matrix ?? new Matrix;
+    this.observer = observer;
+    this.position = new ObservablePoint(this, 0, 0);
+    this.scale = new ObservablePoint(this, 1, 1);
+    this.pivot = new ObservablePoint(this, 0, 0);
+    this.skew = new ObservablePoint(this, 0, 0);
+    this._rotation = 0;
+    this._cx = 1;
+    this._sx = 0;
+    this._cy = 0;
+    this._sy = 1;
+  }
+  get matrix() {
+    const lt = this._matrix;
+    if (!this.dirty)
+      return lt;
+    lt.a = this._cx * this.scale.x;
+    lt.b = this._sx * this.scale.x;
+    lt.c = this._cy * this.scale.y;
+    lt.d = this._sy * this.scale.y;
+    lt.tx = this.position.x - (this.pivot.x * lt.a + this.pivot.y * lt.c);
+    lt.ty = this.position.y - (this.pivot.x * lt.b + this.pivot.y * lt.d);
+    this.dirty = false;
+    return lt;
+  }
+  _onUpdate(point) {
+    this.dirty = true;
+    if (point === this.skew) {
+      this.updateSkew();
+    }
+    this.observer?._onUpdate(this);
+  }
+  updateSkew() {
+    this._cx = Math.cos(this._rotation + this.skew.y);
+    this._sx = Math.sin(this._rotation + this.skew.y);
+    this._cy = -Math.sin(this._rotation - this.skew.x);
+    this._sy = Math.cos(this._rotation - this.skew.x);
+    this.dirty = true;
+  }
+  toString() {
+    return `[pixi.js/math:Transform position=(${this.position.x}, ${this.position.y}) rotation=${this.rotation} scale=(${this.scale.x}, ${this.scale.y}) skew=(${this.skew.x}, ${this.skew.y}) ]`;
+  }
+  setFromMatrix(matrix) {
+    matrix.decompose(this);
+    this.dirty = true;
+  }
+  get rotation() {
+    return this._rotation;
+  }
+  set rotation(value) {
+    if (this._rotation !== value) {
+      this._rotation = value;
+      this._onUpdate(this.skew);
+    }
+  }
+}
+var init_Transform = __esm(() => {
+  init_Matrix();
+  init_ObservablePoint();
+});
+
+// node_modules/pixi.js/lib/scene/sprite-tiling/TilingSprite.mjs
+var _TilingSprite, TilingSprite;
+var init_TilingSprite = __esm(() => {
+  init_Cache();
+  init_ObservablePoint();
+  init_Texture();
+  init_deprecation();
+  init_Transform();
+  init_ViewContainer();
+  _TilingSprite = class _TilingSprite2 extends ViewContainer {
+    constructor(...args) {
+      let options = args[0] || {};
+      if (options instanceof Texture) {
+        options = { texture: options };
+      }
+      if (args.length > 1) {
+        deprecation(v8_0_0, "use new TilingSprite({ texture, width:100, height:100 }) instead");
+        options.width = args[1];
+        options.height = args[2];
+      }
+      options = { ..._TilingSprite2.defaultOptions, ...options };
+      const {
+        texture,
+        anchor,
+        tilePosition,
+        tileScale,
+        tileRotation,
+        width,
+        height,
+        applyAnchorToTexture,
+        roundPixels,
+        ...rest
+      } = options ?? {};
+      super({
+        label: "TilingSprite",
+        ...rest
+      });
+      this.renderPipeId = "tilingSprite";
+      this.batched = true;
+      this.allowChildren = false;
+      this._anchor = new ObservablePoint({
+        _onUpdate: () => {
+          this.onViewUpdate();
+        }
+      });
+      this.applyAnchorToTexture = applyAnchorToTexture;
+      this.texture = texture;
+      this._width = width ?? texture.width;
+      this._height = height ?? texture.height;
+      this._tileTransform = new Transform({
+        observer: {
+          _onUpdate: () => this.onViewUpdate()
+        }
+      });
+      if (anchor)
+        this.anchor = anchor;
+      this.tilePosition = tilePosition;
+      this.tileScale = tileScale;
+      this.tileRotation = tileRotation;
+      this.roundPixels = roundPixels ?? false;
+    }
+    static from(source2, options = {}) {
+      if (typeof source2 === "string") {
+        return new _TilingSprite2({
+          texture: Cache.get(source2),
+          ...options
+        });
+      }
+      return new _TilingSprite2({
+        texture: source2,
+        ...options
+      });
+    }
+    get uvRespectAnchor() {
+      deprecation(v8_0_0, "uvRespectAnchor is deprecated, please use applyAnchorToTexture instead");
+      return this.applyAnchorToTexture;
+    }
+    set uvRespectAnchor(value) {
+      deprecation(v8_0_0, "uvRespectAnchor is deprecated, please use applyAnchorToTexture instead");
+      this.applyAnchorToTexture = value;
+    }
+    get clampMargin() {
+      return this._texture.textureMatrix.clampMargin;
+    }
+    set clampMargin(value) {
+      this._texture.textureMatrix.clampMargin = value;
+    }
+    get anchor() {
+      return this._anchor;
+    }
+    set anchor(value) {
+      typeof value === "number" ? this._anchor.set(value) : this._anchor.copyFrom(value);
+    }
+    get tilePosition() {
+      return this._tileTransform.position;
+    }
+    set tilePosition(value) {
+      this._tileTransform.position.copyFrom(value);
+    }
+    get tileScale() {
+      return this._tileTransform.scale;
+    }
+    set tileScale(value) {
+      typeof value === "number" ? this._tileTransform.scale.set(value) : this._tileTransform.scale.copyFrom(value);
+    }
+    set tileRotation(value) {
+      this._tileTransform.rotation = value;
+    }
+    get tileRotation() {
+      return this._tileTransform.rotation;
+    }
+    get tileTransform() {
+      return this._tileTransform;
+    }
+    set texture(value) {
+      value || (value = Texture.EMPTY);
+      const currentTexture = this._texture;
+      if (currentTexture === value)
+        return;
+      if (currentTexture && currentTexture.dynamic)
+        currentTexture.off("update", this.onViewUpdate, this);
+      if (value.dynamic)
+        value.on("update", this.onViewUpdate, this);
+      this._texture = value;
+      this.onViewUpdate();
+    }
+    get texture() {
+      return this._texture;
+    }
+    set width(value) {
+      this._width = value;
+      this.onViewUpdate();
+    }
+    get width() {
+      return this._width;
+    }
+    set height(value) {
+      this._height = value;
+      this.onViewUpdate();
+    }
+    get height() {
+      return this._height;
+    }
+    setSize(value, height) {
+      if (typeof value === "object") {
+        height = value.height ?? value.width;
+        value = value.width;
+      }
+      this._width = value;
+      this._height = height ?? value;
+      this.onViewUpdate();
+    }
+    getSize(out2) {
+      out2 || (out2 = {});
+      out2.width = this._width;
+      out2.height = this._height;
+      return out2;
+    }
+    updateBounds() {
+      const bounds = this._bounds;
+      const anchor = this._anchor;
+      const width = this._width;
+      const height = this._height;
+      bounds.minX = -anchor._x * width;
+      bounds.maxX = bounds.minX + width;
+      bounds.minY = -anchor._y * height;
+      bounds.maxY = bounds.minY + height;
+    }
+    containsPoint(point) {
+      const width = this._width;
+      const height = this._height;
+      const x1 = -width * this._anchor._x;
+      let y1 = 0;
+      if (point.x >= x1 && point.x <= x1 + width) {
+        y1 = -height * this._anchor._y;
+        if (point.y >= y1 && point.y <= y1 + height)
+          return true;
+      }
+      return false;
+    }
+    destroy(options = false) {
+      super.destroy(options);
+      this._anchor = null;
+      this._tileTransform = null;
+      this._bounds = null;
+      const destroyTexture = typeof options === "boolean" ? options : options?.texture;
+      if (destroyTexture) {
+        const destroyTextureSource = typeof options === "boolean" ? options : options?.textureSource;
+        this._texture.destroy(destroyTextureSource);
+      }
+      this._texture = null;
+    }
+  };
+  _TilingSprite.defaultOptions = {
+    texture: Texture.EMPTY,
+    anchor: { x: 0, y: 0 },
+    tilePosition: { x: 0, y: 0 },
+    tileScale: { x: 1, y: 1 },
+    tileRotation: 0,
+    applyAnchorToTexture: false
+  };
+  TilingSprite = _TilingSprite;
+});
+
 // node_modules/pixi.js/lib/index.mjs
 var init_lib = __esm(() => {
   init_browserExt();
@@ -32103,7 +32372,7 @@ var init_lib = __esm(() => {
   init_Rectangle();
   init_textureFrom();
   init_Container();
-  init_Graphics();
+  init_TilingSprite();
   init_Sprite();
   init_Ticker();
   init_eventemitter3();
@@ -34152,9 +34421,28 @@ var init_building = __esm(() => {
   });
 });
 
+// src/lib/roads.ts
+async function roads_create(x3, y2, width, height) {
+  const road_container = new Container;
+  const background_texture = await Assets.load("/build/images/road_texture.jpg");
+  const background = new TilingSprite({
+    texture: background_texture,
+    width,
+    height
+  });
+  background.tileScale.set(0.15, 0.15);
+  road_container.addChild(background);
+  road_container.x = x3;
+  road_container.y = y2;
+  return road_container;
+}
+var init_roads = __esm(() => {
+  init_lib();
+});
+
 // src/lib/map.ts
 async function map_1_create(viewport) {
-  map_1_roads_create(viewport);
+  await map_1_roads_create(viewport);
   await map_1_buildings_create(viewport);
 }
 async function map_1_buildings_create(viewport) {
@@ -34203,12 +34491,18 @@ async function map_1_buildings_create(viewport) {
   buildings_container.addChild(building_6);
   viewport.addChild(buildings_container);
 }
-function map_1_roads_create(viewport) {
+async function map_1_roads_create(viewport) {
   const roads_container = map_container_create("roads");
-  const road_1 = map_rectangle_create(500, 0, 50, 900, 11184810, 0.85);
-  const road_2 = map_rectangle_create(0, 900, 1000, 50, 11184810, 0.85);
+  const road_1 = await roads_create(500, 0, 50, 900);
+  const road_2 = await roads_create(100, 900, 850, 50);
+  const road_3 = await roads_create(100, 0, 50, 900);
+  const road_4 = await roads_create(900, 0, 50, 900);
+  const road_5 = await roads_create(100, 0, 850, 50);
   roads_container.addChild(road_1);
   roads_container.addChild(road_2);
+  roads_container.addChild(road_3);
+  roads_container.addChild(road_4);
+  roads_container.addChild(road_5);
   viewport.addChild(roads_container);
 }
 function map_container_create(label) {
@@ -34216,20 +34510,10 @@ function map_container_create(label) {
   container.label = label;
   return container;
 }
-function map_rectangle_create(x3, y2, width, height, fill_color = 14606046, fill_alpha = 1, stroke_color = 0, stroke_alpha = 0) {
-  const graphics = new Graphics;
-  graphics.rect(x3, y2, width, height).fill({
-    color: fill_color,
-    alpha: fill_alpha
-  }).stroke({
-    color: stroke_color,
-    alpha: stroke_alpha
-  });
-  return graphics;
-}
 var init_map = __esm(() => {
   init_lib();
   init_building();
+  init_roads();
 });
 
 // src/lib/notifications.ts
@@ -34532,7 +34816,16 @@ async function init2() {
   map_1_create(viewport);
   time_start(new Date("1918-11-11T00:00:00.000Z"));
   time_end(new Date("1918-11-18T00:00:00.000Z"));
-  resources_init(100);
+  resources_init(0);
+  viewport.animate({
+    scale: 0.75,
+    time: 1000,
+    position: {
+      x: 500,
+      y: 500
+    },
+    ease: "easeInOutQuad"
+  });
   notifications_create(`
     The time has been paused!<br>
     You have one week to get $1000 in cash.<br>
@@ -34573,4 +34866,4 @@ async function main() {
 }
 main();
 
-//# debugId=E0C0043AF5545F1D64756E2164756E21
+//# debugId=EA16570DD2A7D8FA64756E2164756E21
