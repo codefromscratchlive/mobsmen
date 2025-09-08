@@ -32637,6 +32637,41 @@ function time_handlers_setup() {
   });
 }
 
+// src/lib/notifications.ts
+function notifications_init() {
+  const notifications = document.createElement("div");
+  notifications.classList.add("notifications");
+  notifications.id = "notifications";
+  return notifications;
+}
+function notifications_create(message, type = "success", duration = 0) {
+  const notifications_wrapper = document.getElementById("notifications");
+  if (!notifications_wrapper) {
+    should_never_happen("Notifications wrapper not found");
+    return;
+  }
+  const delete_button = document.createElement("button");
+  delete_button.className = "notification-close delete";
+  const notification = document.createElement("div");
+  notification.classList.add("notification");
+  notification.classList.add(type);
+  notification.appendChild(delete_button);
+  notification.appendChild(document.createTextNode(message));
+  notifications_wrapper.appendChild(notification);
+  delete_button.addEventListener("click", () => {
+    try {
+      notifications_wrapper.removeChild(notification);
+    } catch (_2) {}
+  });
+  if (duration > 0) {
+    setTimeout(() => {
+      try {
+        notifications_wrapper.removeChild(notification);
+      } catch (_2) {}
+    }, duration);
+  }
+}
+
 // src/web.ts
 async function main() {
   const root_element = document.getElementById("app");
@@ -32644,6 +32679,8 @@ async function main() {
     should_never_happen("Root element not found");
     return;
   }
+  const notifications_wrapper = notifications_init();
+  root_element.appendChild(notifications_wrapper);
   const hud = hud_create();
   for (const h2 of hud) {
     root_element.appendChild(h2);
@@ -32655,7 +32692,8 @@ async function main() {
   app.stage.addChild(viewport);
   map_1_create(viewport);
   time_start(new Date("1918-11-11T00:00:00.000Z"));
+  notifications_create("The time has started!");
 }
 main();
 
-//# debugId=B6F7E2977FD6B8A064756E2164756E21
+//# debugId=058D129D6D8D6B0064756E2164756E21
