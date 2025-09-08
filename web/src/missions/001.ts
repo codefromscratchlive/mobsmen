@@ -3,7 +3,7 @@ import { app_canvas_setup, app_create, app_viewport_create } from "../lib/app";
 import { hud_create } from "../lib/hud";
 import { map_1_create } from "../lib/map";
 import { notifications_create, notifications_init } from "../lib/notifications";
-import { time_pause_toggle, time_start } from "../lib/time";
+import { time_end, time_pause_toggle, time_start } from "../lib/time";
 
 export async function init(): Promise<void> {
   const root_element = document.getElementById("app");
@@ -29,6 +29,7 @@ export async function init(): Promise<void> {
   map_1_create(viewport);
 
   time_start(new Date("1918-11-11T00:00:00.000Z"));
+  time_end(new Date("1918-11-18T00:00:00.000Z"));
 
   notifications_create(
     `

@@ -34519,30 +34519,10 @@ var init_001 = __esm(() => {
   init_notifications();
   init_time();
 });
+init_001();
 
-// src/web.ts
-var VERSION2 = "0.0.1";
-async function main() {
-  const root_element = document.getElementById("app");
-  if (!root_element) {
-    should_never_happen("Root element not found");
-    return;
-  }
-  const saved = window.localStorage.getItem("mobsmen");
-  if (!saved) {
-    window.localStorage.setItem("mobsmen", JSON.stringify({
-      version: VERSION2,
-      mission: "001",
-      save: ""
-    }));
-    const first_mission = await Promise.resolve().then(() => (init_001(), exports_001));
-    first_mission.init();
-  } else {
-    const saved_obj = JSON.parse(saved);
-    const mission = await import(`./missions/${saved_obj.mission}.js`);
-    mission.init();
-  }
-}
-main();
+export {
+  init2 as init
+};
 
-//# debugId=6B6E6FD74FCAC3EF64756E2164756E21
+//# debugId=86489D23881C6B7664756E2164756E21

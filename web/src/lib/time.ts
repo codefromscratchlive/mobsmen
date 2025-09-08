@@ -14,6 +14,8 @@ let current_speed = 0;
 let paused = true;
 let ticker: PIXI.Ticker = new PIXI.Ticker();
 
+let end_date: Date = new Date("1800-11-11T00:00:00.000Z");
+
 export function time_start(start_date: Date, speed: number = 5): PIXI.Ticker {
   current_speed = speed;
   current_date = start_date;
@@ -41,6 +43,10 @@ export function time_start(start_date: Date, speed: number = 5): PIXI.Ticker {
   paused = false;
 
   return ticker;
+}
+
+export function time_end(end: Date) {
+  end_date = end;
 }
 
 export function time_speed_increase_single(): number {
