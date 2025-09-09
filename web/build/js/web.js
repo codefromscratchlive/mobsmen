@@ -33969,6 +33969,9 @@ function player_generate_random_attributes(min = 1, max = 4, min_total = 7, max_
   }
   return attributes;
 }
+function player_get_attributes() {
+  return helpers_get_saved_obj().player.attributes;
+}
 
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
@@ -34066,6 +34069,9 @@ function helpers_get_empty_save_object() {
     }
   };
 }
+function helpers_clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
 
 // src/web.ts
 var VERSION2 = "0.0.6";
@@ -34083,4 +34089,4 @@ async function main() {
 }
 main();
 
-//# debugId=0203891EE4D3438964756E2164756E21
+//# debugId=06F55AF64447FE6864756E2164756E21

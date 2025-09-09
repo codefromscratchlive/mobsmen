@@ -34794,6 +34794,9 @@ function player_generate_random_attributes(min = 1, max = 4, min_total = 7, max_
   }
   return attributes;
 }
+function player_get_attributes() {
+  return helpers_get_saved_obj().player.attributes;
+}
 
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
@@ -34891,6 +34894,35 @@ function helpers_get_empty_save_object() {
     }
   };
 }
+function helpers_clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+// src/lib/formulas.ts
+function formulas_building_extort(building, player) {
+  const success = (player.strength + player.charisma / 2 + player.luck / 2) * 10 - building.resistance * 5;
+  const duration = 4 - player.agility / 2 + building.resistance / 4;
+  return {
+    success: helpers_clamp(success, 15, 85),
+    duration: helpers_clamp(duration, 1, 6)
+  };
+}
+function formulas_building_steal(building, player) {
+  const success = (player.stealth + player.agility / 2 + player.luck / 2) * 10 - building.security * 6;
+  const duration = 3 - player.agility / 2 + building.security / 3;
+  return {
+    success: helpers_clamp(success, 15, 85),
+    duration: helpers_clamp(duration, 1, 5)
+  };
+}
+function formulas_building_scout(building, player) {
+  const success = (player.luck + player.agility / 2 + player.stealth / 2) * 10 - building.alertness * 4;
+  const duration = 2 - player.agility / 3 + building.alertness / 5;
+  return {
+    success: helpers_clamp(success, 50, 95),
+    duration: helpers_clamp(duration, 0.5, 3)
+  };
+}
 
 // src/lib/building.ts
 async function building_create(options) {
@@ -34965,19 +34997,19 @@ function building_selection_show(options) {
       </div>
       <div class="column is-one-third">
         <div class="building-actions">
-          <button class="button is-dark is-danger is-large is-fullwidth mb-4">
+          <button id="building-extort-${options.id}" class="button is-dark is-danger is-large is-fullwidth mb-4">
             <span class="icon">
               <i class="fa-solid fa-gun"></i>
             </span>
             <span>Extort</span>
           </button>
-          <button class="button is-dark is-warning is-large is-fullwidth mb-4">
+          <button id="building-steal-${options.id}" class="button is-dark is-warning is-large is-fullwidth mb-4">
             <span class="icon">
               <i class="fa-solid fa-people-robbery"></i>
             </span>
             <span>Steal</span>
           </button>
-          <button class="button is-dark is-info is-large is-fullwidth">
+          <button id="building-scout-${options.id}" class="button is-dark is-info is-large is-fullwidth">
             <span class="icon">
               <i class="fa-solid fa-user-secret"></i>
             </span>
@@ -34995,22 +35027,63 @@ function building_selection_show(options) {
   });
   building_info_container.appendChild(close_button);
   footer.appendChild(building_info_container);
+  util_event_handler({
+    id: `building-extort-${options.id}`,
+    handler_id: `building-extort-${options.id}`,
+    event_name: "click",
+    handler: () => {
+      building_handler_extort(options);
+    }
+  });
+  util_event_handler({
+    id: `building-steal-${options.id}`,
+    handler_id: `building-steal-${options.id}`,
+    event_name: "click",
+    handler: () => {
+      building_handler_steal(options);
+    }
+  });
+  util_event_handler({
+    id: `building-scout-${options.id}`,
+    handler_id: `building-scout-${options.id}`,
+    event_name: "click",
+    handler: () => {
+      building_handler_scout(options);
+    }
+  });
 }
-var BuildingOptionsSchema = object({
+function building_handler_extort(options) {
+  const result = formulas_building_extort(options, player_get_attributes());
+  console.log(`EXTORT - Success: ${result.success}% | Duration: ${Math.round(result.duration * 100) / 100}hours`);
+}
+function building_handler_steal(options) {
+  const result = formulas_building_steal(options, player_get_attributes());
+  console.log(`STEAL - Success: ${result.success}% | Duration: ${Math.round(result.duration * 100) / 100}hours`);
+}
+function building_handler_scout(options) {
+  const result = formulas_building_scout(options, player_get_attributes());
+  console.log(`SCOUT - Success: ${result.success}% | Duration: ${Math.round(result.duration * 100) / 100}hours`);
+}
+var BuildingInfoSchema = object({
+  id: number(),
   name: string(),
   story: string(),
   occupants: string(),
   type: string(),
   availability: string(),
-  cash: number(),
   x: number(),
   y: number(),
+  cash: number(),
+  resistance: number(),
+  security: number(),
+  alertness: number(),
   texture: optional(string())
 });
 // src/missions/m001.toml
 var m001_default = {
   buildings: [
     {
+      id: 1,
       name: "Giuseppe's Corner Grocery",
       story: "In the shadow of the bustling Lower East Side, Giuseppe Rossi, a Sicilian immigrant who arrived in 1905, runs this modest grocery store. Having lost his son in the trenches of France during the Great War, Giuseppe now struggles with post-war shortages, stocking canned goods, bread, and whatever rationed items he can afford. The Armistice on November 11 brings fleeting celebrations, but for Giuseppe, it's a time of quiet grief and mounting debts to suppliers.",
       occupants: "Giuseppe Rossi (owner, age 52, widowed), occasional part-time helper (young nephew)",
@@ -35024,6 +35097,7 @@ var m001_default = {
       alertness: 2
     },
     {
+      id: 2,
       name: "The O'Malley Tenement",
       story: "This cramped tenement houses the O'Malley family, Irish immigrants who scraped by during the war years. Patrick O'Malley, a dockworker and returning veteran from the 69th Infantry Regiment, came home on November 11 to find his wife Mary and their three children facing eviction due to unpaid rent amid wartime inflation. Patrick drowns his shell shock in cheap whiskey, while Mary takes in laundry to make ends meet. The building buzzes with post-Armistice hope, but underlying tensions from ethnic rivalries simmer—Irish vs. Italian gangs are already forming lines.",
       occupants: "Patrick O'Malley (age 35, veteran), Mary O'Malley (age 32, homemaker), 3 children (ages 5-12)",
@@ -35037,6 +35111,7 @@ var m001_default = {
       alertness: 4
     },
     {
+      id: 3,
       name: "Madame Lefevre's Boarding House",
       story: "Run by Elise Lefevre, a French war widow who fled Paris after losing her husband at Verdun, this boarding house shelters transient workers and returning soldiers celebrating the Armistice. Elise, sharp-tongued and resourceful, charges steep rates for dingy rooms filled with the smells of cabbage soup and cigarette smoke. On November 11, the house echoes with toasts to peace, but Elise worries about unpaid boarders amid economic uncertainty. Hidden in the basement is a small still for homemade spirits.",
       occupants: "Elise Lefevre (owner, age 45), 4-6 rotating boarders (mix of veterans and laborers)",
@@ -35050,6 +35125,7 @@ var m001_default = {
       alertness: 5
     },
     {
+      id: 4,
       name: "Schwartz's Pawn Shop",
       story: "Owned by Abraham Schwartz, a Jewish pawnbroker who emigrated from Poland in 1910, this shop is cluttered with war relics—soldiers' watches, medals, and household goods pawned during shortages. Abraham, a shrewd negotiator, survived anti-Semitic tensions and now eyes the Armistice as a boom for redemptions, but fears rising street crime. His daughter Rebecca helps behind the counter, dreaming of Broadway amid the celebrations. The shop's back room holds fenced goods.",
       occupants: "Abraham Schwartz (age 48), Rebecca Schwartz (age 19, assistant)",
@@ -35063,6 +35139,7 @@ var m001_default = {
       alertness: 3
     },
     {
+      id: 5,
       name: "The Vacant Warehouse",
       story: "This abandoned warehouse, once a munitions storage during the war, stands empty after the Armistice, its doors boarded up but easily pried. Owned absentee by a shipping company, it's become a haunt for vagrants and petty crooks seeking shelter on cold November nights. Echoes of wartime booms linger in the dusty crates, and rumors of hidden stashes from deserters add allure. On November 11, fireworks from celebrations light the alley, drawing opportunistic scavengers.",
       occupants: "Occasional vagrants (1-2 random, non-hostile unless provoked)",
@@ -35076,6 +35153,7 @@ var m001_default = {
       alertness: 1
     },
     {
+      id: 6,
       name: "Dr. Harlan's Clinic",
       story: "Dr. Elias Harlan, a weary physician who treated influenza victims during the 1918 pandemic, operates this small clinic serving the neighborhood's poor. With the Armistice, he's overwhelmed by returning soldiers with wounds and shell shock, charging what he can while dispensing morphine sparingly. His nurse, Clara, harbors secrets of her own—smuggling meds for extra cash. The clinic's sterile facade hides a back office with valuables, and November 11 brings a surge of patients celebrating too hard.",
       occupants: "Dr. Elias Harlan (age 50), Nurse Clara (age 28), variable patients",
@@ -35163,4 +35241,4 @@ export {
   init2 as init
 };
 
-//# debugId=8F1990D73FB8893964756E2164756E21
+//# debugId=D6EF2DCAB3AD072F64756E2164756E21

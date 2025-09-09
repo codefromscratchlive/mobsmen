@@ -143,3 +143,7 @@ function helpers_get_empty_save_object(): GameSave {
     },
   };
 }
+
+export function helpers_clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}

@@ -3,8 +3,11 @@ import * as PIXI from "pixi.js";
 import { helpers_pixi_remove_container_by_label, helpers_pixi_tooltip_create } from "./helpers";
 import { app_viewport_get } from "./app";
 import { should_never_happen } from "../../../lib/src/should";
+import { util_event_handler } from "./util";
+import { formulas_building_extort, formulas_building_scout, formulas_building_steal } from "./formulas";
+import { player_get_attributes } from "./player";
 
-export async function building_create(options: BuildingOptionsType): Promise<PIXI.Container> {
+export async function building_create(options: BuildingInfoType): Promise<PIXI.Container> {
   const building_container = new PIXI.Container();
   building_container.label = options.name + "_container";
   building_container.x = options.x;
@@ -44,7 +47,7 @@ export async function building_create(options: BuildingOptionsType): Promise<PIX
   return building_container;
 }
 
-function building_selection_show(options: BuildingOptionsType): void {
+function building_selection_show(options: BuildingInfoType): void {
   const footer = document.querySelector('.hud-footer') as HTMLDivElement;
   if (!footer) {
     // ... break horribly
@@ -93,19 +96,19 @@ function building_selection_show(options: BuildingOptionsType): void {
       </div>
       <div class="column is-one-third">
         <div class="building-actions">
-          <button class="button is-dark is-danger is-large is-fullwidth mb-4">
+          <button id="building-extort-${options.id}" class="button is-dark is-danger is-large is-fullwidth mb-4">
             <span class="icon">
               <i class="fa-solid fa-gun"></i>
             </span>
             <span>Extort</span>
           </button>
-          <button class="button is-dark is-warning is-large is-fullwidth mb-4">
+          <button id="building-steal-${options.id}" class="button is-dark is-warning is-large is-fullwidth mb-4">
             <span class="icon">
               <i class="fa-solid fa-people-robbery"></i>
             </span>
             <span>Steal</span>
           </button>
-          <button class="button is-dark is-info is-large is-fullwidth">
+          <button id="building-scout-${options.id}" class="button is-dark is-info is-large is-fullwidth">
             <span class="icon">
               <i class="fa-solid fa-user-secret"></i>
             </span>
@@ -124,18 +127,64 @@ function building_selection_show(options: BuildingOptionsType): void {
   });
   building_info_container.appendChild(close_button);
   footer.appendChild(building_info_container);
+
+  util_event_handler({
+    id: `building-extort-${options.id}`,
+    handler_id: `building-extort-${options.id}`,
+    event_name: "click",
+    handler: () => {
+      building_handler_extort(options);
+    }
+  });
+
+  util_event_handler({
+    id: `building-steal-${options.id}`,
+    handler_id: `building-steal-${options.id}`,
+    event_name: "click",
+    handler: () => {
+      building_handler_steal(options);
+    }
+  });
+
+  util_event_handler({
+    id: `building-scout-${options.id}`,
+    handler_id: `building-scout-${options.id}`,
+    event_name: "click",
+    handler: () => {
+      building_handler_scout(options);
+    }
+  });
 }
 
-const BuildingOptionsSchema = v.object({
+function building_handler_extort(options: BuildingInfoType): void {
+  const result = formulas_building_extort(options, player_get_attributes());
+  console.log(`EXTORT - Success: ${result.success}% | Duration: ${Math.round(result.duration*100)/100}hours`);
+}
+
+function building_handler_steal(options: BuildingInfoType): void {
+  const result = formulas_building_steal(options, player_get_attributes());
+  console.log(`STEAL - Success: ${result.success}% | Duration: ${Math.round(result.duration*100)/100}hours`);
+}
+
+function building_handler_scout(options: BuildingInfoType): void {
+  const result = formulas_building_scout(options, player_get_attributes());
+  console.log(`SCOUT - Success: ${result.success}% | Duration: ${Math.round(result.duration*100)/100}hours`);
+}
+
+const BuildingInfoSchema = v.object({
+  id: v.number(),
   name: v.string(),
   story: v.string(),
   occupants: v.string(),
   type : v.string(),
   availability: v.string(),
-  cash: v.number(),
   x: v.number(),
   y: v.number(),
+  cash: v.number(),
+  resistance: v.number(),
+  security: v.number(),
+  alertness: v.number(),
   texture: v.optional(v.string()),
 });
 
-type BuildingOptionsType = v.InferOutput<typeof BuildingOptionsSchema>;
+export type BuildingInfoType = v.InferOutput<typeof BuildingInfoSchema>;
