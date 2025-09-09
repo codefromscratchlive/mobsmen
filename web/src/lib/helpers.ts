@@ -4,12 +4,14 @@ import { app_viewport_get } from './app';
 export function helpers_pixi_tooltip_create(text: string, position: PIXI.Point): PIXI.Container {
   const tooltip_container = new PIXI.Container();
 
+  tooltip_container.eventMode = "none";
+
   const background = new PIXI.Graphics();
   background
-    .rect(0, 0, 150, 40)
+    .roundRect(0, 0, 200, 200) // Temporary dimensions, till we fit it to text
     .fill({
       color: 0x000000,
-      alpha: 0.8
+      alpha: 0.65
     });
 
   tooltip_container.addChild(background);
@@ -24,7 +26,10 @@ export function helpers_pixi_tooltip_create(text: string, position: PIXI.Point):
       align: 'center',
     }
   });
-  tooltip_text.position.set(10, 10); // Offset inside background
+  const padding = 40;
+  background.width = tooltip_text.width + padding;
+  background.height = tooltip_text.height + padding;
+  tooltip_text.position.set(padding / 2, padding / 2); // Offset inside background
   tooltip_container.addChild(tooltip_text);
 
   // Position the tooltip near the item or mouse

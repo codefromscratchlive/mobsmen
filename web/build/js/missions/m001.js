@@ -34887,10 +34887,11 @@ var init_time = __esm(() => {
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
   const tooltip_container = new Container;
+  tooltip_container.eventMode = "none";
   const background = new Graphics;
-  background.rect(0, 0, 150, 40).fill({
+  background.roundRect(0, 0, 200, 200).fill({
     color: 0,
-    alpha: 0.8
+    alpha: 0.65
   });
   tooltip_container.addChild(background);
   const tooltip_text = new Text({
@@ -34902,7 +34903,10 @@ function helpers_pixi_tooltip_create(text, position) {
       align: "center"
     }
   });
-  tooltip_text.position.set(10, 10);
+  const padding = 40;
+  background.width = tooltip_text.width + padding;
+  background.height = tooltip_text.height + padding;
+  tooltip_text.position.set(padding / 2, padding / 2);
   tooltip_container.addChild(tooltip_text);
   tooltip_container.position.set(position.x + 10, position.y - 50);
   tooltip_container.label = "tooltip";
@@ -34942,7 +34946,7 @@ async function building_create(options) {
   building.cursor = "pointer";
   building.eventMode = "static";
   building.hitArea = new Rectangle(25, 25, 250, 250);
-  const description = options.description ?? options.name;
+  const description = options.name;
   building.on("pointerover", (_2) => {
     const tooltip = helpers_pixi_tooltip_create(description, new Point(building_container.x + building.width / 2, building_container.y + building.height / 2));
     app_viewport_get()?.addChild(tooltip);
@@ -34951,8 +34955,19 @@ async function building_create(options) {
   building.on("pointerout", () => {
     helpers_pixi_remove_container_by_label("tooltip");
   });
+  building.on("pointerup", () => {
+    building_selection_show(options);
+  });
   building_container.addChild(building);
   return building_container;
+}
+function building_selection_show(options) {
+  const footer = document.querySelector(".hud-footer");
+  if (!footer) {
+    should_never_happen("Footer not found");
+    return;
+  }
+  footer.textContent = `Selected: ${options.name}`;
 }
 var BuildingOptionsSchema;
 var init_building = __esm(() => {
@@ -34962,12 +34977,84 @@ var init_building = __esm(() => {
   init_app();
   BuildingOptionsSchema = object({
     name: string(),
-    description: optional(string()),
+    story: string(),
+    occupants: string(),
+    type: string(),
+    availability: string(),
     cash: number(),
     x: number(),
     y: number(),
     texture: optional(string())
   });
+});
+
+// src/missions/m001.toml
+var m001_default;
+var init_m001 = __esm(() => {
+  m001_default = {
+    buildings: [
+      {
+        name: "Giuseppe's Corner Grocery",
+        story: "In the shadow of the bustling Lower East Side, Giuseppe Rossi, a Sicilian immigrant who arrived in 1905, runs this modest grocery store. Having lost his son in the trenches of France during the Great War, Giuseppe now struggles with post-war shortages, stocking canned goods, bread, and whatever rationed items he can afford. The Armistice on November 11 brings fleeting celebrations, but for Giuseppe, it's a time of quiet grief and mounting debts to suppliers.",
+        occupants: "Giuseppe Rossi (owner, age 52, widowed), occasional part-time helper (young nephew)",
+        type: "Small commercial shop",
+        availability: "Open daytime (6 AM - 8 PM)",
+        x: 200,
+        y: 0,
+        cash: 150
+      },
+      {
+        name: "The O'Malley Tenement",
+        story: "This cramped tenement houses the O'Malley family, Irish immigrants who scraped by during the war years. Patrick O'Malley, a dockworker and returning veteran from the 69th Infantry Regiment, came home on November 11 to find his wife Mary and their three children facing eviction due to unpaid rent amid wartime inflation. Patrick drowns his shell shock in cheap whiskey, while Mary takes in laundry to make ends meet. The building buzzes with post-Armistice hope, but underlying tensions from ethnic rivalries simmer—Irish vs. Italian gangs are already forming lines.",
+        occupants: "Patrick O'Malley (age 35, veteran), Mary O'Malley (age 32, homemaker), 3 children (ages 5-12)",
+        type: "Residential Tenement",
+        availability: "Accessible anytime, but family more present at night",
+        x: 200,
+        y: 300,
+        cash: 80
+      },
+      {
+        name: "Madame Lefevre's Boarding House",
+        story: "Run by Elise Lefevre, a French war widow who fled Paris after losing her husband at Verdun, this boarding house shelters transient workers and returning soldiers celebrating the Armistice. Elise, sharp-tongued and resourceful, charges steep rates for dingy rooms filled with the smells of cabbage soup and cigarette smoke. On November 11, the house echoes with toasts to peace, but Elise worries about unpaid boarders amid economic uncertainty. Hidden in the basement is a small still for homemade spirits.",
+        occupants: "Elise Lefevre (owner, age 45), 4-6 rotating boarders (mix of veterans and laborers)",
+        type: "Boarding House",
+        availability: "Busy evenings (peak interactions); quiet mornings",
+        x: 200,
+        y: 600,
+        cash: 110
+      },
+      {
+        name: "Schwartz's Pawn Shop",
+        story: "Owned by Abraham Schwartz, a Jewish pawnbroker who emigrated from Poland in 1910, this shop is cluttered with war relics—soldiers' watches, medals, and household goods pawned during shortages. Abraham, a shrewd negotiator, survived anti-Semitic tensions and now eyes the Armistice as a boom for redemptions, but fears rising street crime. His daughter Rebecca helps behind the counter, dreaming of Broadway amid the celebrations. The shop's back room holds fenced goods.",
+        occupants: "Abraham Schwartz (age 48), Rebecca Schwartz (age 19, assistant)",
+        type: "Pawn Shop",
+        availability: "Open day and night; fortified",
+        x: 550,
+        y: 0,
+        cash: 750
+      },
+      {
+        name: "The Vacant Warehouse",
+        story: "This abandoned warehouse, once a munitions storage during the war, stands empty after the Armistice, its doors boarded up but easily pried. Owned absentee by a shipping company, it's become a haunt for vagrants and petty crooks seeking shelter on cold November nights. Echoes of wartime booms linger in the dusty crates, and rumors of hidden stashes from deserters add allure. On November 11, fireworks from celebrations light the alley, drawing opportunistic scavengers.",
+        occupants: "Occasional vagrants (1-2 random, non-hostile unless provoked)",
+        type: "Abandoned industrial",
+        availability: "Always accessible",
+        x: 550,
+        y: 300,
+        cash: 0
+      },
+      {
+        name: "Dr. Harlan's Clinic",
+        story: "Dr. Elias Harlan, a weary physician who treated influenza victims during the 1918 pandemic, operates this small clinic serving the neighborhood's poor. With the Armistice, he's overwhelmed by returning soldiers with wounds and shell shock, charging what he can while dispensing morphine sparingly. His nurse, Clara, harbors secrets of her own—smuggling meds for extra cash. The clinic's sterile facade hides a back office with valuables, and November 11 brings a surge of patients celebrating too hard.",
+        occupants: "Dr. Elias Harlan (age 50), Nurse Clara (age 28), variable patients",
+        type: "Medical clinic",
+        availability: "Open daytime; emergency access at night",
+        x: 550,
+        y: 600,
+        cash: 190
+      }
+    ]
+  };
 });
 
 // src/missions/m001.ts
@@ -35016,48 +35103,11 @@ async function init2() {
 async function m001_buildings_create(viewport) {
   const buildings_container = m001_container_create("buildings");
   buildings_container.sortableChildren = true;
-  const building_1 = await building_create({
-    name: "building_1",
-    x: 200,
-    y: 0,
-    cash: 1000
-  });
-  const building_2 = await building_create({
-    name: "building_2",
-    x: 200,
-    y: 300,
-    cash: 1000
-  });
-  const building_3 = await building_create({
-    name: "building_3",
-    x: 200,
-    y: 600,
-    cash: 1000
-  });
-  const building_4 = await building_create({
-    name: "building_4",
-    x: 550,
-    y: 0,
-    cash: 1000
-  });
-  const building_5 = await building_create({
-    name: "building_5",
-    x: 550,
-    y: 300,
-    cash: 1000
-  });
-  const building_6 = await building_create({
-    name: "building_6",
-    x: 550,
-    y: 600,
-    cash: 1000
-  });
-  buildings_container.addChild(building_1);
-  buildings_container.addChild(building_2);
-  buildings_container.addChild(building_3);
-  buildings_container.addChild(building_4);
-  buildings_container.addChild(building_5);
-  buildings_container.addChild(building_6);
+  for (let i2 = 0;i2 < m001_default.buildings.length; i2++) {
+    const building = m001_default.buildings[i2];
+    const building_instance = await building_create(building);
+    buildings_container.addChild(building_instance);
+  }
   viewport.addChild(buildings_container);
 }
 async function m001_roads_create(viewport) {
@@ -35079,7 +35129,7 @@ function m001_container_create(label) {
   container.label = label;
   return container;
 }
-var init_m001 = __esm(() => {
+var init_m0012 = __esm(() => {
   init_lib();
   init_app();
   init_notifications();
@@ -35087,11 +35137,12 @@ var init_m001 = __esm(() => {
   init_roads();
   init_time();
   init_building();
+  init_m001();
 });
-init_m001();
+init_m0012();
 
 export {
   init2 as init
 };
 
-//# debugId=77B7D505387479C764756E2164756E21
+//# debugId=D5F11C16C057D84064756E2164756E21

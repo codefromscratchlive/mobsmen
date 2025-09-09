@@ -8,7 +8,7 @@ import { resources_init } from "../lib/resources";
 import { roads_create } from "../lib/roads";
 import { time_end, time_pause_toggle, time_start } from "../lib/time";
 import { building_create } from "../lib/building";
-
+import building_data from "./m001.toml";
 
 export async function init(): Promise<void> {
   const root_element = document.getElementById("app");
@@ -65,53 +65,11 @@ async function m001_buildings_create(viewport: Viewport): Promise<void> {
   const buildings_container = m001_container_create("buildings");
   buildings_container.sortableChildren = true;
 
-  const building_1 = await building_create({
-    name: "building_1",
-    x: 200,
-    y: 0,
-    cash: 1000
-  });
-  const building_2 = await building_create({
-    name: "building_2",
-    x: 200,
-    y: 300,
-    cash: 1000
-  });
-  const building_3 = await building_create({
-    name: "building_3",
-    x: 200,
-    y: 600,
-    cash: 1000
-  });
-
-  const building_4 = await building_create({
-    name: "building_4",
-    x: 550,
-    y: 0,
-    cash: 1000
-  });
-
-  const building_5 = await building_create({
-    name: "building_5",
-    x: 550,
-    y: 300,
-    cash: 1000
-  });
-
-  const building_6 = await building_create({
-    name: "building_6",
-    x: 550,
-    y: 600,
-    cash: 1000
-  });
-
-  buildings_container.addChild(building_1);
-  buildings_container.addChild(building_2);
-  buildings_container.addChild(building_3);
-
-  buildings_container.addChild(building_4);
-  buildings_container.addChild(building_5);
-  buildings_container.addChild(building_6);
+  for (let i = 0; i < building_data.buildings.length; i++) {
+    const building = building_data.buildings[i];
+    const building_instance = await building_create(building);
+    buildings_container.addChild(building_instance);
+  }
 
   viewport.addChild(buildings_container);
 }
