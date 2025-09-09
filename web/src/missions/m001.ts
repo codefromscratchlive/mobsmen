@@ -9,6 +9,7 @@ import { roads_create } from "../lib/roads";
 import { time_end, time_pause_toggle, time_start } from "../lib/time";
 import { building_create } from "../lib/building";
 import building_data from "./m001.toml";
+import { profile_init } from "../lib/profile";
 
 export async function init(): Promise<void> {
   const root_element = document.getElementById("app");
@@ -37,6 +38,7 @@ export async function init(): Promise<void> {
   time_start(new Date("1918-11-11T00:00:00.000Z"));
   time_end(new Date("1918-11-18T00:00:00.000Z"));
 
+  profile_init();
   resources_init(0);
 
   // Bring the viewport to the center

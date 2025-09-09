@@ -33944,6 +33944,10 @@ function hud_create() {
 function hud_create_header() {
   const header = document.createElement("div");
   header.classList.add("hud-header");
+  const profile = document.createElement("div");
+  profile.classList.add("hud-profile");
+  profile.id = "hud-profile";
+  header.appendChild(profile);
   const resources = document.createElement("div");
   resources.classList.add("hud-resources");
   resources.id = "hud-resources";
@@ -35169,6 +35173,18 @@ var m001_default = {
   ]
 };
 
+// src/lib/profile.ts
+function profile_init() {
+  const resources_container = document.getElementById("hud-profile");
+  if (!resources_container) {
+    should_never_happen("Resources container not found");
+    return;
+  }
+  resources_container.innerHTML = `
+    <i class="fa-solid fa-user"></i>&nbsp;-&nbsp;
+  `;
+}
+
 // src/missions/m001.ts
 async function init2() {
   const root_element = document.getElementById("app");
@@ -35191,6 +35207,7 @@ async function init2() {
   await m001_buildings_create(viewport);
   time_start(new Date("1918-11-11T00:00:00.000Z"));
   time_end(new Date("1918-11-18T00:00:00.000Z"));
+  profile_init();
   resources_init(0);
   viewport.animate({
     scale: 0.75,
@@ -35241,4 +35258,4 @@ export {
   init2 as init
 };
 
-//# debugId=D6EF2DCAB3AD072F64756E2164756E21
+//# debugId=3F14EB8ACC34C26164756E2164756E21

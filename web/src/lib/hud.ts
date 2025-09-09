@@ -11,6 +11,12 @@ function hud_create_header(): HTMLDivElement {
   const header = document.createElement('div');
   header.classList.add('hud-header');
 
+  const profile = document.createElement('div');
+  profile.classList.add('hud-profile');
+  profile.id = 'hud-profile';
+  header.appendChild(profile);
+
+
   const resources = document.createElement('div');
   resources.classList.add('hud-resources');
   resources.id = 'hud-resources';
