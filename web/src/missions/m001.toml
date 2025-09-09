@@ -6,7 +6,10 @@ type = "Small commercial shop"
 availability = "Open daytime (6 AM - 8 PM)"
 x = 200
 y = 0
-cash = 150
+cash = 200
+resistance = 4
+security = 3
+alertness = 2
 
 [[buildings]]
 name = "The O'Malley Tenement"
@@ -16,7 +19,10 @@ type = "Residential Tenement"
 availability = "Accessible anytime, but family more present at night"
 x = 200
 y = 300
-cash = 80
+cash = 150
+resistance = 6
+security = 2
+alertness = 4
 
 [[buildings]]
 name = "Madame Lefevre's Boarding House"
@@ -26,7 +32,10 @@ type = "Boarding House"
 availability = "Busy evenings (peak interactions); quiet mornings"
 x = 200
 y = 600
-cash = 110
+cash = 250
+resistance = 5
+security = 4
+alertness = 5
 
 [[buildings]]
 name = "Schwartz's Pawn Shop"
@@ -37,6 +46,9 @@ availability = "Open day and night; fortified"
 x = 550
 y = 0
 cash = 750
+resistance = 3
+security = 6
+alertness = 3
 
 [[buildings]]
 name = "The Vacant Warehouse"
@@ -46,7 +58,10 @@ type = "Abandoned industrial"
 availability = "Always accessible"
 x = 550
 y = 300
-cash = 0
+cash = 100
+resistance = 2
+security = 1
+alertness = 1
 
 [[buildings]]
 name = "Dr. Harlan's Clinic"
@@ -56,4 +71,7 @@ type = "Medical clinic"
 availability = "Open daytime; emergency access at night"
 x = 550
 y = 600
-cash = 190
+cash = 300
+resistance = 5
+security = 5
+alertness = 4

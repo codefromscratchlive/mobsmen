@@ -34928,6 +34928,42 @@ function helpers_pixi_remove_container_by_label(label, parent = null) {
     container.destroy({ children: true, texture: true });
   }
 }
+function helpers_generate_random_attribute_values(min = 1, max = 4, min_total = 7, max_total = 12) {
+  if (min_total > max_total || min > max || min_total < 5) {
+    should_never_happen("Invalid attribute values");
+    return {
+      strength: 0,
+      stealth: 0,
+      charisma: 0,
+      agility: 0,
+      luck: 0
+    };
+  }
+  let attributes = {
+    strength: min,
+    stealth: min,
+    charisma: min,
+    agility: min,
+    luck: min
+  };
+  let remaining_points = min_total - min * 5;
+  if (remaining_points <= 0)
+    return attributes;
+  let remaining_points_max = max_total - min * 5;
+  let points_to_distribute = Math.floor(Math.random() * (remaining_points_max - remaining_points + 1)) + remaining_points;
+  while (points_to_distribute > 0) {
+    const attribute_keys = Object.keys(attributes);
+    const random_attribute = attribute_keys[Math.floor(Math.random() * attribute_keys.length)];
+    if (!random_attribute)
+      continue;
+    const current_value = attributes[random_attribute];
+    if (current_value < max) {
+      attributes[random_attribute] += 1;
+      points_to_distribute -= 1;
+    }
+  }
+  return attributes;
+}
 var init_helpers = __esm(() => {
   init_lib();
   init_app();
@@ -35069,7 +35105,10 @@ var init_m001 = __esm(() => {
         availability: "Open daytime (6 AM - 8 PM)",
         x: 200,
         y: 0,
-        cash: 150
+        cash: 200,
+        resistance: 4,
+        security: 3,
+        alertness: 2
       },
       {
         name: "The O'Malley Tenement",
@@ -35079,7 +35118,10 @@ var init_m001 = __esm(() => {
         availability: "Accessible anytime, but family more present at night",
         x: 200,
         y: 300,
-        cash: 80
+        cash: 150,
+        resistance: 6,
+        security: 2,
+        alertness: 4
       },
       {
         name: "Madame Lefevre's Boarding House",
@@ -35089,7 +35131,10 @@ var init_m001 = __esm(() => {
         availability: "Busy evenings (peak interactions); quiet mornings",
         x: 200,
         y: 600,
-        cash: 110
+        cash: 250,
+        resistance: 5,
+        security: 4,
+        alertness: 5
       },
       {
         name: "Schwartz's Pawn Shop",
@@ -35099,7 +35144,10 @@ var init_m001 = __esm(() => {
         availability: "Open day and night; fortified",
         x: 550,
         y: 0,
-        cash: 750
+        cash: 750,
+        resistance: 3,
+        security: 6,
+        alertness: 3
       },
       {
         name: "The Vacant Warehouse",
@@ -35109,7 +35157,10 @@ var init_m001 = __esm(() => {
         availability: "Always accessible",
         x: 550,
         y: 300,
-        cash: 0
+        cash: 100,
+        resistance: 2,
+        security: 1,
+        alertness: 1
       },
       {
         name: "Dr. Harlan's Clinic",
@@ -35119,7 +35170,10 @@ var init_m001 = __esm(() => {
         availability: "Open daytime; emergency access at night",
         x: 550,
         y: 600,
-        cash: 190
+        cash: 300,
+        resistance: 5,
+        security: 5,
+        alertness: 4
       }
     ]
   };
@@ -35209,7 +35263,8 @@ var init_m0012 = __esm(() => {
 });
 
 // src/web.ts
-var VERSION2 = "0.0.1";
+init_helpers();
+var VERSION2 = "0.0.3";
 async function main() {
   const root_element = document.getElementById("app");
   if (!root_element) {
@@ -35221,7 +35276,7 @@ async function main() {
     window.localStorage.setItem("mobsmen", JSON.stringify({
       version: VERSION2,
       mission: "m001",
-      save: ""
+      attributes: helpers_generate_random_attribute_values()
     }));
     const first_mission = await Promise.resolve().then(() => (init_m0012(), exports_m001));
     first_mission.init();
@@ -35238,4 +35293,4 @@ async function main() {
 }
 main();
 
-//# debugId=8A8C6712C313F2E464756E2164756E21
+//# debugId=44BB0DA33B716BEA64756E2164756E21
