@@ -18,7 +18,7 @@ async function main() {
       save: "",
     }));
     // Import the first mission
-    const first_mission = await import("./missions/001");
+    const first_mission = await import("./missions/m001");
     first_mission.init();
   } else {
     const saved_obj = JSON.parse(saved);

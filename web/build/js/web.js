@@ -26,13 +26,6 @@ var __export = (target, all) => {
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
-// ../lib/src/should.ts
-var should_never_happen = (msg, ...args) => {
-  console.error(msg, ...args);
-  debugger;
-  throw new Error(`Should never happen: ${msg}`);
-};
-
 // node_modules/pixi.js/lib/extensions/Extensions.mjs
 var ExtensionType, normalizeExtension = (ext) => {
   if (typeof ext === "function" || typeof ext === "object" && ext.extension) {
@@ -32379,6 +32372,13 @@ var init_lib = __esm(() => {
   extensions.add(browserExt, webworkerExt);
 });
 
+// ../lib/src/should.ts
+var should_never_happen = (msg, ...args) => {
+  console.error(msg, ...args);
+  debugger;
+  throw new Error(`Should never happen: ${msg}`);
+};
+
 // node_modules/pixi-viewport/dist/pixi_viewport.js
 function M2(l2) {
   return l2 && l2.__esModule && Object.prototype.hasOwnProperty.call(l2, "default") ? l2.default : l2;
@@ -33915,6 +33915,78 @@ function hud_create_side_right() {
   return side_right;
 }
 
+// src/lib/notifications.ts
+function notifications_init() {
+  const notifications = document.createElement("div");
+  notifications.classList.add("notifications");
+  notifications.id = "notifications";
+  return notifications;
+}
+function notifications_create(html, type = "success", duration = 0) {
+  const notifications_wrapper = document.getElementById("notifications");
+  if (!notifications_wrapper) {
+    should_never_happen("Notifications wrapper not found");
+    return;
+  }
+  const delete_button = document.createElement("button");
+  delete_button.className = "notification-close delete";
+  const notification = document.createElement("div");
+  notification.classList.add("notification");
+  notification.classList.add(type);
+  notification.appendChild(delete_button);
+  const message_html = document.createElement("div");
+  message_html.classList.add("notification-message");
+  message_html.innerHTML = html;
+  notification.appendChild(message_html);
+  notifications_wrapper.appendChild(notification);
+  delete_button.addEventListener("click", () => {
+    try {
+      notifications_wrapper.removeChild(notification);
+    } catch (_2) {}
+  });
+  if (duration > 0) {
+    setTimeout(() => {
+      try {
+        notifications_wrapper.removeChild(notification);
+      } catch (_2) {}
+    }, duration);
+  }
+}
+var init_notifications = () => {};
+
+// src/lib/resources.ts
+function resources_init(cash) {
+  const resources_container = document.getElementById("hud-resources");
+  if (!resources_container) {
+    should_never_happen("Resources container not found");
+    return;
+  }
+  resources_container.innerHTML = `
+    <i class="fa-solid fa-sack-dollar"></i>
+    <span id="hud-resources-cash">${cash}</span>
+  `;
+}
+var init_resources = () => {};
+
+// src/lib/roads.ts
+async function roads_create(x3, y2, width, height) {
+  const road_container = new Container;
+  const background_texture = await Assets.load("/build/images/road_texture.jpg");
+  const background = new TilingSprite({
+    texture: background_texture,
+    width,
+    height
+  });
+  background.tileScale.set(0.15, 0.15);
+  road_container.addChild(background);
+  road_container.x = x3;
+  road_container.y = y2;
+  return road_container;
+}
+var init_roads = __esm(() => {
+  init_lib();
+});
+
 // node_modules/valibot/dist/index.js
 function getGlobalConfig(config2) {
   return {
@@ -34393,182 +34465,6 @@ function safeParse(schema, input, config2) {
 var store, store2, store3, store4;
 var init_dist = () => {};
 
-// src/lib/building.ts
-async function building_create(options) {
-  const building_container = new Container;
-  building_container.label = options.name + "_container";
-  building_container.x = options.x;
-  building_container.y = options.y;
-  const building_texture = await Assets.load("/build/images/house.png");
-  const building = new Sprite(building_texture);
-  building.label = options.name;
-  building.interactive = true;
-  building.cursor = "pointer";
-  building_container.addChild(building);
-  return building_container;
-}
-var BuildingOptionsSchema;
-var init_building = __esm(() => {
-  init_dist();
-  init_lib();
-  BuildingOptionsSchema = object({
-    name: string(),
-    description: optional(string()),
-    cash: number(),
-    x: number(),
-    y: number(),
-    texture: optional(string())
-  });
-});
-
-// src/lib/roads.ts
-async function roads_create(x3, y2, width, height) {
-  const road_container = new Container;
-  const background_texture = await Assets.load("/build/images/road_texture.jpg");
-  const background = new TilingSprite({
-    texture: background_texture,
-    width,
-    height
-  });
-  background.tileScale.set(0.15, 0.15);
-  road_container.addChild(background);
-  road_container.x = x3;
-  road_container.y = y2;
-  return road_container;
-}
-var init_roads = __esm(() => {
-  init_lib();
-});
-
-// src/lib/map.ts
-async function map_1_create(viewport) {
-  await map_1_roads_create(viewport);
-  await map_1_buildings_create(viewport);
-}
-async function map_1_buildings_create(viewport) {
-  const buildings_container = map_container_create("buildings");
-  const building_1 = await building_create({
-    name: "building_1",
-    x: 200,
-    y: 0,
-    cash: 1000
-  });
-  const building_2 = await building_create({
-    name: "building_2",
-    x: 200,
-    y: 300,
-    cash: 1000
-  });
-  const building_3 = await building_create({
-    name: "building_3",
-    x: 200,
-    y: 600,
-    cash: 1000
-  });
-  const building_4 = await building_create({
-    name: "building_4",
-    x: 550,
-    y: 0,
-    cash: 1000
-  });
-  const building_5 = await building_create({
-    name: "building_5",
-    x: 550,
-    y: 300,
-    cash: 1000
-  });
-  const building_6 = await building_create({
-    name: "building_6",
-    x: 550,
-    y: 600,
-    cash: 1000
-  });
-  buildings_container.addChild(building_1);
-  buildings_container.addChild(building_2);
-  buildings_container.addChild(building_3);
-  buildings_container.addChild(building_4);
-  buildings_container.addChild(building_5);
-  buildings_container.addChild(building_6);
-  viewport.addChild(buildings_container);
-}
-async function map_1_roads_create(viewport) {
-  const roads_container = map_container_create("roads");
-  const road_1 = await roads_create(500, 0, 50, 900);
-  const road_2 = await roads_create(100, 900, 850, 50);
-  const road_3 = await roads_create(100, 0, 50, 900);
-  const road_4 = await roads_create(900, 0, 50, 900);
-  const road_5 = await roads_create(100, 0, 850, 50);
-  roads_container.addChild(road_1);
-  roads_container.addChild(road_2);
-  roads_container.addChild(road_3);
-  roads_container.addChild(road_4);
-  roads_container.addChild(road_5);
-  viewport.addChild(roads_container);
-}
-function map_container_create(label) {
-  const container = new Container;
-  container.label = label;
-  return container;
-}
-var init_map = __esm(() => {
-  init_lib();
-  init_building();
-  init_roads();
-});
-
-// src/lib/notifications.ts
-function notifications_init() {
-  const notifications = document.createElement("div");
-  notifications.classList.add("notifications");
-  notifications.id = "notifications";
-  return notifications;
-}
-function notifications_create(html, type = "success", duration = 0) {
-  const notifications_wrapper = document.getElementById("notifications");
-  if (!notifications_wrapper) {
-    should_never_happen("Notifications wrapper not found");
-    return;
-  }
-  const delete_button = document.createElement("button");
-  delete_button.className = "notification-close delete";
-  const notification = document.createElement("div");
-  notification.classList.add("notification");
-  notification.classList.add(type);
-  notification.appendChild(delete_button);
-  const message_html = document.createElement("div");
-  message_html.classList.add("notification-message");
-  message_html.innerHTML = html;
-  notification.appendChild(message_html);
-  notifications_wrapper.appendChild(notification);
-  delete_button.addEventListener("click", () => {
-    try {
-      notifications_wrapper.removeChild(notification);
-    } catch (_2) {}
-  });
-  if (duration > 0) {
-    setTimeout(() => {
-      try {
-        notifications_wrapper.removeChild(notification);
-      } catch (_2) {}
-    }, duration);
-  }
-}
-var init_notifications = () => {};
-
-// src/lib/resources.ts
-function resources_init(cash) {
-  const resources_container = document.getElementById("hud-resources");
-  if (!resources_container) {
-    should_never_happen("Resources container not found");
-    return;
-  }
-  resources_container.innerHTML = `
-    <i class="fa-solid fa-sack-dollar"></i>
-    <span id="hud-resources-cash">${cash}</span>
-  `;
-}
-var init_resources = () => {};
-
 // src/lib/util.ts
 function util_event_handler(handler_item) {
   const result = safeParse(UtilEventHandlerItemSchema, handler_item);
@@ -34791,9 +34687,37 @@ var init_time = __esm(() => {
   end_date = new Date("1800-11-11T00:00:00.000Z");
 });
 
-// src/missions/001.ts
-var exports_001 = {};
-__export(exports_001, {
+// src/lib/building.ts
+async function building_create(options) {
+  const building_container = new Container;
+  building_container.label = options.name + "_container";
+  building_container.x = options.x;
+  building_container.y = options.y;
+  const building_texture = await Assets.load("/build/images/house.png");
+  const building = new Sprite(building_texture);
+  building.label = options.name;
+  building.interactive = true;
+  building.cursor = "pointer";
+  building_container.addChild(building);
+  return building_container;
+}
+var BuildingOptionsSchema;
+var init_building = __esm(() => {
+  init_dist();
+  init_lib();
+  BuildingOptionsSchema = object({
+    name: string(),
+    description: optional(string()),
+    cash: number(),
+    x: number(),
+    y: number(),
+    texture: optional(string())
+  });
+});
+
+// src/missions/m001.ts
+var exports_m001 = {};
+__export(exports_m001, {
   init: () => init2
 });
 async function init2() {
@@ -34813,7 +34737,8 @@ async function init2() {
   root_element.appendChild(canvas);
   const viewport = await app_viewport_create(app);
   app.stage.addChild(viewport);
-  map_1_create(viewport);
+  await m001_roads_create(viewport);
+  await m001_buildings_create(viewport);
   time_start(new Date("1918-11-11T00:00:00.000Z"));
   time_end(new Date("1918-11-18T00:00:00.000Z"));
   resources_init(0);
@@ -34828,17 +34753,84 @@ async function init2() {
   });
   notifications_create(`
     The time has been paused!<br>
-    You have one week to get $1000 in cash.<br>
+    You have one week to get $100 in cash.<br>
     <span style="color: red;">Good Luck!</span>
     `);
   time_pause_toggle();
 }
-var init_001 = __esm(() => {
+async function m001_buildings_create(viewport) {
+  const buildings_container = m001_container_create("buildings");
+  const building_1 = await building_create({
+    name: "building_1",
+    x: 200,
+    y: 0,
+    cash: 1000
+  });
+  const building_2 = await building_create({
+    name: "building_2",
+    x: 200,
+    y: 300,
+    cash: 1000
+  });
+  const building_3 = await building_create({
+    name: "building_3",
+    x: 200,
+    y: 600,
+    cash: 1000
+  });
+  const building_4 = await building_create({
+    name: "building_4",
+    x: 550,
+    y: 0,
+    cash: 1000
+  });
+  const building_5 = await building_create({
+    name: "building_5",
+    x: 550,
+    y: 300,
+    cash: 1000
+  });
+  const building_6 = await building_create({
+    name: "building_6",
+    x: 550,
+    y: 600,
+    cash: 1000
+  });
+  buildings_container.addChild(building_1);
+  buildings_container.addChild(building_2);
+  buildings_container.addChild(building_3);
+  buildings_container.addChild(building_4);
+  buildings_container.addChild(building_5);
+  buildings_container.addChild(building_6);
+  viewport.addChild(buildings_container);
+}
+async function m001_roads_create(viewport) {
+  const roads_container = m001_container_create("roads");
+  const road_1 = await roads_create(500, 0, 50, 900);
+  const road_2 = await roads_create(100, 900, 850, 50);
+  const road_3 = await roads_create(100, 0, 50, 900);
+  const road_4 = await roads_create(900, 0, 50, 900);
+  const road_5 = await roads_create(100, 0, 850, 50);
+  roads_container.addChild(road_1);
+  roads_container.addChild(road_2);
+  roads_container.addChild(road_3);
+  roads_container.addChild(road_4);
+  roads_container.addChild(road_5);
+  viewport.addChild(roads_container);
+}
+function m001_container_create(label) {
+  const container = new Container;
+  container.label = label;
+  return container;
+}
+var init_m001 = __esm(() => {
+  init_lib();
   init_app();
-  init_map();
   init_notifications();
   init_resources();
+  init_roads();
   init_time();
+  init_building();
 });
 
 // src/web.ts
@@ -34856,7 +34848,7 @@ async function main() {
       mission: "001",
       save: ""
     }));
-    const first_mission = await Promise.resolve().then(() => (init_001(), exports_001));
+    const first_mission = await Promise.resolve().then(() => (init_m001(), exports_m001));
     first_mission.init();
   } else {
     const saved_obj = JSON.parse(saved);
@@ -34866,4 +34858,4 @@ async function main() {
 }
 main();
 
-//# debugId=EA16570DD2A7D8FA64756E2164756E21
+//# debugId=CC13D8F8006226EA64756E2164756E21
