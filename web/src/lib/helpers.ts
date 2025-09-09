@@ -60,9 +60,7 @@ export function helpers_pixi_remove_container_by_label(
       container.parent.removeChild(container);
     }
     container.destroy({ children: true, texture: true });
-  } else {
-    console.warn(`No container found with label: ${label}`);
-  }
+  } 
 }
 
 export function helpers_pixi_get_container_by_label(

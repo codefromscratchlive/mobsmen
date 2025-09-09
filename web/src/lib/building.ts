@@ -60,34 +60,57 @@ function building_selection_show(options: BuildingOptionsType): void {
     <div class="title">
       <div class="building-info-name">${options.name}</div>
     </div>
-    <div class="columns">
-      <div class="column is-half">
+    <hr class="footer-divider">
+    <div class="columns mm-text-sans">
+      <div class="column is-one-third">
         <div class="building-info-story">${options.story}</div>
       </div>
-      <div class="column">
+      <div class="column is-one-third">
         <div class="building-info-entry building-info-occupants">
-          <span class="building-info-title">
+          <span class="building-info-title mm-text-slab">
             Occupants:
           </span>
           ${options.occupants}
         </div>
         <div class="building-info-entry building-info-type">
-          <span class="building-info-title">
+          <span class="building-info-title mm-text-slab">
             Type:
           </span>
           ${options.type}
         </div>
         <div class="building-info-entry building-info-availability">
-          <span class="building-info-title">
+          <span class="building-info-title mm-text-slab">
             Availability:
           </span>
           ${options.availability}
         </div>
         <div class="building-info-entry building-info-cash">
-          <span class="building-info-title">
+          <span class="building-info-title mm-text-slab">
             Cash:
           </span>
           $${options.cash}
+        </div>
+      </div>
+      <div class="column is-one-third">
+        <div class="building-actions">
+          <button class="button is-dark is-danger is-large is-fullwidth mb-4">
+            <span class="icon">
+              <i class="fa-solid fa-gun"></i>
+            </span>
+            <span>Extort</span>
+          </button>
+          <button class="button is-dark is-warning is-large is-fullwidth mb-4">
+            <span class="icon">
+              <i class="fa-solid fa-people-robbery"></i>
+            </span>
+            <span>Steal</span>
+          </button>
+          <button class="button is-dark is-info is-large is-fullwidth">
+            <span class="icon">
+              <i class="fa-solid fa-user-secret"></i>
+            </span>
+            <span>Scout</span>
+          </button>
         </div>
       </div>
     </div>

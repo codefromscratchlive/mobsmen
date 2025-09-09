@@ -8,6 +8,13 @@ body {
   font-style: normal;
 }
 
+.mm-text-sans {
+  font-family: "Epunda Sans", sans-serif;
+}
+.mm-text-slab {
+  font-family: "Epunda Slab", serif;
+}
+
 #app {
   flex: 1;
   display: flex;
@@ -130,31 +137,27 @@ body {
 
 .building-info {
   background-color: #333;
-  padding: 24px 48px 64px;
+  padding: 24px;
   font-size: 18px;
   line-height: 24px;
   box-sizing: border-box;
 }
 
 .building-info-entry {
-  margin-bottom: 12px;
-  border-bottom: 1px solid #5d5d5d;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
 }
 
 .building-info-title {
   display: block;
-  font-size: 24px;
+  color: #dedede;
   text-decoration: underline;
   font-weight: bold;
-  margin-bottom: 8px;
 }
 
 .building-info-story {
   font-weight: 100;
-  font-size: 24px;
-  line-height: 36px;
-  padding: 12px;
+  font-size: 18px;
+  line-height: 24px;
 }
 
 .footer-close-button {
@@ -164,4 +167,9 @@ body {
   top: 12px;
   right: 12px;
   cursor: pointer;
+}
+
+.footer-divider {
+  background-color: white;
+  opacity: 0.2;
 }
