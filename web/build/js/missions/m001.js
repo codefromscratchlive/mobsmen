@@ -34168,13 +34168,13 @@ var init_resources = () => {};
 // src/lib/roads.ts
 async function roads_create(x3, y2, width, height) {
   const road_container = new Container;
-  const background_texture = await Assets.load("/build/images/road_texture.jpg");
+  const background_texture = await Assets.load("/build/images/texture.webp");
   const background = new TilingSprite({
     texture: background_texture,
     width,
     height
   });
-  background.tileScale.set(0.15, 0.15);
+  background.tileScale.set(0.35, 0.35);
   road_container.addChild(background);
   road_container.x = x3;
   road_container.y = y2;
@@ -35145,4 +35145,4 @@ export {
   init2 as init
 };
 
-//# debugId=D5F11C16C057D84064756E2164756E21
+//# debugId=6AB6B86AB55C2EE664756E2164756E21
