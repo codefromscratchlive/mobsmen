@@ -2,6 +2,9 @@ import * as PIXI from 'pixi.js';
 import { app_viewport_get } from './app';
 
 export function helpers_pixi_tooltip_create(text: string, position: PIXI.Point): PIXI.Container {
+  // Only one tooltip should be active at any given point, so destroy any existing ones
+  helpers_pixi_remove_container_by_label('tooltip');
+
   const tooltip_container = new PIXI.Container();
 
   tooltip_container.eventMode = "none";

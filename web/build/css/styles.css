@@ -60,7 +60,6 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 200px;
   /* background-color: #858585; */
   opacity: 1;
   color: #ffffff;
@@ -127,4 +126,42 @@ body {
   flex-direction: column;
   align-items: right;
   z-index: 100;
+}
+
+.building-info {
+  background-color: #333;
+  padding: 24px 48px 64px;
+  font-size: 18px;
+  line-height: 24px;
+  box-sizing: border-box;
+}
+
+.building-info-entry {
+  margin-bottom: 12px;
+  border-bottom: 1px solid #5d5d5d;
+  padding-bottom: 12px;
+}
+
+.building-info-title {
+  display: block;
+  font-size: 24px;
+  text-decoration: underline;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.building-info-story {
+  font-weight: 100;
+  font-size: 24px;
+  line-height: 36px;
+  padding: 12px;
+}
+
+.footer-close-button {
+  position: absolute;
+  font-size: 48px;
+  color: red;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
 }

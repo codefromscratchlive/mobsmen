@@ -34886,6 +34886,7 @@ var init_time = __esm(() => {
 
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
+  helpers_pixi_remove_container_by_label("tooltip");
   const tooltip_container = new Container;
   tooltip_container.eventMode = "none";
   const background = new Graphics;
@@ -34967,7 +34968,53 @@ function building_selection_show(options) {
     should_never_happen("Footer not found");
     return;
   }
-  footer.textContent = `Selected: ${options.name}`;
+  footer.innerHTML = "";
+  const building_info_container = document.createElement("div");
+  building_info_container.classList.add("building-info");
+  building_info_container.innerHTML = `
+    <div class="title">
+      <div class="building-info-name">${options.name}</div>
+    </div>
+    <div class="columns">
+      <div class="column is-half">
+        <div class="building-info-story">${options.story}</div>
+      </div>
+      <div class="column">
+        <div class="building-info-entry building-info-occupants">
+          <span class="building-info-title">
+            Occupants:
+          </span>
+          ${options.occupants}
+        </div>
+        <div class="building-info-entry building-info-type">
+          <span class="building-info-title">
+            Type:
+          </span>
+          ${options.type}
+        </div>
+        <div class="building-info-entry building-info-availability">
+          <span class="building-info-title">
+            Availability:
+          </span>
+          ${options.availability}
+        </div>
+        <div class="building-info-entry building-info-cash">
+          <span class="building-info-title">
+            Cash:
+          </span>
+          $${options.cash}
+        </div>
+      </div>
+    </div>
+  `;
+  const close_button = document.createElement("button");
+  close_button.classList.add("footer-close-button");
+  close_button.innerHTML = '<i class="fa-solid fa-square-xmark"></i>';
+  close_button.addEventListener("click", () => {
+    footer.innerHTML = "";
+  });
+  building_info_container.appendChild(close_button);
+  footer.appendChild(building_info_container);
 }
 var BuildingOptionsSchema;
 var init_building = __esm(() => {
@@ -35165,4 +35212,4 @@ async function main() {
 }
 main();
 
-//# debugId=4BB47C45A76E2B4C64756E2164756E21
+//# debugId=764704531230ABE764756E2164756E21

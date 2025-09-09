@@ -52,7 +52,55 @@ function building_selection_show(options: BuildingOptionsType): void {
     // We never get to this point, but we must make Typescript happy
     return;
   }
-  footer.textContent = `Selected: ${options.name}`;
+  // Clear previous contents of footer
+  footer.innerHTML = "";
+  const building_info_container = document.createElement("div");
+  building_info_container.classList.add("building-info");
+  building_info_container.innerHTML = `
+    <div class="title">
+      <div class="building-info-name">${options.name}</div>
+    </div>
+    <div class="columns">
+      <div class="column is-half">
+        <div class="building-info-story">${options.story}</div>
+      </div>
+      <div class="column">
+        <div class="building-info-entry building-info-occupants">
+          <span class="building-info-title">
+            Occupants:
+          </span>
+          ${options.occupants}
+        </div>
+        <div class="building-info-entry building-info-type">
+          <span class="building-info-title">
+            Type:
+          </span>
+          ${options.type}
+        </div>
+        <div class="building-info-entry building-info-availability">
+          <span class="building-info-title">
+            Availability:
+          </span>
+          ${options.availability}
+        </div>
+        <div class="building-info-entry building-info-cash">
+          <span class="building-info-title">
+            Cash:
+          </span>
+          $${options.cash}
+        </div>
+      </div>
+    </div>
+  `;
+  // Create button to close building info
+  const close_button = document.createElement("button");
+  close_button.classList.add("footer-close-button");
+  close_button.innerHTML = '<i class="fa-solid fa-square-xmark"></i>';
+  close_button.addEventListener("click", () => {
+    footer.innerHTML = "";
+  });
+  building_info_container.appendChild(close_button);
+  footer.appendChild(building_info_container);
 }
 
 const BuildingOptionsSchema = v.object({
