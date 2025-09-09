@@ -21316,23 +21316,6 @@ var init_browserAll = __esm(() => {
   init_init15();
 });
 
-// node_modules/pixi.js/lib/environment-browser/browserExt.mjs
-var browserExt;
-var init_browserExt = __esm(() => {
-  init_Extensions();
-  browserExt = {
-    extension: {
-      type: ExtensionType.Environment,
-      name: "browser",
-      priority: -1
-    },
-    test: () => true,
-    load: async () => {
-      await Promise.resolve().then(() => (init_browserAll(), exports_browserAll));
-    }
-  };
-});
-
 // node_modules/pixi.js/lib/environment-webworker/webworkerAll.mjs
 var exports_webworkerAll = {};
 var init_webworkerAll = __esm(() => {
@@ -21348,23 +21331,6 @@ var init_webworkerAll = __esm(() => {
   init_init13();
   init_init14();
   init_init15();
-});
-
-// node_modules/pixi.js/lib/environment-webworker/webworkerExt.mjs
-var webworkerExt;
-var init_webworkerExt = __esm(() => {
-  init_Extensions();
-  webworkerExt = {
-    extension: {
-      type: ExtensionType.Environment,
-      name: "webworker",
-      priority: 0
-    },
-    test: () => typeof self !== "undefined" && self.WorkerGlobalScope !== undefined,
-    load: async () => {
-      await Promise.resolve().then(() => (init_webworkerAll(), exports_webworkerAll));
-    }
-  };
 });
 
 // node_modules/pixi.js/lib/filters/Filter.mjs
@@ -21732,66 +21698,6 @@ var init_AbstractRenderer = __esm(() => {
     roundPixels: false
   };
   AbstractRenderer = _AbstractRenderer;
-});
-
-// node_modules/pixi.js/lib/utils/browser/isWebGLSupported.mjs
-function isWebGLSupported(failIfMajorPerformanceCaveat) {
-  if (_isWebGLSupported !== undefined)
-    return _isWebGLSupported;
-  _isWebGLSupported = (() => {
-    const contextOptions = {
-      stencil: true,
-      failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat ?? AbstractRenderer.defaultOptions.failIfMajorPerformanceCaveat
-    };
-    try {
-      if (!DOMAdapter.get().getWebGLRenderingContext()) {
-        return false;
-      }
-      const canvas = DOMAdapter.get().createCanvas();
-      let gl = canvas.getContext("webgl", contextOptions);
-      const success = !!gl?.getContextAttributes()?.stencil;
-      if (gl) {
-        const loseContext = gl.getExtension("WEBGL_lose_context");
-        if (loseContext) {
-          loseContext.loseContext();
-        }
-      }
-      gl = null;
-      return success;
-    } catch (_e) {
-      return false;
-    }
-  })();
-  return _isWebGLSupported;
-}
-var _isWebGLSupported;
-var init_isWebGLSupported = __esm(() => {
-  init_adapter();
-  init_AbstractRenderer();
-});
-
-// node_modules/pixi.js/lib/utils/browser/isWebGPUSupported.mjs
-async function isWebGPUSupported(options = {}) {
-  if (_isWebGPUSupported !== undefined)
-    return _isWebGPUSupported;
-  _isWebGPUSupported = await (async () => {
-    const gpu = DOMAdapter.get().getNavigator().gpu;
-    if (!gpu) {
-      return false;
-    }
-    try {
-      const adapter = await gpu.requestAdapter(options);
-      await adapter.requestDevice();
-      return true;
-    } catch (_e) {
-      return false;
-    }
-  })();
-  return _isWebGPUSupported;
-}
-var _isWebGPUSupported;
-var init_isWebGPUSupported = __esm(() => {
-  init_adapter();
 });
 
 // node_modules/pixi.js/lib/scene/graphics/gpu/GpuGraphicsAdaptor.mjs
@@ -30281,7 +30187,108 @@ var init_WebGLRenderer = __esm(() => {
   };
 });
 
+// ../lib/src/should.ts
+var should_never_happen = (msg, ...args) => {
+  console.error(msg, ...args);
+  debugger;
+  throw new Error(`Should never happen: ${msg}`);
+};
+
+// node_modules/pixi.js/lib/environment-browser/browserExt.mjs
+init_Extensions();
+var browserExt = {
+  extension: {
+    type: ExtensionType.Environment,
+    name: "browser",
+    priority: -1
+  },
+  test: () => true,
+  load: async () => {
+    await Promise.resolve().then(() => (init_browserAll(), exports_browserAll));
+  }
+};
+
+// node_modules/pixi.js/lib/environment-webworker/webworkerExt.mjs
+init_Extensions();
+var webworkerExt = {
+  extension: {
+    type: ExtensionType.Environment,
+    name: "webworker",
+    priority: 0
+  },
+  test: () => typeof self !== "undefined" && self.WorkerGlobalScope !== undefined,
+  load: async () => {
+    await Promise.resolve().then(() => (init_webworkerAll(), exports_webworkerAll));
+  }
+};
+
+// node_modules/pixi.js/lib/index.mjs
+init_Extensions();
+init_init6();
+init_init5();
+
+// node_modules/pixi.js/lib/app/Application.mjs
+init_Extensions();
+
+// node_modules/pixi.js/lib/utils/browser/isWebGLSupported.mjs
+init_adapter();
+init_AbstractRenderer();
+var _isWebGLSupported;
+function isWebGLSupported(failIfMajorPerformanceCaveat) {
+  if (_isWebGLSupported !== undefined)
+    return _isWebGLSupported;
+  _isWebGLSupported = (() => {
+    const contextOptions = {
+      stencil: true,
+      failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat ?? AbstractRenderer.defaultOptions.failIfMajorPerformanceCaveat
+    };
+    try {
+      if (!DOMAdapter.get().getWebGLRenderingContext()) {
+        return false;
+      }
+      const canvas = DOMAdapter.get().createCanvas();
+      let gl = canvas.getContext("webgl", contextOptions);
+      const success = !!gl?.getContextAttributes()?.stencil;
+      if (gl) {
+        const loseContext = gl.getExtension("WEBGL_lose_context");
+        if (loseContext) {
+          loseContext.loseContext();
+        }
+      }
+      gl = null;
+      return success;
+    } catch (_e) {
+      return false;
+    }
+  })();
+  return _isWebGLSupported;
+}
+
+// node_modules/pixi.js/lib/utils/browser/isWebGPUSupported.mjs
+init_adapter();
+var _isWebGPUSupported;
+async function isWebGPUSupported(options = {}) {
+  if (_isWebGPUSupported !== undefined)
+    return _isWebGPUSupported;
+  _isWebGPUSupported = await (async () => {
+    const gpu = DOMAdapter.get().getNavigator().gpu;
+    if (!gpu) {
+      return false;
+    }
+    try {
+      const adapter = await gpu.requestAdapter(options);
+      await adapter.requestDevice();
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  })();
+  return _isWebGPUSupported;
+}
+
 // node_modules/pixi.js/lib/rendering/renderers/autoDetectRenderer.mjs
+init_AbstractRenderer();
+var renderPriority = ["webgl", "webgpu", "canvas"];
 async function autoDetectRenderer(options) {
   let preferredOrder = [];
   if (options.preference) {
@@ -30322,15 +30329,11 @@ async function autoDetectRenderer(options) {
   await renderer.init(finalOptions);
   return renderer;
 }
-var renderPriority;
-var init_autoDetectRenderer = __esm(() => {
-  init_isWebGLSupported();
-  init_isWebGPUSupported();
-  init_AbstractRenderer();
-  renderPriority = ["webgl", "webgpu", "canvas"];
-});
 
 // node_modules/pixi.js/lib/app/Application.mjs
+init_Container();
+init_globalHooks();
+init_deprecation();
 var _Application = class _Application2 {
   constructor(...args) {
     this.stage = new Container;
@@ -30369,357 +30372,342 @@ var _Application = class _Application2 {
     this.renderer.destroy(rendererDestroyOptions);
     this.renderer = null;
   }
-}, Application;
-var init_Application = __esm(() => {
-  init_Extensions();
-  init_autoDetectRenderer();
-  init_Container();
-  init_globalHooks();
-  init_deprecation();
-  _Application._plugins = [];
-  Application = _Application;
-  extensions.handleByList(ExtensionType.Application, Application._plugins);
-  extensions.add(ApplicationInitHook);
-});
+};
+_Application._plugins = [];
+var Application = _Application;
+extensions.handleByList(ExtensionType.Application, Application._plugins);
+extensions.add(ApplicationInitHook);
 
-// node_modules/pixi.js/lib/scene/text-bitmap/BitmapFont.mjs
-var BitmapFont;
-var init_BitmapFont = __esm(() => {
-  init_groupD8();
-  init_Rectangle();
-  init_Texture();
-  init_AbstractBitmapFont();
-  init_BitmapFontManager();
-  BitmapFont = class BitmapFont extends AbstractBitmapFont {
-    constructor(options, url) {
-      super();
-      const { textures, data } = options;
-      Object.keys(data.pages).forEach((key) => {
-        const pageData = data.pages[parseInt(key, 10)];
-        const texture = textures[pageData.id];
-        this.pages.push({ texture });
-      });
-      Object.keys(data.chars).forEach((key) => {
-        const charData = data.chars[key];
-        const {
-          frame: textureFrame,
-          source: textureSource,
-          rotate: textureRotate
-        } = textures[charData.page];
-        const frame = groupD8.transformRectCoords(charData, textureFrame, textureRotate, new Rectangle);
-        const texture = new Texture({
-          frame,
-          orig: new Rectangle(0, 0, charData.width, charData.height),
-          source: textureSource,
-          rotate: textureRotate
-        });
-        this.chars[key] = {
-          id: key.codePointAt(0),
-          xOffset: charData.xOffset,
-          yOffset: charData.yOffset,
-          xAdvance: charData.xAdvance,
-          kerning: charData.kerning ?? {},
-          texture
-        };
-      });
-      this.baseRenderedFontSize = data.fontSize;
-      this.baseMeasurementFontSize = data.fontSize;
-      this.fontMetrics = {
-        ascent: 0,
-        descent: 0,
-        fontSize: data.fontSize
-      };
-      this.baseLineOffset = data.baseLineOffset;
-      this.lineHeight = data.lineHeight;
-      this.fontFamily = data.fontFamily;
-      this.distanceField = data.distanceField ?? {
-        type: "none",
-        range: 0
-      };
-      this.url = url;
-    }
-    destroy() {
-      super.destroy();
-      for (let i2 = 0;i2 < this.pages.length; i2++) {
-        const { texture } = this.pages[i2];
-        texture.destroy(true);
-      }
-      this.pages = null;
-    }
-    static install(options) {
-      BitmapFontManager.install(options);
-    }
-    static uninstall(name) {
-      BitmapFontManager.uninstall(name);
-    }
-  };
-});
-
-// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontTextParser.mjs
-var bitmapFontTextParser;
-var init_bitmapFontTextParser = __esm(() => {
-  bitmapFontTextParser = {
-    test(data) {
-      return typeof data === "string" && data.startsWith("info face=");
-    },
-    parse(txt) {
-      const items = txt.match(/^[a-z]+\s+.+$/gm);
-      const rawData = {
-        info: [],
-        common: [],
-        page: [],
-        char: [],
-        chars: [],
-        kerning: [],
-        kernings: [],
-        distanceField: []
-      };
-      for (const i2 in items) {
-        const name = items[i2].match(/^[a-z]+/gm)[0];
-        const attributeList = items[i2].match(/[a-zA-Z]+=([^\s"']+|"([^"]*)")/gm);
-        const itemData = {};
-        for (const i22 in attributeList) {
-          const split = attributeList[i22].split("=");
-          const key = split[0];
-          const strValue = split[1].replace(/"/gm, "");
-          const floatValue = parseFloat(strValue);
-          const value = isNaN(floatValue) ? strValue : floatValue;
-          itemData[key] = value;
-        }
-        rawData[name].push(itemData);
-      }
-      const font = {
-        chars: {},
-        pages: [],
-        lineHeight: 0,
-        fontSize: 0,
-        fontFamily: "",
-        distanceField: null,
-        baseLineOffset: 0
-      };
-      const [info] = rawData.info;
-      const [common] = rawData.common;
-      const [distanceField] = rawData.distanceField ?? [];
-      if (distanceField) {
-        font.distanceField = {
-          range: parseInt(distanceField.distanceRange, 10),
-          type: distanceField.fieldType
-        };
-      }
-      font.fontSize = parseInt(info.size, 10);
-      font.fontFamily = info.face;
-      font.lineHeight = parseInt(common.lineHeight, 10);
-      const page = rawData.page;
-      for (let i2 = 0;i2 < page.length; i2++) {
-        font.pages.push({
-          id: parseInt(page[i2].id, 10) || 0,
-          file: page[i2].file
-        });
-      }
-      const map = {};
-      font.baseLineOffset = font.lineHeight - parseInt(common.base, 10);
-      const char = rawData.char;
-      for (let i2 = 0;i2 < char.length; i2++) {
-        const charNode = char[i2];
-        const id = parseInt(charNode.id, 10);
-        let letter = charNode.letter ?? charNode.char ?? String.fromCharCode(id);
-        if (letter === "space")
-          letter = " ";
-        map[id] = letter;
-        font.chars[letter] = {
-          id,
-          page: parseInt(charNode.page, 10) || 0,
-          x: parseInt(charNode.x, 10),
-          y: parseInt(charNode.y, 10),
-          width: parseInt(charNode.width, 10),
-          height: parseInt(charNode.height, 10),
-          xOffset: parseInt(charNode.xoffset, 10),
-          yOffset: parseInt(charNode.yoffset, 10),
-          xAdvance: parseInt(charNode.xadvance, 10),
-          kerning: {}
-        };
-      }
-      const kerning = rawData.kerning || [];
-      for (let i2 = 0;i2 < kerning.length; i2++) {
-        const first = parseInt(kerning[i2].first, 10);
-        const second = parseInt(kerning[i2].second, 10);
-        const amount = parseInt(kerning[i2].amount, 10);
-        font.chars[map[second]].kerning[map[first]] = amount;
-      }
-      return font;
-    }
-  };
-});
-
-// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLParser.mjs
-var bitmapFontXMLParser;
-var init_bitmapFontXMLParser = __esm(() => {
-  bitmapFontXMLParser = {
-    test(data) {
-      const xml = data;
-      return typeof xml !== "string" && "getElementsByTagName" in xml && xml.getElementsByTagName("page").length && xml.getElementsByTagName("info")[0].getAttribute("face") !== null;
-    },
-    parse(xml) {
-      const data = {
-        chars: {},
-        pages: [],
-        lineHeight: 0,
-        fontSize: 0,
-        fontFamily: "",
-        distanceField: null,
-        baseLineOffset: 0
-      };
-      const info = xml.getElementsByTagName("info")[0];
-      const common = xml.getElementsByTagName("common")[0];
-      const distanceField = xml.getElementsByTagName("distanceField")[0];
-      if (distanceField) {
-        data.distanceField = {
-          type: distanceField.getAttribute("fieldType"),
-          range: parseInt(distanceField.getAttribute("distanceRange"), 10)
-        };
-      }
-      const page = xml.getElementsByTagName("page");
-      const char = xml.getElementsByTagName("char");
-      const kerning = xml.getElementsByTagName("kerning");
-      data.fontSize = parseInt(info.getAttribute("size"), 10);
-      data.fontFamily = info.getAttribute("face");
-      data.lineHeight = parseInt(common.getAttribute("lineHeight"), 10);
-      for (let i2 = 0;i2 < page.length; i2++) {
-        data.pages.push({
-          id: parseInt(page[i2].getAttribute("id"), 10) || 0,
-          file: page[i2].getAttribute("file")
-        });
-      }
-      const map = {};
-      data.baseLineOffset = data.lineHeight - parseInt(common.getAttribute("base"), 10);
-      for (let i2 = 0;i2 < char.length; i2++) {
-        const charNode = char[i2];
-        const id = parseInt(charNode.getAttribute("id"), 10);
-        let letter = charNode.getAttribute("letter") ?? charNode.getAttribute("char") ?? String.fromCharCode(id);
-        if (letter === "space")
-          letter = " ";
-        map[id] = letter;
-        data.chars[letter] = {
-          id,
-          page: parseInt(charNode.getAttribute("page"), 10) || 0,
-          x: parseInt(charNode.getAttribute("x"), 10),
-          y: parseInt(charNode.getAttribute("y"), 10),
-          width: parseInt(charNode.getAttribute("width"), 10),
-          height: parseInt(charNode.getAttribute("height"), 10),
-          xOffset: parseInt(charNode.getAttribute("xoffset"), 10),
-          yOffset: parseInt(charNode.getAttribute("yoffset"), 10),
-          xAdvance: parseInt(charNode.getAttribute("xadvance"), 10),
-          kerning: {}
-        };
-      }
-      for (let i2 = 0;i2 < kerning.length; i2++) {
-        const first = parseInt(kerning[i2].getAttribute("first"), 10);
-        const second = parseInt(kerning[i2].getAttribute("second"), 10);
-        const amount = parseInt(kerning[i2].getAttribute("amount"), 10);
-        data.chars[map[second]].kerning[map[first]] = amount;
-      }
-      return data;
-    }
-  };
-});
-
-// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLStringParser.mjs
-var bitmapFontXMLStringParser;
-var init_bitmapFontXMLStringParser = __esm(() => {
-  init_adapter();
-  init_bitmapFontXMLParser();
-  bitmapFontXMLStringParser = {
-    test(data) {
-      if (typeof data === "string" && data.includes("<font>")) {
-        return bitmapFontXMLParser.test(DOMAdapter.get().parseXML(data));
-      }
-      return false;
-    },
-    parse(data) {
-      return bitmapFontXMLParser.parse(DOMAdapter.get().parseXML(data));
-    }
-  };
-});
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_Extensions();
 
 // node_modules/pixi.js/lib/scene/text-bitmap/asset/loadBitmapFont.mjs
-var validExtensions, bitmapFontCachePlugin, loadBitmapFont;
-var init_loadBitmapFont = __esm(() => {
-  init_LoaderParser();
-  init_copySearchParams();
-  init_adapter();
-  init_Extensions();
-  init_path();
-  init_BitmapFont();
-  init_bitmapFontTextParser();
-  init_bitmapFontXMLStringParser();
-  validExtensions = [".xml", ".fnt"];
-  bitmapFontCachePlugin = {
-    extension: {
-      type: ExtensionType.CacheParser,
-      name: "cacheBitmapFont"
-    },
-    test: (asset) => asset instanceof BitmapFont,
-    getCacheableAssets(keys, asset) {
-      const out2 = {};
-      keys.forEach((key) => {
-        out2[key] = asset;
-        out2[`${key}-bitmap`] = asset;
+init_LoaderParser();
+init_copySearchParams();
+init_adapter();
+init_Extensions();
+init_path();
+
+// node_modules/pixi.js/lib/scene/text-bitmap/BitmapFont.mjs
+init_groupD8();
+init_Rectangle();
+init_Texture();
+init_AbstractBitmapFont();
+init_BitmapFontManager();
+
+class BitmapFont extends AbstractBitmapFont {
+  constructor(options, url) {
+    super();
+    const { textures, data } = options;
+    Object.keys(data.pages).forEach((key) => {
+      const pageData = data.pages[parseInt(key, 10)];
+      const texture = textures[pageData.id];
+      this.pages.push({ texture });
+    });
+    Object.keys(data.chars).forEach((key) => {
+      const charData = data.chars[key];
+      const {
+        frame: textureFrame,
+        source: textureSource,
+        rotate: textureRotate
+      } = textures[charData.page];
+      const frame = groupD8.transformRectCoords(charData, textureFrame, textureRotate, new Rectangle);
+      const texture = new Texture({
+        frame,
+        orig: new Rectangle(0, 0, charData.width, charData.height),
+        source: textureSource,
+        rotate: textureRotate
       });
-      out2[`${asset.fontFamily}-bitmap`] = asset;
-      return out2;
+      this.chars[key] = {
+        id: key.codePointAt(0),
+        xOffset: charData.xOffset,
+        yOffset: charData.yOffset,
+        xAdvance: charData.xAdvance,
+        kerning: charData.kerning ?? {},
+        texture
+      };
+    });
+    this.baseRenderedFontSize = data.fontSize;
+    this.baseMeasurementFontSize = data.fontSize;
+    this.fontMetrics = {
+      ascent: 0,
+      descent: 0,
+      fontSize: data.fontSize
+    };
+    this.baseLineOffset = data.baseLineOffset;
+    this.lineHeight = data.lineHeight;
+    this.fontFamily = data.fontFamily;
+    this.distanceField = data.distanceField ?? {
+      type: "none",
+      range: 0
+    };
+    this.url = url;
+  }
+  destroy() {
+    super.destroy();
+    for (let i2 = 0;i2 < this.pages.length; i2++) {
+      const { texture } = this.pages[i2];
+      texture.destroy(true);
     }
-  };
-  loadBitmapFont = {
-    extension: {
-      type: ExtensionType.LoadParser,
-      priority: LoaderParserPriority.Normal
-    },
-    name: "loadBitmapFont",
-    id: "bitmap-font",
-    test(url) {
-      return validExtensions.includes(path.extname(url).toLowerCase());
-    },
-    async testParse(data) {
-      return bitmapFontTextParser.test(data) || bitmapFontXMLStringParser.test(data);
-    },
-    async parse(asset, data, loader) {
-      const bitmapFontData = bitmapFontTextParser.test(asset) ? bitmapFontTextParser.parse(asset) : bitmapFontXMLStringParser.parse(asset);
-      const { src } = data;
-      const { pages } = bitmapFontData;
-      const textureUrls = [];
-      const textureOptions = bitmapFontData.distanceField ? {
-        scaleMode: "linear",
-        alphaMode: "premultiply-alpha-on-upload",
-        autoGenerateMipmaps: false,
-        resolution: 1
-      } : {};
-      for (let i2 = 0;i2 < pages.length; ++i2) {
-        const pageFile = pages[i2].file;
-        let imagePath = path.join(path.dirname(src), pageFile);
-        imagePath = copySearchParams(imagePath, src);
-        textureUrls.push({
-          src: imagePath,
-          data: textureOptions
-        });
+    this.pages = null;
+  }
+  static install(options) {
+    BitmapFontManager.install(options);
+  }
+  static uninstall(name) {
+    BitmapFontManager.uninstall(name);
+  }
+}
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontTextParser.mjs
+var bitmapFontTextParser = {
+  test(data) {
+    return typeof data === "string" && data.startsWith("info face=");
+  },
+  parse(txt) {
+    const items = txt.match(/^[a-z]+\s+.+$/gm);
+    const rawData = {
+      info: [],
+      common: [],
+      page: [],
+      char: [],
+      chars: [],
+      kerning: [],
+      kernings: [],
+      distanceField: []
+    };
+    for (const i2 in items) {
+      const name = items[i2].match(/^[a-z]+/gm)[0];
+      const attributeList = items[i2].match(/[a-zA-Z]+=([^\s"']+|"([^"]*)")/gm);
+      const itemData = {};
+      for (const i22 in attributeList) {
+        const split = attributeList[i22].split("=");
+        const key = split[0];
+        const strValue = split[1].replace(/"/gm, "");
+        const floatValue = parseFloat(strValue);
+        const value = isNaN(floatValue) ? strValue : floatValue;
+        itemData[key] = value;
       }
-      const loadedTextures = await loader.load(textureUrls);
-      const textures = textureUrls.map((url) => loadedTextures[url.src]);
-      const bitmapFont = new BitmapFont({
-        data: bitmapFontData,
-        textures
-      }, src);
-      return bitmapFont;
-    },
-    async load(url, _options) {
-      const response = await DOMAdapter.get().fetch(url);
-      return await response.text();
-    },
-    async unload(bitmapFont, _resolvedAsset, loader) {
-      await Promise.all(bitmapFont.pages.map((page) => loader.unload(page.texture.source._sourceOrigin)));
-      bitmapFont.destroy();
+      rawData[name].push(itemData);
     }
-  };
-});
+    const font = {
+      chars: {},
+      pages: [],
+      lineHeight: 0,
+      fontSize: 0,
+      fontFamily: "",
+      distanceField: null,
+      baseLineOffset: 0
+    };
+    const [info] = rawData.info;
+    const [common] = rawData.common;
+    const [distanceField] = rawData.distanceField ?? [];
+    if (distanceField) {
+      font.distanceField = {
+        range: parseInt(distanceField.distanceRange, 10),
+        type: distanceField.fieldType
+      };
+    }
+    font.fontSize = parseInt(info.size, 10);
+    font.fontFamily = info.face;
+    font.lineHeight = parseInt(common.lineHeight, 10);
+    const page = rawData.page;
+    for (let i2 = 0;i2 < page.length; i2++) {
+      font.pages.push({
+        id: parseInt(page[i2].id, 10) || 0,
+        file: page[i2].file
+      });
+    }
+    const map = {};
+    font.baseLineOffset = font.lineHeight - parseInt(common.base, 10);
+    const char = rawData.char;
+    for (let i2 = 0;i2 < char.length; i2++) {
+      const charNode = char[i2];
+      const id = parseInt(charNode.id, 10);
+      let letter = charNode.letter ?? charNode.char ?? String.fromCharCode(id);
+      if (letter === "space")
+        letter = " ";
+      map[id] = letter;
+      font.chars[letter] = {
+        id,
+        page: parseInt(charNode.page, 10) || 0,
+        x: parseInt(charNode.x, 10),
+        y: parseInt(charNode.y, 10),
+        width: parseInt(charNode.width, 10),
+        height: parseInt(charNode.height, 10),
+        xOffset: parseInt(charNode.xoffset, 10),
+        yOffset: parseInt(charNode.yoffset, 10),
+        xAdvance: parseInt(charNode.xadvance, 10),
+        kerning: {}
+      };
+    }
+    const kerning = rawData.kerning || [];
+    for (let i2 = 0;i2 < kerning.length; i2++) {
+      const first = parseInt(kerning[i2].first, 10);
+      const second = parseInt(kerning[i2].second, 10);
+      const amount = parseInt(kerning[i2].amount, 10);
+      font.chars[map[second]].kerning[map[first]] = amount;
+    }
+    return font;
+  }
+};
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLStringParser.mjs
+init_adapter();
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLParser.mjs
+var bitmapFontXMLParser = {
+  test(data) {
+    const xml = data;
+    return typeof xml !== "string" && "getElementsByTagName" in xml && xml.getElementsByTagName("page").length && xml.getElementsByTagName("info")[0].getAttribute("face") !== null;
+  },
+  parse(xml) {
+    const data = {
+      chars: {},
+      pages: [],
+      lineHeight: 0,
+      fontSize: 0,
+      fontFamily: "",
+      distanceField: null,
+      baseLineOffset: 0
+    };
+    const info = xml.getElementsByTagName("info")[0];
+    const common = xml.getElementsByTagName("common")[0];
+    const distanceField = xml.getElementsByTagName("distanceField")[0];
+    if (distanceField) {
+      data.distanceField = {
+        type: distanceField.getAttribute("fieldType"),
+        range: parseInt(distanceField.getAttribute("distanceRange"), 10)
+      };
+    }
+    const page = xml.getElementsByTagName("page");
+    const char = xml.getElementsByTagName("char");
+    const kerning = xml.getElementsByTagName("kerning");
+    data.fontSize = parseInt(info.getAttribute("size"), 10);
+    data.fontFamily = info.getAttribute("face");
+    data.lineHeight = parseInt(common.getAttribute("lineHeight"), 10);
+    for (let i2 = 0;i2 < page.length; i2++) {
+      data.pages.push({
+        id: parseInt(page[i2].getAttribute("id"), 10) || 0,
+        file: page[i2].getAttribute("file")
+      });
+    }
+    const map = {};
+    data.baseLineOffset = data.lineHeight - parseInt(common.getAttribute("base"), 10);
+    for (let i2 = 0;i2 < char.length; i2++) {
+      const charNode = char[i2];
+      const id = parseInt(charNode.getAttribute("id"), 10);
+      let letter = charNode.getAttribute("letter") ?? charNode.getAttribute("char") ?? String.fromCharCode(id);
+      if (letter === "space")
+        letter = " ";
+      map[id] = letter;
+      data.chars[letter] = {
+        id,
+        page: parseInt(charNode.getAttribute("page"), 10) || 0,
+        x: parseInt(charNode.getAttribute("x"), 10),
+        y: parseInt(charNode.getAttribute("y"), 10),
+        width: parseInt(charNode.getAttribute("width"), 10),
+        height: parseInt(charNode.getAttribute("height"), 10),
+        xOffset: parseInt(charNode.getAttribute("xoffset"), 10),
+        yOffset: parseInt(charNode.getAttribute("yoffset"), 10),
+        xAdvance: parseInt(charNode.getAttribute("xadvance"), 10),
+        kerning: {}
+      };
+    }
+    for (let i2 = 0;i2 < kerning.length; i2++) {
+      const first = parseInt(kerning[i2].getAttribute("first"), 10);
+      const second = parseInt(kerning[i2].getAttribute("second"), 10);
+      const amount = parseInt(kerning[i2].getAttribute("amount"), 10);
+      data.chars[map[second]].kerning[map[first]] = amount;
+    }
+    return data;
+  }
+};
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/bitmapFontXMLStringParser.mjs
+var bitmapFontXMLStringParser = {
+  test(data) {
+    if (typeof data === "string" && data.includes("<font>")) {
+      return bitmapFontXMLParser.test(DOMAdapter.get().parseXML(data));
+    }
+    return false;
+  },
+  parse(data) {
+    return bitmapFontXMLParser.parse(DOMAdapter.get().parseXML(data));
+  }
+};
+
+// node_modules/pixi.js/lib/scene/text-bitmap/asset/loadBitmapFont.mjs
+var validExtensions = [".xml", ".fnt"];
+var bitmapFontCachePlugin = {
+  extension: {
+    type: ExtensionType.CacheParser,
+    name: "cacheBitmapFont"
+  },
+  test: (asset) => asset instanceof BitmapFont,
+  getCacheableAssets(keys, asset) {
+    const out2 = {};
+    keys.forEach((key) => {
+      out2[key] = asset;
+      out2[`${key}-bitmap`] = asset;
+    });
+    out2[`${asset.fontFamily}-bitmap`] = asset;
+    return out2;
+  }
+};
+var loadBitmapFont = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Normal
+  },
+  name: "loadBitmapFont",
+  id: "bitmap-font",
+  test(url) {
+    return validExtensions.includes(path.extname(url).toLowerCase());
+  },
+  async testParse(data) {
+    return bitmapFontTextParser.test(data) || bitmapFontXMLStringParser.test(data);
+  },
+  async parse(asset, data, loader) {
+    const bitmapFontData = bitmapFontTextParser.test(asset) ? bitmapFontTextParser.parse(asset) : bitmapFontXMLStringParser.parse(asset);
+    const { src } = data;
+    const { pages } = bitmapFontData;
+    const textureUrls = [];
+    const textureOptions = bitmapFontData.distanceField ? {
+      scaleMode: "linear",
+      alphaMode: "premultiply-alpha-on-upload",
+      autoGenerateMipmaps: false,
+      resolution: 1
+    } : {};
+    for (let i2 = 0;i2 < pages.length; ++i2) {
+      const pageFile = pages[i2].file;
+      let imagePath = path.join(path.dirname(src), pageFile);
+      imagePath = copySearchParams(imagePath, src);
+      textureUrls.push({
+        src: imagePath,
+        data: textureOptions
+      });
+    }
+    const loadedTextures = await loader.load(textureUrls);
+    const textures = textureUrls.map((url) => loadedTextures[url.src]);
+    const bitmapFont = new BitmapFont({
+      data: bitmapFontData,
+      textures
+    }, src);
+    return bitmapFont;
+  },
+  async load(url, _options) {
+    const response = await DOMAdapter.get().fetch(url);
+    return await response.text();
+  },
+  async unload(bitmapFont, _resolvedAsset, loader) {
+    await Promise.all(bitmapFont.pages.map((page) => loader.unload(page.texture.source._sourceOrigin)));
+    bitmapFont.destroy();
+  }
+};
+
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_warn();
 
 // node_modules/pixi.js/lib/assets/BackgroundLoader.mjs
 class BackgroundLoader {
@@ -30766,30 +30754,32 @@ class BackgroundLoader {
     }
   }
 }
-var init_BackgroundLoader = () => {};
+
+// node_modules/pixi.js/lib/assets/Assets.mjs
+init_Cache();
 
 // node_modules/pixi.js/lib/assets/cache/parsers/cacheTextureArray.mjs
-var cacheTextureArray;
-var init_cacheTextureArray = __esm(() => {
-  init_Extensions();
-  init_Texture();
-  cacheTextureArray = {
-    extension: {
-      type: ExtensionType.CacheParser,
-      name: "cacheTextureArray"
-    },
-    test: (asset) => Array.isArray(asset) && asset.every((t2) => t2 instanceof Texture),
-    getCacheableAssets: (keys, asset) => {
-      const out2 = {};
-      keys.forEach((key) => {
-        asset.forEach((item, i2) => {
-          out2[key + (i2 === 0 ? "" : i2 + 1)] = item;
-        });
+init_Extensions();
+init_Texture();
+var cacheTextureArray = {
+  extension: {
+    type: ExtensionType.CacheParser,
+    name: "cacheTextureArray"
+  },
+  test: (asset) => Array.isArray(asset) && asset.every((t2) => t2 instanceof Texture),
+  getCacheableAssets: (keys, asset) => {
+    const out2 = {};
+    keys.forEach((key) => {
+      asset.forEach((item, i2) => {
+        out2[key + (i2 === 0 ? "" : i2 + 1)] = item;
       });
-      return out2;
-    }
-  };
-});
+    });
+    return out2;
+  }
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectAvif.mjs
+init_Extensions();
 
 // node_modules/pixi.js/lib/assets/detections/utils/testImageFormat.mjs
 async function testImageFormat(imageData) {
@@ -30816,41 +30806,36 @@ async function testImageFormat(imageData) {
   }
   return false;
 }
-var init_testImageFormat = () => {};
 
 // node_modules/pixi.js/lib/assets/detections/parsers/detectAvif.mjs
-var detectAvif;
-var init_detectAvif = __esm(() => {
-  init_Extensions();
-  init_testImageFormat();
-  detectAvif = {
-    extension: {
-      type: ExtensionType.DetectionParser,
-      priority: 1
-    },
-    test: async () => testImageFormat("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A="),
-    add: async (formats) => [...formats, "avif"],
-    remove: async (formats) => formats.filter((f2) => f2 !== "avif")
-  };
-});
+var detectAvif = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 1
+  },
+  test: async () => testImageFormat("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A="),
+  add: async (formats) => [...formats, "avif"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "avif")
+};
 
 // node_modules/pixi.js/lib/assets/detections/parsers/detectDefaults.mjs
-var imageFormats, detectDefaults;
-var init_detectDefaults = __esm(() => {
-  init_Extensions();
-  imageFormats = ["png", "jpg", "jpeg"];
-  detectDefaults = {
-    extension: {
-      type: ExtensionType.DetectionParser,
-      priority: -1
-    },
-    test: () => Promise.resolve(true),
-    add: async (formats) => [...formats, ...imageFormats],
-    remove: async (formats) => formats.filter((f2) => !imageFormats.includes(f2))
-  };
-});
+init_Extensions();
+var imageFormats = ["png", "jpg", "jpeg"];
+var detectDefaults = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: -1
+  },
+  test: () => Promise.resolve(true),
+  add: async (formats) => [...formats, ...imageFormats],
+  remove: async (formats) => formats.filter((f2) => !imageFormats.includes(f2))
+};
+
+// node_modules/pixi.js/lib/assets/detections/parsers/detectMp4.mjs
+init_Extensions();
 
 // node_modules/pixi.js/lib/assets/detections/utils/testVideoFormat.mjs
+var inWorker = "WorkerGlobalScope" in globalThis && globalThis instanceof globalThis.WorkerGlobalScope;
 function testVideoFormat(mimeType) {
   if (inWorker) {
     return false;
@@ -30858,76 +30843,60 @@ function testVideoFormat(mimeType) {
   const video = document.createElement("video");
   return video.canPlayType(mimeType) !== "";
 }
-var inWorker;
-var init_testVideoFormat = __esm(() => {
-  inWorker = "WorkerGlobalScope" in globalThis && globalThis instanceof globalThis.WorkerGlobalScope;
-});
 
 // node_modules/pixi.js/lib/assets/detections/parsers/detectMp4.mjs
-var detectMp4;
-var init_detectMp4 = __esm(() => {
-  init_Extensions();
-  init_testVideoFormat();
-  detectMp4 = {
-    extension: {
-      type: ExtensionType.DetectionParser,
-      priority: 0
-    },
-    test: async () => testVideoFormat("video/mp4"),
-    add: async (formats) => [...formats, "mp4", "m4v"],
-    remove: async (formats) => formats.filter((f2) => f2 !== "mp4" && f2 !== "m4v")
-  };
-});
+var detectMp4 = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testVideoFormat("video/mp4"),
+  add: async (formats) => [...formats, "mp4", "m4v"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "mp4" && f2 !== "m4v")
+};
 
 // node_modules/pixi.js/lib/assets/detections/parsers/detectOgv.mjs
-var detectOgv;
-var init_detectOgv = __esm(() => {
-  init_Extensions();
-  init_testVideoFormat();
-  detectOgv = {
-    extension: {
-      type: ExtensionType.DetectionParser,
-      priority: 0
-    },
-    test: async () => testVideoFormat("video/ogg"),
-    add: async (formats) => [...formats, "ogv"],
-    remove: async (formats) => formats.filter((f2) => f2 !== "ogv")
-  };
-});
+init_Extensions();
+var detectOgv = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testVideoFormat("video/ogg"),
+  add: async (formats) => [...formats, "ogv"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "ogv")
+};
 
 // node_modules/pixi.js/lib/assets/detections/parsers/detectWebm.mjs
-var detectWebm;
-var init_detectWebm = __esm(() => {
-  init_Extensions();
-  init_testVideoFormat();
-  detectWebm = {
-    extension: {
-      type: ExtensionType.DetectionParser,
-      priority: 0
-    },
-    test: async () => testVideoFormat("video/webm"),
-    add: async (formats) => [...formats, "webm"],
-    remove: async (formats) => formats.filter((f2) => f2 !== "webm")
-  };
-});
+init_Extensions();
+var detectWebm = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testVideoFormat("video/webm"),
+  add: async (formats) => [...formats, "webm"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "webm")
+};
 
 // node_modules/pixi.js/lib/assets/detections/parsers/detectWebp.mjs
-var detectWebp;
-var init_detectWebp = __esm(() => {
-  init_Extensions();
-  init_testImageFormat();
-  detectWebp = {
-    extension: {
-      type: ExtensionType.DetectionParser,
-      priority: 0
-    },
-    test: async () => testImageFormat("data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA="),
-    add: async (formats) => [...formats, "webp"],
-    remove: async (formats) => formats.filter((f2) => f2 !== "webp")
-  };
-});
+init_Extensions();
+var detectWebp = {
+  extension: {
+    type: ExtensionType.DetectionParser,
+    priority: 0
+  },
+  test: async () => testImageFormat("data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA="),
+  add: async (formats) => [...formats, "webp"],
+  remove: async (formats) => formats.filter((f2) => f2 !== "webp")
+};
 
 // node_modules/pixi.js/lib/assets/loader/Loader.mjs
+init_warn();
+init_path();
+init_convertToList();
+init_isSingleItem();
+
 class Loader {
   constructor() {
     this._parsers = [];
@@ -31055,12 +31024,10 @@ ${e2}`);
     }, {});
   }
 }
-var init_Loader = __esm(() => {
-  init_warn();
-  init_path();
-  init_convertToList();
-  init_isSingleItem();
-});
+
+// node_modules/pixi.js/lib/assets/loader/parsers/loadJson.mjs
+init_adapter();
+init_Extensions();
 
 // node_modules/pixi.js/lib/assets/utils/checkDataUrl.mjs
 function checkDataUrl(url, mimes) {
@@ -31073,9 +31040,9 @@ function checkDataUrl(url, mimes) {
   }
   return url.startsWith(`data:${mimes}`);
 }
-var init_checkDataUrl = () => {};
 
 // node_modules/pixi.js/lib/assets/utils/checkExtension.mjs
+init_path();
 function checkExtension(url, extension) {
   const tempURL = url.split("?")[0];
   const ext = path.extname(tempURL).toLowerCase();
@@ -31084,64 +31051,80 @@ function checkExtension(url, extension) {
   }
   return ext === extension;
 }
-var init_checkExtension = __esm(() => {
-  init_path();
-});
 
 // node_modules/pixi.js/lib/assets/loader/parsers/loadJson.mjs
-var validJSONExtension = ".json", validJSONMIME = "application/json", loadJson;
-var init_loadJson = __esm(() => {
-  init_adapter();
-  init_Extensions();
-  init_checkDataUrl();
-  init_checkExtension();
-  init_LoaderParser();
-  loadJson = {
-    extension: {
-      type: ExtensionType.LoadParser,
-      priority: LoaderParserPriority.Low
-    },
-    name: "loadJson",
-    id: "json",
-    test(url) {
-      return checkDataUrl(url, validJSONMIME) || checkExtension(url, validJSONExtension);
-    },
-    async load(url) {
-      const response = await DOMAdapter.get().fetch(url);
-      const json = await response.json();
-      return json;
-    }
-  };
-});
+init_LoaderParser();
+var validJSONExtension = ".json";
+var validJSONMIME = "application/json";
+var loadJson = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low
+  },
+  name: "loadJson",
+  id: "json",
+  test(url) {
+    return checkDataUrl(url, validJSONMIME) || checkExtension(url, validJSONExtension);
+  },
+  async load(url) {
+    const response = await DOMAdapter.get().fetch(url);
+    const json = await response.json();
+    return json;
+  }
+};
 
 // node_modules/pixi.js/lib/assets/loader/parsers/loadTxt.mjs
-var validTXTExtension = ".txt", validTXTMIME = "text/plain", loadTxt;
-var init_loadTxt = __esm(() => {
-  init_adapter();
-  init_Extensions();
-  init_checkDataUrl();
-  init_checkExtension();
-  init_LoaderParser();
-  loadTxt = {
-    name: "loadTxt",
-    id: "text",
-    extension: {
-      type: ExtensionType.LoadParser,
-      priority: LoaderParserPriority.Low,
-      name: "loadTxt"
-    },
-    test(url) {
-      return checkDataUrl(url, validTXTMIME) || checkExtension(url, validTXTExtension);
-    },
-    async load(url) {
-      const response = await DOMAdapter.get().fetch(url);
-      const txt = await response.text();
-      return txt;
-    }
-  };
-});
+init_adapter();
+init_Extensions();
+init_LoaderParser();
+var validTXTExtension = ".txt";
+var validTXTMIME = "text/plain";
+var loadTxt = {
+  name: "loadTxt",
+  id: "text",
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low,
+    name: "loadTxt"
+  },
+  test(url) {
+    return checkDataUrl(url, validTXTMIME) || checkExtension(url, validTXTExtension);
+  },
+  async load(url) {
+    const response = await DOMAdapter.get().fetch(url);
+    const txt = await response.text();
+    return txt;
+  }
+};
 
 // node_modules/pixi.js/lib/assets/loader/parsers/loadWebFont.mjs
+init_adapter();
+init_Extensions();
+init_warn();
+init_path();
+init_Cache();
+init_LoaderParser();
+var validWeights = [
+  "normal",
+  "bold",
+  "100",
+  "200",
+  "300",
+  "400",
+  "500",
+  "600",
+  "700",
+  "800",
+  "900"
+];
+var validFontExtensions = [".ttf", ".otf", ".woff", ".woff2"];
+var validFontMIMEs = [
+  "font/ttf",
+  "font/otf",
+  "font/woff",
+  "font/woff2"
+];
+var CSS_IDENT_TOKEN_REGEX = /^(--|-?[A-Z_])[0-9A-Z_-]*$/i;
 function getFontFamilyName(url) {
   const ext = path.extname(url);
   const name = path.basename(url, ext);
@@ -31160,104 +31143,79 @@ function getFontFamilyName(url) {
   }
   return fontFamilyName;
 }
+var validURICharactersRegex = /^[0-9A-Za-z%:/?#\[\]@!\$&'()\*\+,;=\-._~]*$/;
 function encodeURIWhenNeeded(uri) {
   if (validURICharactersRegex.test(uri)) {
     return uri;
   }
   return encodeURI(uri);
 }
-var validWeights, validFontExtensions, validFontMIMEs, CSS_IDENT_TOKEN_REGEX, validURICharactersRegex, loadWebFont;
-var init_loadWebFont = __esm(() => {
-  init_adapter();
-  init_Extensions();
-  init_warn();
-  init_path();
-  init_Cache();
-  init_checkDataUrl();
-  init_checkExtension();
-  init_LoaderParser();
-  validWeights = [
-    "normal",
-    "bold",
-    "100",
-    "200",
-    "300",
-    "400",
-    "500",
-    "600",
-    "700",
-    "800",
-    "900"
-  ];
-  validFontExtensions = [".ttf", ".otf", ".woff", ".woff2"];
-  validFontMIMEs = [
-    "font/ttf",
-    "font/otf",
-    "font/woff",
-    "font/woff2"
-  ];
-  CSS_IDENT_TOKEN_REGEX = /^(--|-?[A-Z_])[0-9A-Z_-]*$/i;
-  validURICharactersRegex = /^[0-9A-Za-z%:/?#\[\]@!\$&'()\*\+,;=\-._~]*$/;
-  loadWebFont = {
-    extension: {
-      type: ExtensionType.LoadParser,
-      priority: LoaderParserPriority.Low
-    },
-    name: "loadWebFont",
-    id: "web-font",
-    test(url) {
-      return checkDataUrl(url, validFontMIMEs) || checkExtension(url, validFontExtensions);
-    },
-    async load(url, options) {
-      const fonts = DOMAdapter.get().getFontFaceSet();
-      if (fonts) {
-        const fontFaces = [];
-        const name = options.data?.family ?? getFontFamilyName(url);
-        const weights = options.data?.weights?.filter((weight) => validWeights.includes(weight)) ?? ["normal"];
-        const data = options.data ?? {};
-        for (let i2 = 0;i2 < weights.length; i2++) {
-          const weight = weights[i2];
-          const font = new FontFace(name, `url(${encodeURIWhenNeeded(url)})`, {
-            ...data,
-            weight
-          });
-          await font.load();
-          fonts.add(font);
-          fontFaces.push(font);
-        }
-        if (Cache.has(`${name}-and-url`)) {
-          const cached = Cache.get(`${name}-and-url`);
-          cached.entries.push({ url, faces: fontFaces });
-        } else {
-          Cache.set(`${name}-and-url`, {
-            entries: [{ url, faces: fontFaces }]
-          });
-        }
-        return fontFaces.length === 1 ? fontFaces[0] : fontFaces;
+var loadWebFont = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low
+  },
+  name: "loadWebFont",
+  id: "web-font",
+  test(url) {
+    return checkDataUrl(url, validFontMIMEs) || checkExtension(url, validFontExtensions);
+  },
+  async load(url, options) {
+    const fonts = DOMAdapter.get().getFontFaceSet();
+    if (fonts) {
+      const fontFaces = [];
+      const name = options.data?.family ?? getFontFamilyName(url);
+      const weights = options.data?.weights?.filter((weight) => validWeights.includes(weight)) ?? ["normal"];
+      const data = options.data ?? {};
+      for (let i2 = 0;i2 < weights.length; i2++) {
+        const weight = weights[i2];
+        const font = new FontFace(name, `url(${encodeURIWhenNeeded(url)})`, {
+          ...data,
+          weight
+        });
+        await font.load();
+        fonts.add(font);
+        fontFaces.push(font);
       }
-      warn("[loadWebFont] FontFace API is not supported. Skipping loading font");
-      return null;
-    },
-    unload(font) {
-      const fonts = Array.isArray(font) ? font : [font];
-      const fontFamily = fonts[0].family;
-      const cached = Cache.get(`${fontFamily}-and-url`);
-      const entry = cached.entries.find((f2) => f2.faces.some((t2) => fonts.indexOf(t2) !== -1));
-      entry.faces = entry.faces.filter((f2) => fonts.indexOf(f2) === -1);
-      if (entry.faces.length === 0) {
-        cached.entries = cached.entries.filter((f2) => f2 !== entry);
+      if (Cache.has(`${name}-and-url`)) {
+        const cached = Cache.get(`${name}-and-url`);
+        cached.entries.push({ url, faces: fontFaces });
+      } else {
+        Cache.set(`${name}-and-url`, {
+          entries: [{ url, faces: fontFaces }]
+        });
       }
-      fonts.forEach((t2) => {
-        DOMAdapter.get().getFontFaceSet().delete(t2);
-      });
-      if (cached.entries.length === 0) {
-        Cache.remove(`${fontFamily}-and-url`);
-      }
+      return fontFaces.length === 1 ? fontFaces[0] : fontFaces;
     }
-  };
-});
+    warn("[loadWebFont] FontFace API is not supported. Skipping loading font");
+    return null;
+  },
+  unload(font) {
+    const fonts = Array.isArray(font) ? font : [font];
+    const fontFamily = fonts[0].family;
+    const cached = Cache.get(`${fontFamily}-and-url`);
+    const entry = cached.entries.find((f2) => f2.faces.some((t2) => fonts.indexOf(t2) !== -1));
+    entry.faces = entry.faces.filter((f2) => fonts.indexOf(f2) === -1);
+    if (entry.faces.length === 0) {
+      cached.entries = cached.entries.filter((f2) => f2 !== entry);
+    }
+    fonts.forEach((t2) => {
+      DOMAdapter.get().getFontFaceSet().delete(t2);
+    });
+    if (cached.entries.length === 0) {
+      Cache.remove(`${fontFamily}-and-url`);
+    }
+  }
+};
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadSVG.mjs
+init_adapter();
+init_Extensions();
+init_ImageSource();
+init_GraphicsContext();
 
 // node_modules/pixi.js/lib/utils/network/getResolutionOfUrl.mjs
+init_Resolver();
 function getResolutionOfUrl(url, defaultValue2 = 1) {
   const resolution = Resolver.RETINA_PREFIX?.exec(url);
   if (resolution) {
@@ -31265,11 +31223,14 @@ function getResolutionOfUrl(url, defaultValue2 = 1) {
   }
   return defaultValue2;
 }
-var init_getResolutionOfUrl = __esm(() => {
-  init_Resolver();
-});
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadSVG.mjs
+init_LoaderParser();
 
 // node_modules/pixi.js/lib/assets/loader/parsers/textures/utils/createTexture.mjs
+init_Texture();
+init_warn();
+init_Cache();
 function createTexture(source2, loader, url) {
   source2.label = url;
   source2._sourceOrigin = url;
@@ -31297,13 +31258,35 @@ function createTexture(source2, loader, url) {
   });
   return texture;
 }
-var init_createTexture = __esm(() => {
-  init_Texture();
-  init_warn();
-  init_Cache();
-});
 
 // node_modules/pixi.js/lib/assets/loader/parsers/textures/loadSVG.mjs
+var validSVGExtension = ".svg";
+var validSVGMIME = "image/svg+xml";
+var loadSvg = {
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.Low,
+    name: "loadSVG"
+  },
+  name: "loadSVG",
+  id: "svg",
+  config: {
+    crossOrigin: "anonymous",
+    parseAsGraphicsContext: false
+  },
+  test(url) {
+    return checkDataUrl(url, validSVGMIME) || checkExtension(url, validSVGExtension);
+  },
+  async load(url, asset, loader) {
+    if (asset.data?.parseAsGraphicsContext ?? this.config.parseAsGraphicsContext) {
+      return loadAsGraphics(url);
+    }
+    return loadAsTexture(url, asset, loader, this.config.crossOrigin);
+  },
+  unload(asset) {
+    asset.destroy(true);
+  }
+};
 async function loadAsTexture(url, asset, loader, crossOrigin) {
   const response = await DOMAdapter.get().fetch(url);
   const image = DOMAdapter.get().createImage();
@@ -31336,53 +31319,13 @@ async function loadAsGraphics(url) {
   context2.svg(svgSource);
   return context2;
 }
-var validSVGExtension = ".svg", validSVGMIME = "image/svg+xml", loadSvg;
-var init_loadSVG = __esm(() => {
-  init_adapter();
-  init_Extensions();
-  init_ImageSource();
-  init_GraphicsContext();
-  init_getResolutionOfUrl();
-  init_checkDataUrl();
-  init_checkExtension();
-  init_LoaderParser();
-  init_createTexture();
-  loadSvg = {
-    extension: {
-      type: ExtensionType.LoadParser,
-      priority: LoaderParserPriority.Low,
-      name: "loadSVG"
-    },
-    name: "loadSVG",
-    id: "svg",
-    config: {
-      crossOrigin: "anonymous",
-      parseAsGraphicsContext: false
-    },
-    test(url) {
-      return checkDataUrl(url, validSVGMIME) || checkExtension(url, validSVGExtension);
-    },
-    async load(url, asset, loader) {
-      if (asset.data?.parseAsGraphicsContext ?? this.config.parseAsGraphicsContext) {
-        return loadAsGraphics(url);
-      }
-      return loadAsTexture(url, asset, loader, this.config.crossOrigin);
-    },
-    unload(asset) {
-      asset.destroy(true);
-    }
-  };
-});
+
+// node_modules/pixi.js/lib/assets/loader/parsers/textures/loadTextures.mjs
+init_adapter();
+init_Extensions();
+init_ImageSource();
 
 // node_modules/pixi.js/lib/_virtual/checkImageBitmap.worker.mjs
-class WorkerInstance {
-  constructor() {
-    if (!WORKER_URL) {
-      WORKER_URL = URL.createObjectURL(new Blob([WORKER_CODE], { type: "application/javascript" }));
-    }
-    this.worker = new Worker(WORKER_URL);
-  }
-}
 var WORKER_CODE = `(function () {
     'use strict';
 
@@ -31404,25 +31347,25 @@ var WORKER_CODE = `(function () {
     });
 
 })();
-`, WORKER_URL = null;
-var init_checkImageBitmap_worker = __esm(() => {
-  WorkerInstance.revokeObjectURL = function revokeObjectURL() {
-    if (WORKER_URL) {
-      URL.revokeObjectURL(WORKER_URL);
-      WORKER_URL = null;
-    }
-  };
-});
+`;
+var WORKER_URL = null;
 
-// node_modules/pixi.js/lib/_virtual/loadImageBitmap.worker.mjs
-class WorkerInstance2 {
+class WorkerInstance {
   constructor() {
-    if (!WORKER_URL2) {
-      WORKER_URL2 = URL.createObjectURL(new Blob([WORKER_CODE2], { type: "application/javascript" }));
+    if (!WORKER_URL) {
+      WORKER_URL = URL.createObjectURL(new Blob([WORKER_CODE], { type: "application/javascript" }));
     }
-    this.worker = new Worker(WORKER_URL2);
+    this.worker = new Worker(WORKER_URL);
   }
 }
+WorkerInstance.revokeObjectURL = function revokeObjectURL() {
+  if (WORKER_URL) {
+    URL.revokeObjectURL(WORKER_URL);
+    WORKER_URL = null;
+  }
+};
+
+// node_modules/pixi.js/lib/_virtual/loadImageBitmap.worker.mjs
 var WORKER_CODE2 = `(function () {
     'use strict';
 
@@ -31452,17 +31395,28 @@ var WORKER_CODE2 = `(function () {
     };
 
 })();
-`, WORKER_URL2 = null;
-var init_loadImageBitmap_worker = __esm(() => {
-  WorkerInstance2.revokeObjectURL = function revokeObjectURL2() {
-    if (WORKER_URL2) {
-      URL.revokeObjectURL(WORKER_URL2);
-      WORKER_URL2 = null;
+`;
+var WORKER_URL2 = null;
+
+class WorkerInstance2 {
+  constructor() {
+    if (!WORKER_URL2) {
+      WORKER_URL2 = URL.createObjectURL(new Blob([WORKER_CODE2], { type: "application/javascript" }));
     }
-  };
-});
+    this.worker = new Worker(WORKER_URL2);
+  }
+}
+WorkerInstance2.revokeObjectURL = function revokeObjectURL2() {
+  if (WORKER_URL2) {
+    URL.revokeObjectURL(WORKER_URL2);
+    WORKER_URL2 = null;
+  }
+};
 
 // node_modules/pixi.js/lib/assets/loader/workers/WorkerManager.mjs
+var UUID = 0;
+var MAX_WORKERS;
+
 class WorkerManagerClass {
   constructor() {
     this._initialized = false;
@@ -31555,14 +31509,17 @@ class WorkerManagerClass {
     this._createdWorkers = 0;
   }
 }
-var UUID = 0, MAX_WORKERS, WorkerManager;
-var init_WorkerManager = __esm(() => {
-  init_checkImageBitmap_worker();
-  init_loadImageBitmap_worker();
-  WorkerManager = new WorkerManagerClass;
-});
+var WorkerManager = new WorkerManagerClass;
 
 // node_modules/pixi.js/lib/assets/loader/parsers/textures/loadTextures.mjs
+init_LoaderParser();
+var validImageExtensions = [".jpeg", ".jpg", ".png", ".webp", ".avif"];
+var validImageMIMEs = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif"
+];
 async function loadImageBitmap(url, asset) {
   const response = await DOMAdapter.get().fetch(url);
   if (!response.ok) {
@@ -31571,78 +31528,65 @@ async function loadImageBitmap(url, asset) {
   const imageBlob = await response.blob();
   return asset?.data?.alphaMode === "premultiplied-alpha" ? createImageBitmap(imageBlob, { premultiplyAlpha: "none" }) : createImageBitmap(imageBlob);
 }
-var validImageExtensions, validImageMIMEs, loadTextures;
-var init_loadTextures = __esm(() => {
-  init_adapter();
-  init_Extensions();
-  init_ImageSource();
-  init_getResolutionOfUrl();
-  init_checkDataUrl();
-  init_checkExtension();
-  init_WorkerManager();
-  init_LoaderParser();
-  init_createTexture();
-  validImageExtensions = [".jpeg", ".jpg", ".png", ".webp", ".avif"];
-  validImageMIMEs = [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/avif"
-  ];
-  loadTextures = {
-    name: "loadTextures",
-    id: "texture",
-    extension: {
-      type: ExtensionType.LoadParser,
-      priority: LoaderParserPriority.High,
-      name: "loadTextures"
-    },
-    config: {
-      preferWorkers: true,
-      preferCreateImageBitmap: true,
-      crossOrigin: "anonymous"
-    },
-    test(url) {
-      return checkDataUrl(url, validImageMIMEs) || checkExtension(url, validImageExtensions);
-    },
-    async load(url, asset, loader) {
-      let src = null;
-      if (globalThis.createImageBitmap && this.config.preferCreateImageBitmap) {
-        if (this.config.preferWorkers && await WorkerManager.isImageBitmapSupported()) {
-          src = await WorkerManager.loadImageBitmap(url, asset);
-        } else {
-          src = await loadImageBitmap(url, asset);
-        }
+var loadTextures = {
+  name: "loadTextures",
+  id: "texture",
+  extension: {
+    type: ExtensionType.LoadParser,
+    priority: LoaderParserPriority.High,
+    name: "loadTextures"
+  },
+  config: {
+    preferWorkers: true,
+    preferCreateImageBitmap: true,
+    crossOrigin: "anonymous"
+  },
+  test(url) {
+    return checkDataUrl(url, validImageMIMEs) || checkExtension(url, validImageExtensions);
+  },
+  async load(url, asset, loader) {
+    let src = null;
+    if (globalThis.createImageBitmap && this.config.preferCreateImageBitmap) {
+      if (this.config.preferWorkers && await WorkerManager.isImageBitmapSupported()) {
+        src = await WorkerManager.loadImageBitmap(url, asset);
       } else {
-        src = await new Promise((resolve, reject) => {
-          src = DOMAdapter.get().createImage();
-          src.crossOrigin = this.config.crossOrigin;
-          src.src = url;
-          if (src.complete) {
-            resolve(src);
-          } else {
-            src.onload = () => {
-              resolve(src);
-            };
-            src.onerror = reject;
-          }
-        });
+        src = await loadImageBitmap(url, asset);
       }
-      const base = new ImageSource({
-        resource: src,
-        alphaMode: "premultiply-alpha-on-upload",
-        resolution: asset.data?.resolution || getResolutionOfUrl(url),
-        ...asset.data
+    } else {
+      src = await new Promise((resolve, reject) => {
+        src = DOMAdapter.get().createImage();
+        src.crossOrigin = this.config.crossOrigin;
+        src.src = url;
+        if (src.complete) {
+          resolve(src);
+        } else {
+          src.onload = () => {
+            resolve(src);
+          };
+          src.onerror = reject;
+        }
       });
-      return createTexture(base, loader, url);
-    },
-    unload(texture) {
-      texture.destroy(true);
     }
-  };
-});
+    const base = new ImageSource({
+      resource: src,
+      alphaMode: "premultiply-alpha-on-upload",
+      resolution: asset.data?.resolution || getResolutionOfUrl(url),
+      ...asset.data
+    });
+    return createTexture(base, loader, url);
+  },
+  unload(texture) {
+    texture.destroy(true);
+  }
+};
 
 // node_modules/pixi.js/lib/assets/loader/parsers/textures/loadVideoTextures.mjs
+init_Extensions();
+init_VideoSource();
+init_detectVideoAlphaMode();
+var potentialVideoExtensions = [".mp4", ".m4v", ".webm", ".ogg", ".ogv", ".h264", ".avi", ".mov"];
+var validVideoExtensions;
+var validVideoMIMEs;
 function crossOrigin(element, url, crossorigin) {
   if (crossorigin === undefined && !url.startsWith("data:")) {
     element.crossOrigin = determineCrossOrigin(url);
@@ -31697,133 +31641,119 @@ function getBrowserSupportedVideoExtensions() {
     validVideoMime: supportedMimes
   };
 }
-var potentialVideoExtensions, validVideoExtensions, validVideoMIMEs, loadVideoTextures;
-var init_loadVideoTextures = __esm(() => {
-  init_Extensions();
-  init_VideoSource();
-  init_detectVideoAlphaMode();
-  init_getResolutionOfUrl();
-  init_testVideoFormat();
-  init_checkDataUrl();
-  init_checkExtension();
-  init_createTexture();
-  potentialVideoExtensions = [".mp4", ".m4v", ".webm", ".ogg", ".ogv", ".h264", ".avi", ".mov"];
-  loadVideoTextures = {
-    name: "loadVideo",
-    id: "video",
-    extension: {
-      type: ExtensionType.LoadParser,
-      name: "loadVideo"
-    },
-    test(url) {
-      if (!validVideoExtensions || !validVideoMIMEs) {
-        const { validVideoExtensions: ve, validVideoMime: vm } = getBrowserSupportedVideoExtensions();
-        validVideoExtensions = ve;
-        validVideoMIMEs = vm;
-      }
-      const isValidDataUrl = checkDataUrl(url, validVideoMIMEs);
-      const isValidExtension = checkExtension(url, validVideoExtensions);
-      return isValidDataUrl || isValidExtension;
-    },
-    async load(url, asset, loader) {
-      const options = {
-        ...VideoSource.defaultOptions,
-        resolution: asset.data?.resolution || getResolutionOfUrl(url),
-        alphaMode: asset.data?.alphaMode || await detectVideoAlphaMode(),
-        ...asset.data
-      };
-      const videoElement = document.createElement("video");
-      const attributeMap = {
-        preload: options.autoLoad !== false ? "auto" : undefined,
-        "webkit-playsinline": options.playsinline !== false ? "" : undefined,
-        playsinline: options.playsinline !== false ? "" : undefined,
-        muted: options.muted === true ? "" : undefined,
-        loop: options.loop === true ? "" : undefined,
-        autoplay: options.autoPlay !== false ? "" : undefined
-      };
-      Object.keys(attributeMap).forEach((key) => {
-        const value = attributeMap[key];
-        if (value !== undefined)
-          videoElement.setAttribute(key, value);
-      });
-      if (options.muted === true) {
-        videoElement.muted = true;
-      }
-      crossOrigin(videoElement, url, options.crossorigin);
-      const sourceElement = document.createElement("source");
-      let mime;
-      if (options.mime) {
-        mime = options.mime;
-      } else if (url.startsWith("data:")) {
-        mime = url.slice(5, url.indexOf(";"));
-      } else if (!url.startsWith("blob:")) {
-        const ext = url.split("?")[0].slice(url.lastIndexOf(".") + 1).toLowerCase();
-        mime = VideoSource.MIME_TYPES[ext] || `video/${ext}`;
-      }
-      sourceElement.src = url;
-      if (mime) {
-        sourceElement.type = mime;
-      }
-      return new Promise((resolve) => {
-        const onCanPlay = async () => {
-          const base = new VideoSource({ ...options, resource: videoElement });
-          videoElement.removeEventListener("canplay", onCanPlay);
-          if (asset.data.preload) {
-            await preloadVideo(videoElement);
-          }
-          resolve(createTexture(base, loader, url));
-        };
-        if (options.preload && !options.autoPlay) {
-          videoElement.load();
-        }
-        videoElement.addEventListener("canplay", onCanPlay);
-        videoElement.appendChild(sourceElement);
-      });
-    },
-    unload(texture) {
-      texture.destroy(true);
+var loadVideoTextures = {
+  name: "loadVideo",
+  id: "video",
+  extension: {
+    type: ExtensionType.LoadParser,
+    name: "loadVideo"
+  },
+  test(url) {
+    if (!validVideoExtensions || !validVideoMIMEs) {
+      const { validVideoExtensions: ve, validVideoMime: vm } = getBrowserSupportedVideoExtensions();
+      validVideoExtensions = ve;
+      validVideoMIMEs = vm;
     }
-  };
-});
-
-// node_modules/pixi.js/lib/assets/resolver/parsers/resolveTextureUrl.mjs
-var resolveTextureUrl;
-var init_resolveTextureUrl = __esm(() => {
-  init_Extensions();
-  init_loadTextures();
-  init_Resolver();
-  resolveTextureUrl = {
-    extension: {
-      type: ExtensionType.ResolveParser,
-      name: "resolveTexture"
-    },
-    test: loadTextures.test,
-    parse: (value) => ({
-      resolution: parseFloat(Resolver.RETINA_PREFIX.exec(value)?.[1] ?? "1"),
-      format: value.split(".").pop(),
-      src: value
-    })
-  };
-});
+    const isValidDataUrl = checkDataUrl(url, validVideoMIMEs);
+    const isValidExtension = checkExtension(url, validVideoExtensions);
+    return isValidDataUrl || isValidExtension;
+  },
+  async load(url, asset, loader) {
+    const options = {
+      ...VideoSource.defaultOptions,
+      resolution: asset.data?.resolution || getResolutionOfUrl(url),
+      alphaMode: asset.data?.alphaMode || await detectVideoAlphaMode(),
+      ...asset.data
+    };
+    const videoElement = document.createElement("video");
+    const attributeMap = {
+      preload: options.autoLoad !== false ? "auto" : undefined,
+      "webkit-playsinline": options.playsinline !== false ? "" : undefined,
+      playsinline: options.playsinline !== false ? "" : undefined,
+      muted: options.muted === true ? "" : undefined,
+      loop: options.loop === true ? "" : undefined,
+      autoplay: options.autoPlay !== false ? "" : undefined
+    };
+    Object.keys(attributeMap).forEach((key) => {
+      const value = attributeMap[key];
+      if (value !== undefined)
+        videoElement.setAttribute(key, value);
+    });
+    if (options.muted === true) {
+      videoElement.muted = true;
+    }
+    crossOrigin(videoElement, url, options.crossorigin);
+    const sourceElement = document.createElement("source");
+    let mime;
+    if (options.mime) {
+      mime = options.mime;
+    } else if (url.startsWith("data:")) {
+      mime = url.slice(5, url.indexOf(";"));
+    } else if (!url.startsWith("blob:")) {
+      const ext = url.split("?")[0].slice(url.lastIndexOf(".") + 1).toLowerCase();
+      mime = VideoSource.MIME_TYPES[ext] || `video/${ext}`;
+    }
+    sourceElement.src = url;
+    if (mime) {
+      sourceElement.type = mime;
+    }
+    return new Promise((resolve) => {
+      const onCanPlay = async () => {
+        const base = new VideoSource({ ...options, resource: videoElement });
+        videoElement.removeEventListener("canplay", onCanPlay);
+        if (asset.data.preload) {
+          await preloadVideo(videoElement);
+        }
+        resolve(createTexture(base, loader, url));
+      };
+      if (options.preload && !options.autoPlay) {
+        videoElement.load();
+      }
+      videoElement.addEventListener("canplay", onCanPlay);
+      videoElement.appendChild(sourceElement);
+    });
+  },
+  unload(texture) {
+    texture.destroy(true);
+  }
+};
 
 // node_modules/pixi.js/lib/assets/resolver/parsers/resolveJsonUrl.mjs
-var resolveJsonUrl;
-var init_resolveJsonUrl = __esm(() => {
-  init_Extensions();
-  init_Resolver();
-  init_resolveTextureUrl();
-  resolveJsonUrl = {
-    extension: {
-      type: ExtensionType.ResolveParser,
-      priority: -2,
-      name: "resolveJson"
-    },
-    test: (value) => Resolver.RETINA_PREFIX.test(value) && value.endsWith(".json"),
-    parse: resolveTextureUrl.parse
-  };
-});
+init_Extensions();
+init_Resolver();
+
+// node_modules/pixi.js/lib/assets/resolver/parsers/resolveTextureUrl.mjs
+init_Extensions();
+init_Resolver();
+var resolveTextureUrl = {
+  extension: {
+    type: ExtensionType.ResolveParser,
+    name: "resolveTexture"
+  },
+  test: loadTextures.test,
+  parse: (value) => ({
+    resolution: parseFloat(Resolver.RETINA_PREFIX.exec(value)?.[1] ?? "1"),
+    format: value.split(".").pop(),
+    src: value
+  })
+};
+
+// node_modules/pixi.js/lib/assets/resolver/parsers/resolveJsonUrl.mjs
+var resolveJsonUrl = {
+  extension: {
+    type: ExtensionType.ResolveParser,
+    priority: -2,
+    name: "resolveJson"
+  },
+  test: (value) => Resolver.RETINA_PREFIX.test(value) && value.endsWith(".json"),
+  parse: resolveTextureUrl.parse
+};
 
 // node_modules/pixi.js/lib/assets/Assets.mjs
+init_Resolver();
+init_convertToList();
+init_isSingleItem();
+
 class AssetsClass {
   constructor() {
     this._detections = [];
@@ -32039,51 +31969,33 @@ class AssetsClass {
     });
   }
 }
-var Assets, assetKeyMap;
-var init_Assets = __esm(() => {
-  init_Extensions();
-  init_loadBitmapFont();
-  init_warn();
-  init_BackgroundLoader();
-  init_Cache();
-  init_cacheTextureArray();
-  init_detectAvif();
-  init_detectDefaults();
-  init_detectMp4();
-  init_detectOgv();
-  init_detectWebm();
-  init_detectWebp();
-  init_Loader();
-  init_loadJson();
-  init_loadTxt();
-  init_loadWebFont();
-  init_loadSVG();
-  init_loadTextures();
-  init_loadVideoTextures();
-  init_resolveJsonUrl();
-  init_resolveTextureUrl();
-  init_Resolver();
-  init_convertToList();
-  init_isSingleItem();
-  Assets = new AssetsClass;
-  extensions.handleByList(ExtensionType.LoadParser, Assets.loader.parsers).handleByList(ExtensionType.ResolveParser, Assets.resolver.parsers).handleByList(ExtensionType.CacheParser, Assets.cache.parsers).handleByList(ExtensionType.DetectionParser, Assets.detections);
-  extensions.add(cacheTextureArray, detectDefaults, detectAvif, detectWebp, detectMp4, detectOgv, detectWebm, loadJson, loadTxt, loadWebFont, loadSvg, loadTextures, loadVideoTextures, loadBitmapFont, bitmapFontCachePlugin, resolveTextureUrl, resolveJsonUrl);
-  assetKeyMap = {
-    loader: ExtensionType.LoadParser,
-    resolver: ExtensionType.ResolveParser,
-    cache: ExtensionType.CacheParser,
-    detection: ExtensionType.DetectionParser
-  };
-  extensions.handle(ExtensionType.Asset, (extension) => {
-    const ref = extension.ref;
-    Object.entries(assetKeyMap).filter(([key]) => !!ref[key]).forEach(([key, type]) => extensions.add(Object.assign(ref[key], { extension: ref[key].extension ?? type })));
-  }, (extension) => {
-    const ref = extension.ref;
-    Object.keys(assetKeyMap).filter((key) => !!ref[key]).forEach((key) => extensions.remove(ref[key]));
-  });
+var Assets = new AssetsClass;
+extensions.handleByList(ExtensionType.LoadParser, Assets.loader.parsers).handleByList(ExtensionType.ResolveParser, Assets.resolver.parsers).handleByList(ExtensionType.CacheParser, Assets.cache.parsers).handleByList(ExtensionType.DetectionParser, Assets.detections);
+extensions.add(cacheTextureArray, detectDefaults, detectAvif, detectWebp, detectMp4, detectOgv, detectWebm, loadJson, loadTxt, loadWebFont, loadSvg, loadTextures, loadVideoTextures, loadBitmapFont, bitmapFontCachePlugin, resolveTextureUrl, resolveJsonUrl);
+var assetKeyMap = {
+  loader: ExtensionType.LoadParser,
+  resolver: ExtensionType.ResolveParser,
+  cache: ExtensionType.CacheParser,
+  detection: ExtensionType.DetectionParser
+};
+extensions.handle(ExtensionType.Asset, (extension) => {
+  const ref = extension.ref;
+  Object.entries(assetKeyMap).filter(([key]) => !!ref[key]).forEach(([key, type]) => extensions.add(Object.assign(ref[key], { extension: ref[key].extension ?? type })));
+}, (extension) => {
+  const ref = extension.ref;
+  Object.keys(assetKeyMap).filter((key) => !!ref[key]).forEach((key) => extensions.remove(ref[key]));
 });
 
+// node_modules/pixi.js/lib/scene/sprite-tiling/TilingSprite.mjs
+init_Cache();
+init_ObservablePoint();
+init_Texture();
+init_deprecation();
+
 // node_modules/pixi.js/lib/utils/misc/Transform.mjs
+init_Matrix();
+init_ObservablePoint();
+
 class Transform {
   constructor({ matrix, observer } = {}) {
     this.dirty = true;
@@ -32143,216 +32055,337 @@ class Transform {
     }
   }
 }
-var init_Transform = __esm(() => {
-  init_Matrix();
-  init_ObservablePoint();
-});
 
 // node_modules/pixi.js/lib/scene/sprite-tiling/TilingSprite.mjs
-var _TilingSprite, TilingSprite;
-var init_TilingSprite = __esm(() => {
-  init_Cache();
-  init_ObservablePoint();
-  init_Texture();
-  init_deprecation();
-  init_Transform();
-  init_ViewContainer();
-  _TilingSprite = class _TilingSprite2 extends ViewContainer {
-    constructor(...args) {
-      let options = args[0] || {};
-      if (options instanceof Texture) {
-        options = { texture: options };
-      }
-      if (args.length > 1) {
-        deprecation(v8_0_0, "use new TilingSprite({ texture, width:100, height:100 }) instead");
-        options.width = args[1];
-        options.height = args[2];
-      }
-      options = { ..._TilingSprite2.defaultOptions, ...options };
-      const {
-        texture,
-        anchor,
-        tilePosition,
-        tileScale,
-        tileRotation,
-        width,
-        height,
-        applyAnchorToTexture,
-        roundPixels,
-        ...rest
-      } = options ?? {};
-      super({
-        label: "TilingSprite",
-        ...rest
-      });
-      this.renderPipeId = "tilingSprite";
-      this.batched = true;
-      this.allowChildren = false;
-      this._anchor = new ObservablePoint({
-        _onUpdate: () => {
-          this.onViewUpdate();
-        }
-      });
-      this.applyAnchorToTexture = applyAnchorToTexture;
-      this.texture = texture;
-      this._width = width ?? texture.width;
-      this._height = height ?? texture.height;
-      this._tileTransform = new Transform({
-        observer: {
-          _onUpdate: () => this.onViewUpdate()
-        }
-      });
-      if (anchor)
-        this.anchor = anchor;
-      this.tilePosition = tilePosition;
-      this.tileScale = tileScale;
-      this.tileRotation = tileRotation;
-      this.roundPixels = roundPixels ?? false;
+init_ViewContainer();
+var _TilingSprite = class _TilingSprite2 extends ViewContainer {
+  constructor(...args) {
+    let options = args[0] || {};
+    if (options instanceof Texture) {
+      options = { texture: options };
     }
-    static from(source2, options = {}) {
-      if (typeof source2 === "string") {
-        return new _TilingSprite2({
-          texture: Cache.get(source2),
-          ...options
-        });
+    if (args.length > 1) {
+      deprecation(v8_0_0, "use new TilingSprite({ texture, width:100, height:100 }) instead");
+      options.width = args[1];
+      options.height = args[2];
+    }
+    options = { ..._TilingSprite2.defaultOptions, ...options };
+    const {
+      texture,
+      anchor,
+      tilePosition,
+      tileScale,
+      tileRotation,
+      width,
+      height,
+      applyAnchorToTexture,
+      roundPixels,
+      ...rest
+    } = options ?? {};
+    super({
+      label: "TilingSprite",
+      ...rest
+    });
+    this.renderPipeId = "tilingSprite";
+    this.batched = true;
+    this.allowChildren = false;
+    this._anchor = new ObservablePoint({
+      _onUpdate: () => {
+        this.onViewUpdate();
       }
+    });
+    this.applyAnchorToTexture = applyAnchorToTexture;
+    this.texture = texture;
+    this._width = width ?? texture.width;
+    this._height = height ?? texture.height;
+    this._tileTransform = new Transform({
+      observer: {
+        _onUpdate: () => this.onViewUpdate()
+      }
+    });
+    if (anchor)
+      this.anchor = anchor;
+    this.tilePosition = tilePosition;
+    this.tileScale = tileScale;
+    this.tileRotation = tileRotation;
+    this.roundPixels = roundPixels ?? false;
+  }
+  static from(source2, options = {}) {
+    if (typeof source2 === "string") {
       return new _TilingSprite2({
-        texture: source2,
+        texture: Cache.get(source2),
         ...options
       });
     }
-    get uvRespectAnchor() {
-      deprecation(v8_0_0, "uvRespectAnchor is deprecated, please use applyAnchorToTexture instead");
-      return this.applyAnchorToTexture;
+    return new _TilingSprite2({
+      texture: source2,
+      ...options
+    });
+  }
+  get uvRespectAnchor() {
+    deprecation(v8_0_0, "uvRespectAnchor is deprecated, please use applyAnchorToTexture instead");
+    return this.applyAnchorToTexture;
+  }
+  set uvRespectAnchor(value) {
+    deprecation(v8_0_0, "uvRespectAnchor is deprecated, please use applyAnchorToTexture instead");
+    this.applyAnchorToTexture = value;
+  }
+  get clampMargin() {
+    return this._texture.textureMatrix.clampMargin;
+  }
+  set clampMargin(value) {
+    this._texture.textureMatrix.clampMargin = value;
+  }
+  get anchor() {
+    return this._anchor;
+  }
+  set anchor(value) {
+    typeof value === "number" ? this._anchor.set(value) : this._anchor.copyFrom(value);
+  }
+  get tilePosition() {
+    return this._tileTransform.position;
+  }
+  set tilePosition(value) {
+    this._tileTransform.position.copyFrom(value);
+  }
+  get tileScale() {
+    return this._tileTransform.scale;
+  }
+  set tileScale(value) {
+    typeof value === "number" ? this._tileTransform.scale.set(value) : this._tileTransform.scale.copyFrom(value);
+  }
+  set tileRotation(value) {
+    this._tileTransform.rotation = value;
+  }
+  get tileRotation() {
+    return this._tileTransform.rotation;
+  }
+  get tileTransform() {
+    return this._tileTransform;
+  }
+  set texture(value) {
+    value || (value = Texture.EMPTY);
+    const currentTexture = this._texture;
+    if (currentTexture === value)
+      return;
+    if (currentTexture && currentTexture.dynamic)
+      currentTexture.off("update", this.onViewUpdate, this);
+    if (value.dynamic)
+      value.on("update", this.onViewUpdate, this);
+    this._texture = value;
+    this.onViewUpdate();
+  }
+  get texture() {
+    return this._texture;
+  }
+  set width(value) {
+    this._width = value;
+    this.onViewUpdate();
+  }
+  get width() {
+    return this._width;
+  }
+  set height(value) {
+    this._height = value;
+    this.onViewUpdate();
+  }
+  get height() {
+    return this._height;
+  }
+  setSize(value, height) {
+    if (typeof value === "object") {
+      height = value.height ?? value.width;
+      value = value.width;
     }
-    set uvRespectAnchor(value) {
-      deprecation(v8_0_0, "uvRespectAnchor is deprecated, please use applyAnchorToTexture instead");
-      this.applyAnchorToTexture = value;
+    this._width = value;
+    this._height = height ?? value;
+    this.onViewUpdate();
+  }
+  getSize(out2) {
+    out2 || (out2 = {});
+    out2.width = this._width;
+    out2.height = this._height;
+    return out2;
+  }
+  updateBounds() {
+    const bounds = this._bounds;
+    const anchor = this._anchor;
+    const width = this._width;
+    const height = this._height;
+    bounds.minX = -anchor._x * width;
+    bounds.maxX = bounds.minX + width;
+    bounds.minY = -anchor._y * height;
+    bounds.maxY = bounds.minY + height;
+  }
+  containsPoint(point) {
+    const width = this._width;
+    const height = this._height;
+    const x1 = -width * this._anchor._x;
+    let y1 = 0;
+    if (point.x >= x1 && point.x <= x1 + width) {
+      y1 = -height * this._anchor._y;
+      if (point.y >= y1 && point.y <= y1 + height)
+        return true;
     }
-    get clampMargin() {
-      return this._texture.textureMatrix.clampMargin;
+    return false;
+  }
+  destroy(options = false) {
+    super.destroy(options);
+    this._anchor = null;
+    this._tileTransform = null;
+    this._bounds = null;
+    const destroyTexture = typeof options === "boolean" ? options : options?.texture;
+    if (destroyTexture) {
+      const destroyTextureSource = typeof options === "boolean" ? options : options?.textureSource;
+      this._texture.destroy(destroyTextureSource);
     }
-    set clampMargin(value) {
-      this._texture.textureMatrix.clampMargin = value;
-    }
-    get anchor() {
-      return this._anchor;
-    }
-    set anchor(value) {
-      typeof value === "number" ? this._anchor.set(value) : this._anchor.copyFrom(value);
-    }
-    get tilePosition() {
-      return this._tileTransform.position;
-    }
-    set tilePosition(value) {
-      this._tileTransform.position.copyFrom(value);
-    }
-    get tileScale() {
-      return this._tileTransform.scale;
-    }
-    set tileScale(value) {
-      typeof value === "number" ? this._tileTransform.scale.set(value) : this._tileTransform.scale.copyFrom(value);
-    }
-    set tileRotation(value) {
-      this._tileTransform.rotation = value;
-    }
-    get tileRotation() {
-      return this._tileTransform.rotation;
-    }
-    get tileTransform() {
-      return this._tileTransform;
-    }
-    set texture(value) {
-      value || (value = Texture.EMPTY);
-      const currentTexture = this._texture;
-      if (currentTexture === value)
-        return;
-      if (currentTexture && currentTexture.dynamic)
-        currentTexture.off("update", this.onViewUpdate, this);
-      if (value.dynamic)
-        value.on("update", this.onViewUpdate, this);
-      this._texture = value;
-      this.onViewUpdate();
-    }
-    get texture() {
-      return this._texture;
-    }
-    set width(value) {
-      this._width = value;
-      this.onViewUpdate();
-    }
-    get width() {
-      return this._width;
-    }
-    set height(value) {
-      this._height = value;
-      this.onViewUpdate();
-    }
-    get height() {
-      return this._height;
-    }
-    setSize(value, height) {
-      if (typeof value === "object") {
-        height = value.height ?? value.width;
-        value = value.width;
-      }
-      this._width = value;
-      this._height = height ?? value;
-      this.onViewUpdate();
-    }
-    getSize(out2) {
-      out2 || (out2 = {});
-      out2.width = this._width;
-      out2.height = this._height;
-      return out2;
-    }
-    updateBounds() {
-      const bounds = this._bounds;
-      const anchor = this._anchor;
-      const width = this._width;
-      const height = this._height;
-      bounds.minX = -anchor._x * width;
-      bounds.maxX = bounds.minX + width;
-      bounds.minY = -anchor._y * height;
-      bounds.maxY = bounds.minY + height;
-    }
-    containsPoint(point) {
-      const width = this._width;
-      const height = this._height;
-      const x1 = -width * this._anchor._x;
-      let y1 = 0;
-      if (point.x >= x1 && point.x <= x1 + width) {
-        y1 = -height * this._anchor._y;
-        if (point.y >= y1 && point.y <= y1 + height)
-          return true;
-      }
-      return false;
-    }
-    destroy(options = false) {
-      super.destroy(options);
-      this._anchor = null;
-      this._tileTransform = null;
-      this._bounds = null;
-      const destroyTexture = typeof options === "boolean" ? options : options?.texture;
-      if (destroyTexture) {
-        const destroyTextureSource = typeof options === "boolean" ? options : options?.textureSource;
-        this._texture.destroy(destroyTextureSource);
-      }
-      this._texture = null;
-    }
-  };
-  _TilingSprite.defaultOptions = {
-    texture: Texture.EMPTY,
-    anchor: { x: 0, y: 0 },
-    tilePosition: { x: 0, y: 0 },
-    tileScale: { x: 1, y: 1 },
-    tileRotation: 0,
-    applyAnchorToTexture: false
-  };
-  TilingSprite = _TilingSprite;
-});
+    this._texture = null;
+  }
+};
+_TilingSprite.defaultOptions = {
+  texture: Texture.EMPTY,
+  anchor: { x: 0, y: 0 },
+  tilePosition: { x: 0, y: 0 },
+  tileScale: { x: 1, y: 1 },
+  tileRotation: 0,
+  applyAnchorToTexture: false
+};
+var TilingSprite = _TilingSprite;
+
+// node_modules/pixi.js/lib/scene/text/Text.mjs
+init_TextureStyle();
 
 // node_modules/pixi.js/lib/scene/text/AbstractText.mjs
+init_ObservablePoint();
+init_deprecation();
+init_ViewContainer();
+
+class AbstractText extends ViewContainer {
+  constructor(options, styleClass) {
+    const { text, resolution, style, anchor, width, height, roundPixels, ...rest } = options;
+    super({
+      ...rest
+    });
+    this.batched = true;
+    this._resolution = null;
+    this._autoResolution = true;
+    this._didTextUpdate = true;
+    this._styleClass = styleClass;
+    this.text = text ?? "";
+    this.style = style;
+    this.resolution = resolution ?? null;
+    this.allowChildren = false;
+    this._anchor = new ObservablePoint({
+      _onUpdate: () => {
+        this.onViewUpdate();
+      }
+    });
+    if (anchor)
+      this.anchor = anchor;
+    this.roundPixels = roundPixels ?? false;
+    if (width !== undefined)
+      this.width = width;
+    if (height !== undefined)
+      this.height = height;
+  }
+  get anchor() {
+    return this._anchor;
+  }
+  set anchor(value) {
+    typeof value === "number" ? this._anchor.set(value) : this._anchor.copyFrom(value);
+  }
+  set text(value) {
+    value = value.toString();
+    if (this._text === value)
+      return;
+    this._text = value;
+    this.onViewUpdate();
+  }
+  get text() {
+    return this._text;
+  }
+  set resolution(value) {
+    this._autoResolution = value === null;
+    this._resolution = value;
+    this.onViewUpdate();
+  }
+  get resolution() {
+    return this._resolution;
+  }
+  get style() {
+    return this._style;
+  }
+  set style(style) {
+    style || (style = {});
+    this._style?.off("update", this.onViewUpdate, this);
+    if (style instanceof this._styleClass) {
+      this._style = style;
+    } else {
+      this._style = new this._styleClass(style);
+    }
+    this._style.on("update", this.onViewUpdate, this);
+    this.onViewUpdate();
+  }
+  get width() {
+    return Math.abs(this.scale.x) * this.bounds.width;
+  }
+  set width(value) {
+    this._setWidth(value, this.bounds.width);
+  }
+  get height() {
+    return Math.abs(this.scale.y) * this.bounds.height;
+  }
+  set height(value) {
+    this._setHeight(value, this.bounds.height);
+  }
+  getSize(out2) {
+    out2 || (out2 = {});
+    out2.width = Math.abs(this.scale.x) * this.bounds.width;
+    out2.height = Math.abs(this.scale.y) * this.bounds.height;
+    return out2;
+  }
+  setSize(value, height) {
+    if (typeof value === "object") {
+      height = value.height ?? value.width;
+      value = value.width;
+    } else {
+      height ?? (height = value);
+    }
+    value !== undefined && this._setWidth(value, this.bounds.width);
+    height !== undefined && this._setHeight(height, this.bounds.height);
+  }
+  containsPoint(point) {
+    const width = this.bounds.width;
+    const height = this.bounds.height;
+    const x1 = -width * this.anchor.x;
+    let y1 = 0;
+    if (point.x >= x1 && point.x <= x1 + width) {
+      y1 = -height * this.anchor.y;
+      if (point.y >= y1 && point.y <= y1 + height)
+        return true;
+    }
+    return false;
+  }
+  onViewUpdate() {
+    if (!this.didViewUpdate)
+      this._didTextUpdate = true;
+    super.onViewUpdate();
+  }
+  destroy(options = false) {
+    super.destroy(options);
+    this.owner = null;
+    this._bounds = null;
+    this._anchor = null;
+    if (typeof options === "boolean" ? options : options?.style) {
+      this._style.destroy(options);
+    }
+    this._style = null;
+    this._text = null;
+  }
+  get styleKey() {
+    return `${this._text}:${this._style.styleKey}:${this._resolution}`;
+  }
+}
 function ensureTextOptions(args, name) {
   let options = args[0] ?? {};
   if (typeof options === "string" || args[1]) {
@@ -32364,216 +32397,172 @@ function ensureTextOptions(args, name) {
   }
   return options;
 }
-var AbstractText;
-var init_AbstractText = __esm(() => {
-  init_ObservablePoint();
-  init_deprecation();
-  init_ViewContainer();
-  AbstractText = class AbstractText extends ViewContainer {
-    constructor(options, styleClass) {
-      const { text, resolution, style, anchor, width, height, roundPixels, ...rest } = options;
-      super({
-        ...rest
-      });
-      this.batched = true;
-      this._resolution = null;
-      this._autoResolution = true;
-      this._didTextUpdate = true;
-      this._styleClass = styleClass;
-      this.text = text ?? "";
-      this.style = style;
-      this.resolution = resolution ?? null;
-      this.allowChildren = false;
-      this._anchor = new ObservablePoint({
-        _onUpdate: () => {
-          this.onViewUpdate();
-        }
-      });
-      if (anchor)
-        this.anchor = anchor;
-      this.roundPixels = roundPixels ?? false;
-      if (width !== undefined)
-        this.width = width;
-      if (height !== undefined)
-        this.height = height;
-    }
-    get anchor() {
-      return this._anchor;
-    }
-    set anchor(value) {
-      typeof value === "number" ? this._anchor.set(value) : this._anchor.copyFrom(value);
-    }
-    set text(value) {
-      value = value.toString();
-      if (this._text === value)
-        return;
-      this._text = value;
-      this.onViewUpdate();
-    }
-    get text() {
-      return this._text;
-    }
-    set resolution(value) {
-      this._autoResolution = value === null;
-      this._resolution = value;
-      this.onViewUpdate();
-    }
-    get resolution() {
-      return this._resolution;
-    }
-    get style() {
-      return this._style;
-    }
-    set style(style) {
-      style || (style = {});
-      this._style?.off("update", this.onViewUpdate, this);
-      if (style instanceof this._styleClass) {
-        this._style = style;
-      } else {
-        this._style = new this._styleClass(style);
-      }
-      this._style.on("update", this.onViewUpdate, this);
-      this.onViewUpdate();
-    }
-    get width() {
-      return Math.abs(this.scale.x) * this.bounds.width;
-    }
-    set width(value) {
-      this._setWidth(value, this.bounds.width);
-    }
-    get height() {
-      return Math.abs(this.scale.y) * this.bounds.height;
-    }
-    set height(value) {
-      this._setHeight(value, this.bounds.height);
-    }
-    getSize(out2) {
-      out2 || (out2 = {});
-      out2.width = Math.abs(this.scale.x) * this.bounds.width;
-      out2.height = Math.abs(this.scale.y) * this.bounds.height;
-      return out2;
-    }
-    setSize(value, height) {
-      if (typeof value === "object") {
-        height = value.height ?? value.width;
-        value = value.width;
-      } else {
-        height ?? (height = value);
-      }
-      value !== undefined && this._setWidth(value, this.bounds.width);
-      height !== undefined && this._setHeight(height, this.bounds.height);
-    }
-    containsPoint(point) {
-      const width = this.bounds.width;
-      const height = this.bounds.height;
-      const x1 = -width * this.anchor.x;
-      let y1 = 0;
-      if (point.x >= x1 && point.x <= x1 + width) {
-        y1 = -height * this.anchor.y;
-        if (point.y >= y1 && point.y <= y1 + height)
-          return true;
-      }
-      return false;
-    }
-    onViewUpdate() {
-      if (!this.didViewUpdate)
-        this._didTextUpdate = true;
-      super.onViewUpdate();
-    }
-    destroy(options = false) {
-      super.destroy(options);
-      this.owner = null;
-      this._bounds = null;
-      this._anchor = null;
-      if (typeof options === "boolean" ? options : options?.style) {
-        this._style.destroy(options);
-      }
-      this._style = null;
-      this._text = null;
-    }
-    get styleKey() {
-      return `${this._text}:${this._style.styleKey}:${this._resolution}`;
-    }
-  };
-});
 
 // node_modules/pixi.js/lib/scene/text/Text.mjs
-var Text;
-var init_Text = __esm(() => {
-  init_TextureStyle();
-  init_AbstractText();
-  init_CanvasTextGenerator();
-  init_CanvasTextMetrics();
-  init_TextStyle();
-  Text = class Text extends AbstractText {
-    constructor(...args) {
-      const options = ensureTextOptions(args, "Text");
-      super(options, TextStyle);
-      this.renderPipeId = "text";
-      if (options.textureStyle) {
-        this.textureStyle = options.textureStyle instanceof TextureStyle ? options.textureStyle : new TextureStyle(options.textureStyle);
-      }
-    }
-    updateBounds() {
-      const bounds = this._bounds;
-      const anchor = this._anchor;
-      let width = 0;
-      let height = 0;
-      if (this._style.trim) {
-        const { frame, canvasAndContext } = CanvasTextGenerator.getCanvasAndContext({
-          text: this.text,
-          style: this._style,
-          resolution: 1
-        });
-        CanvasTextGenerator.returnCanvasAndContext(canvasAndContext);
-        width = frame.width;
-        height = frame.height;
-      } else {
-        const canvasMeasurement = CanvasTextMetrics.measureText(this._text, this._style);
-        width = canvasMeasurement.width;
-        height = canvasMeasurement.height;
-      }
-      bounds.minX = -anchor._x * width;
-      bounds.maxX = bounds.minX + width;
-      bounds.minY = -anchor._y * height;
-      bounds.maxY = bounds.minY + height;
-    }
-  };
-});
+init_CanvasTextGenerator();
+init_CanvasTextMetrics();
+init_TextStyle();
 
+class Text extends AbstractText {
+  constructor(...args) {
+    const options = ensureTextOptions(args, "Text");
+    super(options, TextStyle);
+    this.renderPipeId = "text";
+    if (options.textureStyle) {
+      this.textureStyle = options.textureStyle instanceof TextureStyle ? options.textureStyle : new TextureStyle(options.textureStyle);
+    }
+  }
+  updateBounds() {
+    const bounds = this._bounds;
+    const anchor = this._anchor;
+    let width = 0;
+    let height = 0;
+    if (this._style.trim) {
+      const { frame, canvasAndContext } = CanvasTextGenerator.getCanvasAndContext({
+        text: this.text,
+        style: this._style,
+        resolution: 1
+      });
+      CanvasTextGenerator.returnCanvasAndContext(canvasAndContext);
+      width = frame.width;
+      height = frame.height;
+    } else {
+      const canvasMeasurement = CanvasTextMetrics.measureText(this._text, this._style);
+      width = canvasMeasurement.width;
+      height = canvasMeasurement.height;
+    }
+    bounds.minX = -anchor._x * width;
+    bounds.maxX = bounds.minX + width;
+    bounds.minY = -anchor._y * height;
+    bounds.maxY = bounds.minY + height;
+  }
+}
 // node_modules/pixi.js/lib/index.mjs
-var init_lib = __esm(() => {
-  init_browserExt();
-  init_webworkerExt();
-  init_Extensions();
-  init_init6();
-  init_init5();
-  init_Application();
-  init_Assets();
-  init_Point();
-  init_Rectangle();
-  init_textureFrom();
-  init_Container();
-  init_Graphics();
-  init_TilingSprite();
-  init_Sprite();
-  init_Text();
-  init_Ticker();
-  init_eventemitter3();
-  extensions.add(browserExt, webworkerExt);
-});
-
-// ../lib/src/should.ts
-var should_never_happen = (msg, ...args) => {
-  console.error(msg, ...args);
-  debugger;
-  throw new Error(`Should never happen: ${msg}`);
-};
+init_Point();
+init_Rectangle();
+init_textureFrom();
+init_Container();
+init_Graphics();
+init_Sprite();
+init_Ticker();
+init_eventemitter3();
+extensions.add(browserExt, webworkerExt);
 
 // node_modules/pixi-viewport/dist/pixi_viewport.js
+var S2 = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
 function M2(l2) {
   return l2 && l2.__esModule && Object.prototype.hasOwnProperty.call(l2, "default") ? l2.default : l2;
 }
+var W = { exports: {} };
+(function(l2, t2) {
+  (function() {
+    var e2, n2;
+    n2 = function(i2) {
+      return l2.exports = i2;
+    }, e2 = {
+      linear: function(i2, s2, h2, o2) {
+        return h2 * i2 / o2 + s2;
+      },
+      easeInQuad: function(i2, s2, h2, o2) {
+        return h2 * (i2 /= o2) * i2 + s2;
+      },
+      easeOutQuad: function(i2, s2, h2, o2) {
+        return -h2 * (i2 /= o2) * (i2 - 2) + s2;
+      },
+      easeInOutQuad: function(i2, s2, h2, o2) {
+        return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 + s2 : -h2 / 2 * (--i2 * (i2 - 2) - 1) + s2;
+      },
+      easeInCubic: function(i2, s2, h2, o2) {
+        return h2 * (i2 /= o2) * i2 * i2 + s2;
+      },
+      easeOutCubic: function(i2, s2, h2, o2) {
+        return h2 * ((i2 = i2 / o2 - 1) * i2 * i2 + 1) + s2;
+      },
+      easeInOutCubic: function(i2, s2, h2, o2) {
+        return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 * i2 + s2 : h2 / 2 * ((i2 -= 2) * i2 * i2 + 2) + s2;
+      },
+      easeInQuart: function(i2, s2, h2, o2) {
+        return h2 * (i2 /= o2) * i2 * i2 * i2 + s2;
+      },
+      easeOutQuart: function(i2, s2, h2, o2) {
+        return -h2 * ((i2 = i2 / o2 - 1) * i2 * i2 * i2 - 1) + s2;
+      },
+      easeInOutQuart: function(i2, s2, h2, o2) {
+        return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 * i2 * i2 + s2 : -h2 / 2 * ((i2 -= 2) * i2 * i2 * i2 - 2) + s2;
+      },
+      easeInQuint: function(i2, s2, h2, o2) {
+        return h2 * (i2 /= o2) * i2 * i2 * i2 * i2 + s2;
+      },
+      easeOutQuint: function(i2, s2, h2, o2) {
+        return h2 * ((i2 = i2 / o2 - 1) * i2 * i2 * i2 * i2 + 1) + s2;
+      },
+      easeInOutQuint: function(i2, s2, h2, o2) {
+        return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 * i2 * i2 * i2 + s2 : h2 / 2 * ((i2 -= 2) * i2 * i2 * i2 * i2 + 2) + s2;
+      },
+      easeInSine: function(i2, s2, h2, o2) {
+        return -h2 * Math.cos(i2 / o2 * (Math.PI / 2)) + h2 + s2;
+      },
+      easeOutSine: function(i2, s2, h2, o2) {
+        return h2 * Math.sin(i2 / o2 * (Math.PI / 2)) + s2;
+      },
+      easeInOutSine: function(i2, s2, h2, o2) {
+        return -h2 / 2 * (Math.cos(Math.PI * i2 / o2) - 1) + s2;
+      },
+      easeInExpo: function(i2, s2, h2, o2) {
+        return i2 === 0 ? s2 : h2 * Math.pow(2, 10 * (i2 / o2 - 1)) + s2;
+      },
+      easeOutExpo: function(i2, s2, h2, o2) {
+        return i2 === o2 ? s2 + h2 : h2 * (-Math.pow(2, -10 * i2 / o2) + 1) + s2;
+      },
+      easeInOutExpo: function(i2, s2, h2, o2) {
+        return (i2 /= o2 / 2) < 1 ? h2 / 2 * Math.pow(2, 10 * (i2 - 1)) + s2 : h2 / 2 * (-Math.pow(2, -10 * --i2) + 2) + s2;
+      },
+      easeInCirc: function(i2, s2, h2, o2) {
+        return -h2 * (Math.sqrt(1 - (i2 /= o2) * i2) - 1) + s2;
+      },
+      easeOutCirc: function(i2, s2, h2, o2) {
+        return h2 * Math.sqrt(1 - (i2 = i2 / o2 - 1) * i2) + s2;
+      },
+      easeInOutCirc: function(i2, s2, h2, o2) {
+        return (i2 /= o2 / 2) < 1 ? -h2 / 2 * (Math.sqrt(1 - i2 * i2) - 1) + s2 : h2 / 2 * (Math.sqrt(1 - (i2 -= 2) * i2) + 1) + s2;
+      },
+      easeInElastic: function(i2, s2, h2, o2) {
+        var r2, a2, p2;
+        return p2 = 1.70158, a2 = 0, r2 = h2, i2 === 0 || (i2 /= o2), a2 || (a2 = o2 * 0.3), r2 < Math.abs(h2) ? (r2 = h2, p2 = a2 / 4) : p2 = a2 / (2 * Math.PI) * Math.asin(h2 / r2), -(r2 * Math.pow(2, 10 * (i2 -= 1)) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2)) + s2;
+      },
+      easeOutElastic: function(i2, s2, h2, o2) {
+        var r2, a2, p2;
+        return p2 = 1.70158, a2 = 0, r2 = h2, i2 === 0 || (i2 /= o2), a2 || (a2 = o2 * 0.3), r2 < Math.abs(h2) ? (r2 = h2, p2 = a2 / 4) : p2 = a2 / (2 * Math.PI) * Math.asin(h2 / r2), r2 * Math.pow(2, -10 * i2) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2) + h2 + s2;
+      },
+      easeInOutElastic: function(i2, s2, h2, o2) {
+        var r2, a2, p2;
+        return p2 = 1.70158, a2 = 0, r2 = h2, i2 === 0 || (i2 /= o2 / 2), a2 || (a2 = o2 * (0.3 * 1.5)), r2 < Math.abs(h2) ? (r2 = h2, p2 = a2 / 4) : p2 = a2 / (2 * Math.PI) * Math.asin(h2 / r2), i2 < 1 ? -0.5 * (r2 * Math.pow(2, 10 * (i2 -= 1)) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2)) + s2 : r2 * Math.pow(2, -10 * (i2 -= 1)) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2) * 0.5 + h2 + s2;
+      },
+      easeInBack: function(i2, s2, h2, o2, r2) {
+        return r2 === undefined && (r2 = 1.70158), h2 * (i2 /= o2) * i2 * ((r2 + 1) * i2 - r2) + s2;
+      },
+      easeOutBack: function(i2, s2, h2, o2, r2) {
+        return r2 === undefined && (r2 = 1.70158), h2 * ((i2 = i2 / o2 - 1) * i2 * ((r2 + 1) * i2 + r2) + 1) + s2;
+      },
+      easeInOutBack: function(i2, s2, h2, o2, r2) {
+        return r2 === undefined && (r2 = 1.70158), (i2 /= o2 / 2) < 1 ? h2 / 2 * (i2 * i2 * (((r2 *= 1.525) + 1) * i2 - r2)) + s2 : h2 / 2 * ((i2 -= 2) * i2 * (((r2 *= 1.525) + 1) * i2 + r2) + 2) + s2;
+      },
+      easeInBounce: function(i2, s2, h2, o2) {
+        var r2;
+        return r2 = e2.easeOutBounce(o2 - i2, 0, h2, o2), h2 - r2 + s2;
+      },
+      easeOutBounce: function(i2, s2, h2, o2) {
+        return (i2 /= o2) < 1 / 2.75 ? h2 * (7.5625 * i2 * i2) + s2 : i2 < 2 / 2.75 ? h2 * (7.5625 * (i2 -= 1.5 / 2.75) * i2 + 0.75) + s2 : i2 < 2.5 / 2.75 ? h2 * (7.5625 * (i2 -= 2.25 / 2.75) * i2 + 0.9375) + s2 : h2 * (7.5625 * (i2 -= 2.625 / 2.75) * i2 + 0.984375) + s2;
+      },
+      easeInOutBounce: function(i2, s2, h2, o2) {
+        var r2;
+        return i2 < o2 / 2 ? (r2 = e2.easeInBounce(i2 * 2, 0, h2, o2), r2 * 0.5 + s2) : (r2 = e2.easeOutBounce(i2 * 2 - o2, 0, h2, o2), r2 * 0.5 + h2 * 0.5 + s2);
+      }
+    }, n2(e2);
+  }).call(S2);
+})(W);
+var O = W.exports;
+var v2 = /* @__PURE__ */ M2(O);
 function x2(l2, t2) {
   if (l2) {
     if (typeof l2 == "function")
@@ -32664,6 +32653,20 @@ class P {
     return (this.isMouseDown ? 1 : 0) + this.touches.length;
   }
 }
+var m2 = [
+  "drag",
+  "pinch",
+  "wheel",
+  "follow",
+  "mouse-edges",
+  "decelerate",
+  "animate",
+  "bounce",
+  "snap-zoom",
+  "clamp-zoom",
+  "snap",
+  "clamp"
+];
 
 class C {
   constructor(t2) {
@@ -32766,1244 +32769,1130 @@ class u2 {
     this.paused = false;
   }
 }
-var S2, W, O, v2, m2, I, k2, Y, X, z, A, T, _, L, d2 = 16, E, D, U, F, B, N2, V, Z, R, j2, K, q, Q, G, J, $2, tt, it;
-var init_pixi_viewport = __esm(() => {
-  init_lib();
-  S2 = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
-  W = { exports: {} };
-  (function(l2, t2) {
-    (function() {
-      var e2, n2;
-      n2 = function(i2) {
-        return l2.exports = i2;
-      }, e2 = {
-        linear: function(i2, s2, h2, o2) {
-          return h2 * i2 / o2 + s2;
-        },
-        easeInQuad: function(i2, s2, h2, o2) {
-          return h2 * (i2 /= o2) * i2 + s2;
-        },
-        easeOutQuad: function(i2, s2, h2, o2) {
-          return -h2 * (i2 /= o2) * (i2 - 2) + s2;
-        },
-        easeInOutQuad: function(i2, s2, h2, o2) {
-          return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 + s2 : -h2 / 2 * (--i2 * (i2 - 2) - 1) + s2;
-        },
-        easeInCubic: function(i2, s2, h2, o2) {
-          return h2 * (i2 /= o2) * i2 * i2 + s2;
-        },
-        easeOutCubic: function(i2, s2, h2, o2) {
-          return h2 * ((i2 = i2 / o2 - 1) * i2 * i2 + 1) + s2;
-        },
-        easeInOutCubic: function(i2, s2, h2, o2) {
-          return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 * i2 + s2 : h2 / 2 * ((i2 -= 2) * i2 * i2 + 2) + s2;
-        },
-        easeInQuart: function(i2, s2, h2, o2) {
-          return h2 * (i2 /= o2) * i2 * i2 * i2 + s2;
-        },
-        easeOutQuart: function(i2, s2, h2, o2) {
-          return -h2 * ((i2 = i2 / o2 - 1) * i2 * i2 * i2 - 1) + s2;
-        },
-        easeInOutQuart: function(i2, s2, h2, o2) {
-          return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 * i2 * i2 + s2 : -h2 / 2 * ((i2 -= 2) * i2 * i2 * i2 - 2) + s2;
-        },
-        easeInQuint: function(i2, s2, h2, o2) {
-          return h2 * (i2 /= o2) * i2 * i2 * i2 * i2 + s2;
-        },
-        easeOutQuint: function(i2, s2, h2, o2) {
-          return h2 * ((i2 = i2 / o2 - 1) * i2 * i2 * i2 * i2 + 1) + s2;
-        },
-        easeInOutQuint: function(i2, s2, h2, o2) {
-          return (i2 /= o2 / 2) < 1 ? h2 / 2 * i2 * i2 * i2 * i2 * i2 + s2 : h2 / 2 * ((i2 -= 2) * i2 * i2 * i2 * i2 + 2) + s2;
-        },
-        easeInSine: function(i2, s2, h2, o2) {
-          return -h2 * Math.cos(i2 / o2 * (Math.PI / 2)) + h2 + s2;
-        },
-        easeOutSine: function(i2, s2, h2, o2) {
-          return h2 * Math.sin(i2 / o2 * (Math.PI / 2)) + s2;
-        },
-        easeInOutSine: function(i2, s2, h2, o2) {
-          return -h2 / 2 * (Math.cos(Math.PI * i2 / o2) - 1) + s2;
-        },
-        easeInExpo: function(i2, s2, h2, o2) {
-          return i2 === 0 ? s2 : h2 * Math.pow(2, 10 * (i2 / o2 - 1)) + s2;
-        },
-        easeOutExpo: function(i2, s2, h2, o2) {
-          return i2 === o2 ? s2 + h2 : h2 * (-Math.pow(2, -10 * i2 / o2) + 1) + s2;
-        },
-        easeInOutExpo: function(i2, s2, h2, o2) {
-          return (i2 /= o2 / 2) < 1 ? h2 / 2 * Math.pow(2, 10 * (i2 - 1)) + s2 : h2 / 2 * (-Math.pow(2, -10 * --i2) + 2) + s2;
-        },
-        easeInCirc: function(i2, s2, h2, o2) {
-          return -h2 * (Math.sqrt(1 - (i2 /= o2) * i2) - 1) + s2;
-        },
-        easeOutCirc: function(i2, s2, h2, o2) {
-          return h2 * Math.sqrt(1 - (i2 = i2 / o2 - 1) * i2) + s2;
-        },
-        easeInOutCirc: function(i2, s2, h2, o2) {
-          return (i2 /= o2 / 2) < 1 ? -h2 / 2 * (Math.sqrt(1 - i2 * i2) - 1) + s2 : h2 / 2 * (Math.sqrt(1 - (i2 -= 2) * i2) + 1) + s2;
-        },
-        easeInElastic: function(i2, s2, h2, o2) {
-          var r2, a2, p2;
-          return p2 = 1.70158, a2 = 0, r2 = h2, i2 === 0 || (i2 /= o2), a2 || (a2 = o2 * 0.3), r2 < Math.abs(h2) ? (r2 = h2, p2 = a2 / 4) : p2 = a2 / (2 * Math.PI) * Math.asin(h2 / r2), -(r2 * Math.pow(2, 10 * (i2 -= 1)) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2)) + s2;
-        },
-        easeOutElastic: function(i2, s2, h2, o2) {
-          var r2, a2, p2;
-          return p2 = 1.70158, a2 = 0, r2 = h2, i2 === 0 || (i2 /= o2), a2 || (a2 = o2 * 0.3), r2 < Math.abs(h2) ? (r2 = h2, p2 = a2 / 4) : p2 = a2 / (2 * Math.PI) * Math.asin(h2 / r2), r2 * Math.pow(2, -10 * i2) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2) + h2 + s2;
-        },
-        easeInOutElastic: function(i2, s2, h2, o2) {
-          var r2, a2, p2;
-          return p2 = 1.70158, a2 = 0, r2 = h2, i2 === 0 || (i2 /= o2 / 2), a2 || (a2 = o2 * (0.3 * 1.5)), r2 < Math.abs(h2) ? (r2 = h2, p2 = a2 / 4) : p2 = a2 / (2 * Math.PI) * Math.asin(h2 / r2), i2 < 1 ? -0.5 * (r2 * Math.pow(2, 10 * (i2 -= 1)) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2)) + s2 : r2 * Math.pow(2, -10 * (i2 -= 1)) * Math.sin((i2 * o2 - p2) * (2 * Math.PI) / a2) * 0.5 + h2 + s2;
-        },
-        easeInBack: function(i2, s2, h2, o2, r2) {
-          return r2 === undefined && (r2 = 1.70158), h2 * (i2 /= o2) * i2 * ((r2 + 1) * i2 - r2) + s2;
-        },
-        easeOutBack: function(i2, s2, h2, o2, r2) {
-          return r2 === undefined && (r2 = 1.70158), h2 * ((i2 = i2 / o2 - 1) * i2 * ((r2 + 1) * i2 + r2) + 1) + s2;
-        },
-        easeInOutBack: function(i2, s2, h2, o2, r2) {
-          return r2 === undefined && (r2 = 1.70158), (i2 /= o2 / 2) < 1 ? h2 / 2 * (i2 * i2 * (((r2 *= 1.525) + 1) * i2 - r2)) + s2 : h2 / 2 * ((i2 -= 2) * i2 * (((r2 *= 1.525) + 1) * i2 + r2) + 2) + s2;
-        },
-        easeInBounce: function(i2, s2, h2, o2) {
-          var r2;
-          return r2 = e2.easeOutBounce(o2 - i2, 0, h2, o2), h2 - r2 + s2;
-        },
-        easeOutBounce: function(i2, s2, h2, o2) {
-          return (i2 /= o2) < 1 / 2.75 ? h2 * (7.5625 * i2 * i2) + s2 : i2 < 2 / 2.75 ? h2 * (7.5625 * (i2 -= 1.5 / 2.75) * i2 + 0.75) + s2 : i2 < 2.5 / 2.75 ? h2 * (7.5625 * (i2 -= 2.25 / 2.75) * i2 + 0.9375) + s2 : h2 * (7.5625 * (i2 -= 2.625 / 2.75) * i2 + 0.984375) + s2;
-        },
-        easeInOutBounce: function(i2, s2, h2, o2) {
-          var r2;
-          return i2 < o2 / 2 ? (r2 = e2.easeInBounce(i2 * 2, 0, h2, o2), r2 * 0.5 + s2) : (r2 = e2.easeOutBounce(i2 * 2 - o2, 0, h2, o2), r2 * 0.5 + h2 * 0.5 + s2);
-        }
-      }, n2(e2);
-    }).call(S2);
-  })(W);
-  O = W.exports;
-  v2 = /* @__PURE__ */ M2(O);
-  m2 = [
-    "drag",
-    "pinch",
-    "wheel",
-    "follow",
-    "mouse-edges",
-    "decelerate",
-    "animate",
-    "bounce",
-    "snap-zoom",
-    "clamp-zoom",
-    "snap",
-    "clamp"
-  ];
-  I = {
-    removeOnInterrupt: false,
-    ease: "linear",
-    time: 1000
-  };
-  k2 = class k2 extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.startWidth = null, this.startHeight = null, this.deltaWidth = null, this.deltaHeight = null, this.width = null, this.height = null, this.time = 0, this.options = Object.assign({}, I, e2), this.options.ease = x2(this.options.ease), this.setupPosition(), this.setupZoom(), this.time = 0;
+var I = {
+  removeOnInterrupt: false,
+  ease: "linear",
+  time: 1000
+};
+
+class k2 extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.startWidth = null, this.startHeight = null, this.deltaWidth = null, this.deltaHeight = null, this.width = null, this.height = null, this.time = 0, this.options = Object.assign({}, I, e2), this.options.ease = x2(this.options.ease), this.setupPosition(), this.setupZoom(), this.time = 0;
+  }
+  setupPosition() {
+    typeof this.options.position < "u" ? (this.startX = this.parent.center.x, this.startY = this.parent.center.y, this.deltaX = this.options.position.x - this.parent.center.x, this.deltaY = this.options.position.y - this.parent.center.y, this.keepCenter = false) : this.keepCenter = true;
+  }
+  setupZoom() {
+    this.width = null, this.height = null, typeof this.options.scale < "u" ? this.width = this.parent.screenWidth / this.options.scale : typeof this.options.scaleX < "u" || typeof this.options.scaleY < "u" ? (typeof this.options.scaleX < "u" && (this.width = this.parent.screenWidth / this.options.scaleX), typeof this.options.scaleY < "u" && (this.height = this.parent.screenHeight / this.options.scaleY)) : (typeof this.options.width < "u" && (this.width = this.options.width), typeof this.options.height < "u" && (this.height = this.options.height)), this.width !== null && (this.startWidth = this.parent.screenWidthInWorldPixels, this.deltaWidth = this.width - this.startWidth), this.height !== null && (this.startHeight = this.parent.screenHeightInWorldPixels, this.deltaHeight = this.height - this.startHeight);
+  }
+  down() {
+    return this.options.removeOnInterrupt && this.parent.plugins.remove("animate"), false;
+  }
+  complete() {
+    this.parent.plugins.remove("animate"), this.width !== null && this.parent.fitWidth(this.width, this.keepCenter, this.height === null), this.height !== null && this.parent.fitHeight(this.height, this.keepCenter, this.width === null), !this.keepCenter && this.options.position && this.parent.moveCenter(this.options.position), this.parent.emit("animate-end", this.parent), this.options.callbackOnComplete && this.options.callbackOnComplete(this.parent);
+  }
+  update(t2) {
+    if (this.paused)
+      return;
+    this.time += t2;
+    const e2 = new Point(this.parent.scale.x, this.parent.scale.y);
+    if (this.time >= this.options.time) {
+      const n2 = this.parent.width, i2 = this.parent.height;
+      this.complete(), (n2 !== this.parent.width || i2 !== this.parent.height) && this.parent.emit("zoomed", { viewport: this.parent, original: e2, type: "animate" });
+    } else {
+      const n2 = this.options.ease(this.time, 0, 1, this.options.time);
+      if (this.width !== null) {
+        const i2 = this.startWidth, s2 = this.deltaWidth;
+        this.parent.fitWidth(i2 + s2 * n2, this.keepCenter, this.height === null);
+      }
+      if (this.height !== null) {
+        const i2 = this.startHeight, s2 = this.deltaHeight;
+        this.parent.fitHeight(i2 + s2 * n2, this.keepCenter, this.width === null);
+      }
+      if (this.width === null ? this.parent.scale.x = this.parent.scale.y : this.height === null && (this.parent.scale.y = this.parent.scale.x), !this.keepCenter) {
+        const i2 = this.startX, s2 = this.startY, h2 = this.deltaX, o2 = this.deltaY, r2 = new Point(this.parent.x, this.parent.y);
+        this.parent.moveCenter(i2 + h2 * n2, s2 + o2 * n2), this.parent.emit("moved", { viewport: this.parent, original: r2, type: "animate" });
+      }
+      (this.width || this.height) && this.parent.emit("zoomed", { viewport: this.parent, original: e2, type: "animate" });
     }
-    setupPosition() {
-      typeof this.options.position < "u" ? (this.startX = this.parent.center.x, this.startY = this.parent.center.y, this.deltaX = this.options.position.x - this.parent.center.x, this.deltaY = this.options.position.y - this.parent.center.y, this.keepCenter = false) : this.keepCenter = true;
-    }
-    setupZoom() {
-      this.width = null, this.height = null, typeof this.options.scale < "u" ? this.width = this.parent.screenWidth / this.options.scale : typeof this.options.scaleX < "u" || typeof this.options.scaleY < "u" ? (typeof this.options.scaleX < "u" && (this.width = this.parent.screenWidth / this.options.scaleX), typeof this.options.scaleY < "u" && (this.height = this.parent.screenHeight / this.options.scaleY)) : (typeof this.options.width < "u" && (this.width = this.options.width), typeof this.options.height < "u" && (this.height = this.options.height)), this.width !== null && (this.startWidth = this.parent.screenWidthInWorldPixels, this.deltaWidth = this.width - this.startWidth), this.height !== null && (this.startHeight = this.parent.screenHeightInWorldPixels, this.deltaHeight = this.height - this.startHeight);
-    }
-    down() {
-      return this.options.removeOnInterrupt && this.parent.plugins.remove("animate"), false;
-    }
-    complete() {
-      this.parent.plugins.remove("animate"), this.width !== null && this.parent.fitWidth(this.width, this.keepCenter, this.height === null), this.height !== null && this.parent.fitHeight(this.height, this.keepCenter, this.width === null), !this.keepCenter && this.options.position && this.parent.moveCenter(this.options.position), this.parent.emit("animate-end", this.parent), this.options.callbackOnComplete && this.options.callbackOnComplete(this.parent);
-    }
-    update(t2) {
-      if (this.paused)
-        return;
-      this.time += t2;
-      const e2 = new Point(this.parent.scale.x, this.parent.scale.y);
-      if (this.time >= this.options.time) {
-        const n2 = this.parent.width, i2 = this.parent.height;
-        this.complete(), (n2 !== this.parent.width || i2 !== this.parent.height) && this.parent.emit("zoomed", { viewport: this.parent, original: e2, type: "animate" });
-      } else {
-        const n2 = this.options.ease(this.time, 0, 1, this.options.time);
-        if (this.width !== null) {
-          const i2 = this.startWidth, s2 = this.deltaWidth;
-          this.parent.fitWidth(i2 + s2 * n2, this.keepCenter, this.height === null);
-        }
-        if (this.height !== null) {
-          const i2 = this.startHeight, s2 = this.deltaHeight;
-          this.parent.fitHeight(i2 + s2 * n2, this.keepCenter, this.width === null);
-        }
-        if (this.width === null ? this.parent.scale.x = this.parent.scale.y : this.height === null && (this.parent.scale.y = this.parent.scale.x), !this.keepCenter) {
-          const i2 = this.startX, s2 = this.startY, h2 = this.deltaX, o2 = this.deltaY, r2 = new Point(this.parent.x, this.parent.y);
-          this.parent.moveCenter(i2 + h2 * n2, s2 + o2 * n2), this.parent.emit("moved", { viewport: this.parent, original: r2, type: "animate" });
-        }
-        (this.width || this.height) && this.parent.emit("zoomed", { viewport: this.parent, original: e2, type: "animate" });
+  }
+}
+var Y = {
+  sides: "all",
+  friction: 0.5,
+  time: 150,
+  ease: "easeInOutSine",
+  underflow: "center",
+  bounceBox: null
+};
+
+class X extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, Y, e2), this.ease = x2(this.options.ease, "easeInOutSine"), this.options.sides ? this.options.sides === "all" ? this.top = this.bottom = this.left = this.right = true : this.options.sides === "horizontal" ? (this.right = this.left = true, this.top = this.bottom = false) : this.options.sides === "vertical" ? (this.left = this.right = false, this.top = this.bottom = true) : (this.top = this.options.sides.indexOf("top") !== -1, this.bottom = this.options.sides.indexOf("bottom") !== -1, this.left = this.options.sides.indexOf("left") !== -1, this.right = this.options.sides.indexOf("right") !== -1) : this.left = this.top = this.right = this.bottom = false;
+    const n2 = this.options.underflow.toLowerCase();
+    n2 === "center" ? (this.underflowX = 0, this.underflowY = 0) : (this.underflowX = n2.indexOf("left") !== -1 ? -1 : n2.indexOf("right") !== -1 ? 1 : 0, this.underflowY = n2.indexOf("top") !== -1 ? -1 : n2.indexOf("bottom") !== -1 ? 1 : 0), this.reset();
+  }
+  isActive() {
+    return this.toX !== null || this.toY !== null;
+  }
+  down() {
+    return this.toX = this.toY = null, false;
+  }
+  up() {
+    return this.bounce(), false;
+  }
+  update(t2) {
+    if (!this.paused) {
+      if (this.bounce(), this.toX) {
+        const e2 = this.toX;
+        e2.time += t2, this.parent.emit("moved", { viewport: this.parent, type: "bounce-x" }), e2.time >= this.options.time ? (this.parent.x = e2.end, this.toX = null, this.parent.emit("bounce-x-end", this.parent)) : this.parent.x = this.ease(e2.time, e2.start, e2.delta, this.options.time);
+      }
+      if (this.toY) {
+        const e2 = this.toY;
+        e2.time += t2, this.parent.emit("moved", { viewport: this.parent, type: "bounce-y" }), e2.time >= this.options.time ? (this.parent.y = e2.end, this.toY = null, this.parent.emit("bounce-y-end", this.parent)) : this.parent.y = this.ease(e2.time, e2.start, e2.delta, this.options.time);
       }
     }
-  };
-  Y = {
-    sides: "all",
-    friction: 0.5,
-    time: 150,
-    ease: "easeInOutSine",
-    underflow: "center",
-    bounceBox: null
-  };
-  X = class X extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, Y, e2), this.ease = x2(this.options.ease, "easeInOutSine"), this.options.sides ? this.options.sides === "all" ? this.top = this.bottom = this.left = this.right = true : this.options.sides === "horizontal" ? (this.right = this.left = true, this.top = this.bottom = false) : this.options.sides === "vertical" ? (this.left = this.right = false, this.top = this.bottom = true) : (this.top = this.options.sides.indexOf("top") !== -1, this.bottom = this.options.sides.indexOf("bottom") !== -1, this.left = this.options.sides.indexOf("left") !== -1, this.right = this.options.sides.indexOf("right") !== -1) : this.left = this.top = this.right = this.bottom = false;
-      const n2 = this.options.underflow.toLowerCase();
-      n2 === "center" ? (this.underflowX = 0, this.underflowY = 0) : (this.underflowX = n2.indexOf("left") !== -1 ? -1 : n2.indexOf("right") !== -1 ? 1 : 0, this.underflowY = n2.indexOf("top") !== -1 ? -1 : n2.indexOf("bottom") !== -1 ? 1 : 0), this.reset();
+  }
+  calcUnderflowX() {
+    let t2;
+    switch (this.underflowX) {
+      case -1:
+        t2 = 0;
+        break;
+      case 1:
+        t2 = this.parent.screenWidth - this.parent.screenWorldWidth;
+        break;
+      default:
+        t2 = (this.parent.screenWidth - this.parent.screenWorldWidth) / 2;
     }
-    isActive() {
-      return this.toX !== null || this.toY !== null;
+    return t2;
+  }
+  calcUnderflowY() {
+    let t2;
+    switch (this.underflowY) {
+      case -1:
+        t2 = 0;
+        break;
+      case 1:
+        t2 = this.parent.screenHeight - this.parent.screenWorldHeight;
+        break;
+      default:
+        t2 = (this.parent.screenHeight - this.parent.screenWorldHeight) / 2;
     }
-    down() {
-      return this.toX = this.toY = null, false;
-    }
-    up() {
-      return this.bounce(), false;
-    }
-    update(t2) {
-      if (!this.paused) {
-        if (this.bounce(), this.toX) {
-          const e2 = this.toX;
-          e2.time += t2, this.parent.emit("moved", { viewport: this.parent, type: "bounce-x" }), e2.time >= this.options.time ? (this.parent.x = e2.end, this.toX = null, this.parent.emit("bounce-x-end", this.parent)) : this.parent.x = this.ease(e2.time, e2.start, e2.delta, this.options.time);
-        }
-        if (this.toY) {
-          const e2 = this.toY;
-          e2.time += t2, this.parent.emit("moved", { viewport: this.parent, type: "bounce-y" }), e2.time >= this.options.time ? (this.parent.y = e2.end, this.toY = null, this.parent.emit("bounce-y-end", this.parent)) : this.parent.y = this.ease(e2.time, e2.start, e2.delta, this.options.time);
-        }
-      }
-    }
-    calcUnderflowX() {
-      let t2;
-      switch (this.underflowX) {
-        case -1:
-          t2 = 0;
-          break;
-        case 1:
-          t2 = this.parent.screenWidth - this.parent.screenWorldWidth;
-          break;
-        default:
-          t2 = (this.parent.screenWidth - this.parent.screenWorldWidth) / 2;
-      }
-      return t2;
-    }
-    calcUnderflowY() {
-      let t2;
-      switch (this.underflowY) {
-        case -1:
-          t2 = 0;
-          break;
-        case 1:
-          t2 = this.parent.screenHeight - this.parent.screenWorldHeight;
-          break;
-        default:
-          t2 = (this.parent.screenHeight - this.parent.screenWorldHeight) / 2;
-      }
-      return t2;
-    }
-    oob() {
-      const t2 = this.options.bounceBox;
-      if (t2) {
-        const e2 = typeof t2.x > "u" ? 0 : t2.x, n2 = typeof t2.y > "u" ? 0 : t2.y, i2 = typeof t2.width > "u" ? this.parent.worldWidth : t2.width, s2 = typeof t2.height > "u" ? this.parent.worldHeight : t2.height;
-        return {
-          left: this.parent.left < e2,
-          right: this.parent.right > i2,
-          top: this.parent.top < n2,
-          bottom: this.parent.bottom > s2,
-          topLeft: new Point(e2 * this.parent.scale.x, n2 * this.parent.scale.y),
-          bottomRight: new Point(i2 * this.parent.scale.x - this.parent.screenWidth, s2 * this.parent.scale.y - this.parent.screenHeight)
-        };
-      }
+    return t2;
+  }
+  oob() {
+    const t2 = this.options.bounceBox;
+    if (t2) {
+      const e2 = typeof t2.x > "u" ? 0 : t2.x, n2 = typeof t2.y > "u" ? 0 : t2.y, i2 = typeof t2.width > "u" ? this.parent.worldWidth : t2.width, s2 = typeof t2.height > "u" ? this.parent.worldHeight : t2.height;
       return {
-        left: this.parent.left < 0,
-        right: this.parent.right > this.parent.worldWidth,
-        top: this.parent.top < 0,
-        bottom: this.parent.bottom > this.parent.worldHeight,
-        topLeft: new Point(0, 0),
-        bottomRight: new Point(this.parent.worldWidth * this.parent.scale.x - this.parent.screenWidth, this.parent.worldHeight * this.parent.scale.y - this.parent.screenHeight)
+        left: this.parent.left < e2,
+        right: this.parent.right > i2,
+        top: this.parent.top < n2,
+        bottom: this.parent.bottom > s2,
+        topLeft: new Point(e2 * this.parent.scale.x, n2 * this.parent.scale.y),
+        bottomRight: new Point(i2 * this.parent.scale.x - this.parent.screenWidth, s2 * this.parent.scale.y - this.parent.screenHeight)
       };
     }
-    bounce() {
-      var s2, h2;
-      if (this.paused)
-        return;
-      let t2, e2 = this.parent.plugins.get("decelerate", true);
-      e2 && (e2.x || e2.y) && (e2.x && e2.percentChangeX === ((s2 = e2.options) == null ? undefined : s2.friction) || e2.y && e2.percentChangeY === ((h2 = e2.options) == null ? undefined : h2.friction)) && (t2 = this.oob(), (t2.left && this.left || t2.right && this.right) && (e2.percentChangeX = this.options.friction), (t2.top && this.top || t2.bottom && this.bottom) && (e2.percentChangeY = this.options.friction));
-      const n2 = this.parent.plugins.get("drag", true) || {}, i2 = this.parent.plugins.get("pinch", true) || {};
-      if (e2 = e2 || {}, !(n2 != null && n2.active) && !(i2 != null && i2.active) && (!this.toX || !this.toY) && (!e2.x || !e2.y)) {
-        t2 = t2 || this.oob();
-        const { topLeft: o2, bottomRight: r2 } = t2;
-        if (!this.toX && !e2.x) {
-          let a2 = null;
-          t2.left && this.left ? a2 = this.parent.screenWorldWidth < this.parent.screenWidth ? this.calcUnderflowX() : -o2.x : t2.right && this.right && (a2 = this.parent.screenWorldWidth < this.parent.screenWidth ? this.calcUnderflowX() : -r2.x), a2 !== null && this.parent.x !== a2 && (this.toX = { time: 0, start: this.parent.x, delta: a2 - this.parent.x, end: a2 }, this.parent.emit("bounce-x-start", this.parent));
-        }
-        if (!this.toY && !e2.y) {
-          let a2 = null;
-          t2.top && this.top ? a2 = this.parent.screenWorldHeight < this.parent.screenHeight ? this.calcUnderflowY() : -o2.y : t2.bottom && this.bottom && (a2 = this.parent.screenWorldHeight < this.parent.screenHeight ? this.calcUnderflowY() : -r2.y), a2 !== null && this.parent.y !== a2 && (this.toY = { time: 0, start: this.parent.y, delta: a2 - this.parent.y, end: a2 }, this.parent.emit("bounce-y-start", this.parent));
-        }
+    return {
+      left: this.parent.left < 0,
+      right: this.parent.right > this.parent.worldWidth,
+      top: this.parent.top < 0,
+      bottom: this.parent.bottom > this.parent.worldHeight,
+      topLeft: new Point(0, 0),
+      bottomRight: new Point(this.parent.worldWidth * this.parent.scale.x - this.parent.screenWidth, this.parent.worldHeight * this.parent.scale.y - this.parent.screenHeight)
+    };
+  }
+  bounce() {
+    var s2, h2;
+    if (this.paused)
+      return;
+    let t2, e2 = this.parent.plugins.get("decelerate", true);
+    e2 && (e2.x || e2.y) && (e2.x && e2.percentChangeX === ((s2 = e2.options) == null ? undefined : s2.friction) || e2.y && e2.percentChangeY === ((h2 = e2.options) == null ? undefined : h2.friction)) && (t2 = this.oob(), (t2.left && this.left || t2.right && this.right) && (e2.percentChangeX = this.options.friction), (t2.top && this.top || t2.bottom && this.bottom) && (e2.percentChangeY = this.options.friction));
+    const n2 = this.parent.plugins.get("drag", true) || {}, i2 = this.parent.plugins.get("pinch", true) || {};
+    if (e2 = e2 || {}, !(n2 != null && n2.active) && !(i2 != null && i2.active) && (!this.toX || !this.toY) && (!e2.x || !e2.y)) {
+      t2 = t2 || this.oob();
+      const { topLeft: o2, bottomRight: r2 } = t2;
+      if (!this.toX && !e2.x) {
+        let a2 = null;
+        t2.left && this.left ? a2 = this.parent.screenWorldWidth < this.parent.screenWidth ? this.calcUnderflowX() : -o2.x : t2.right && this.right && (a2 = this.parent.screenWorldWidth < this.parent.screenWidth ? this.calcUnderflowX() : -r2.x), a2 !== null && this.parent.x !== a2 && (this.toX = { time: 0, start: this.parent.x, delta: a2 - this.parent.x, end: a2 }, this.parent.emit("bounce-x-start", this.parent));
+      }
+      if (!this.toY && !e2.y) {
+        let a2 = null;
+        t2.top && this.top ? a2 = this.parent.screenWorldHeight < this.parent.screenHeight ? this.calcUnderflowY() : -o2.y : t2.bottom && this.bottom && (a2 = this.parent.screenWorldHeight < this.parent.screenHeight ? this.calcUnderflowY() : -r2.y), a2 !== null && this.parent.y !== a2 && (this.toY = { time: 0, start: this.parent.y, delta: a2 - this.parent.y, end: a2 }, this.parent.emit("bounce-y-start", this.parent));
       }
     }
-    reset() {
-      this.toX = this.toY = null, this.bounce();
-    }
-  };
-  z = {
-    left: false,
-    right: false,
-    top: false,
-    bottom: false,
-    direction: null,
-    underflow: "center"
-  };
-  A = class A extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, z, e2), this.options.direction && (this.options.left = this.options.direction === "x" || this.options.direction === "all" ? true : null, this.options.right = this.options.direction === "x" || this.options.direction === "all" ? true : null, this.options.top = this.options.direction === "y" || this.options.direction === "all" ? true : null, this.options.bottom = this.options.direction === "y" || this.options.direction === "all" ? true : null), this.parseUnderflow(), this.last = { x: null, y: null, scaleX: null, scaleY: null }, this.update();
-    }
-    parseUnderflow() {
-      const t2 = this.options.underflow.toLowerCase();
-      t2 === "none" ? this.noUnderflow = true : t2 === "center" ? (this.underflowX = this.underflowY = 0, this.noUnderflow = false) : (this.underflowX = t2.indexOf("left") !== -1 ? -1 : t2.indexOf("right") !== -1 ? 1 : 0, this.underflowY = t2.indexOf("top") !== -1 ? -1 : t2.indexOf("bottom") !== -1 ? 1 : 0, this.noUnderflow = false);
-    }
-    move() {
-      return this.update(), false;
-    }
-    update() {
-      if (this.paused || this.parent.x === this.last.x && this.parent.y === this.last.y && this.parent.scale.x === this.last.scaleX && this.parent.scale.y === this.last.scaleY)
-        return;
-      const t2 = new Point(this.parent.x, this.parent.y), e2 = this.parent.plugins.decelerate || {};
-      if (this.options.left !== null || this.options.right !== null) {
-        let n2 = false;
-        if (!this.noUnderflow && this.parent.screenWorldWidth < this.parent.screenWidth)
-          switch (this.underflowX) {
-            case -1:
-              this.parent.x !== 0 && (this.parent.x = 0, n2 = true);
-              break;
-            case 1:
-              this.parent.x !== this.parent.screenWidth - this.parent.screenWorldWidth && (this.parent.x = this.parent.screenWidth - this.parent.screenWorldWidth, n2 = true);
-              break;
-            default:
-              this.parent.x !== (this.parent.screenWidth - this.parent.screenWorldWidth) / 2 && (this.parent.x = (this.parent.screenWidth - this.parent.screenWorldWidth) / 2, n2 = true);
-          }
-        else
-          this.options.left !== null && this.parent.left < (this.options.left === true ? 0 : this.options.left) && (this.parent.x = -(this.options.left === true ? 0 : this.options.left) * this.parent.scale.x, e2.x = 0, n2 = true), this.options.right !== null && this.parent.right > (this.options.right === true ? this.parent.worldWidth : this.options.right) && (this.parent.x = -(this.options.right === true ? this.parent.worldWidth : this.options.right) * this.parent.scale.x + this.parent.screenWidth, e2.x = 0, n2 = true);
-        n2 && this.parent.emit("moved", {
-          viewport: this.parent,
-          original: t2,
-          type: "clamp-x"
-        });
-      }
-      if (this.options.top !== null || this.options.bottom !== null) {
-        let n2 = false;
-        if (!this.noUnderflow && this.parent.screenWorldHeight < this.parent.screenHeight)
-          switch (this.underflowY) {
-            case -1:
-              this.parent.y !== 0 && (this.parent.y = 0, n2 = true);
-              break;
-            case 1:
-              this.parent.y !== this.parent.screenHeight - this.parent.screenWorldHeight && (this.parent.y = this.parent.screenHeight - this.parent.screenWorldHeight, n2 = true);
-              break;
-            default:
-              this.parent.y !== (this.parent.screenHeight - this.parent.screenWorldHeight) / 2 && (this.parent.y = (this.parent.screenHeight - this.parent.screenWorldHeight) / 2, n2 = true);
-          }
-        else
-          this.options.top !== null && this.parent.top < (this.options.top === true ? 0 : this.options.top) && (this.parent.y = -(this.options.top === true ? 0 : this.options.top) * this.parent.scale.y, e2.y = 0, n2 = true), this.options.bottom !== null && this.parent.bottom > (this.options.bottom === true ? this.parent.worldHeight : this.options.bottom) && (this.parent.y = -(this.options.bottom === true ? this.parent.worldHeight : this.options.bottom) * this.parent.scale.y + this.parent.screenHeight, e2.y = 0, n2 = true);
-        n2 && this.parent.emit("moved", {
-          viewport: this.parent,
-          original: t2,
-          type: "clamp-y"
-        });
-      }
-      this.last.x = this.parent.x, this.last.y = this.parent.y, this.last.scaleX = this.parent.scale.x, this.last.scaleY = this.parent.scale.y;
-    }
-    reset() {
-      this.update();
-    }
-  };
-  T = {
-    minWidth: null,
-    minHeight: null,
-    maxWidth: null,
-    maxHeight: null,
-    minScale: null,
-    maxScale: null
-  };
-  _ = class _ extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, T, e2), this.clamp();
-    }
-    resize() {
-      this.clamp();
-    }
-    clamp() {
-      if (!this.paused) {
-        if (this.options.minWidth || this.options.minHeight || this.options.maxWidth || this.options.maxHeight) {
-          let t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight;
-          if (this.options.minWidth !== null && t2 < this.options.minWidth) {
-            const n2 = this.parent.scale.x;
-            this.parent.fitWidth(this.options.minWidth, false, false, true), this.parent.scale.y *= this.parent.scale.x / n2, t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
-          }
-          if (this.options.maxWidth !== null && t2 > this.options.maxWidth) {
-            const n2 = this.parent.scale.x;
-            this.parent.fitWidth(this.options.maxWidth, false, false, true), this.parent.scale.y *= this.parent.scale.x / n2, t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
-          }
-          if (this.options.minHeight !== null && e2 < this.options.minHeight) {
-            const n2 = this.parent.scale.y;
-            this.parent.fitHeight(this.options.minHeight, false, false, true), this.parent.scale.x *= this.parent.scale.y / n2, t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
-          }
-          if (this.options.maxHeight !== null && e2 > this.options.maxHeight) {
-            const n2 = this.parent.scale.y;
-            this.parent.fitHeight(this.options.maxHeight, false, false, true), this.parent.scale.x *= this.parent.scale.y / n2, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
-          }
-        } else if (this.options.minScale || this.options.maxScale) {
-          const t2 = { x: null, y: null }, e2 = { x: null, y: null };
-          if (typeof this.options.minScale == "number")
-            t2.x = this.options.minScale, t2.y = this.options.minScale;
-          else if (this.options.minScale !== null) {
-            const s2 = this.options.minScale;
-            t2.x = typeof s2.x > "u" ? null : s2.x, t2.y = typeof s2.y > "u" ? null : s2.y;
-          }
-          if (typeof this.options.maxScale == "number")
-            e2.x = this.options.maxScale, e2.y = this.options.maxScale;
-          else if (this.options.maxScale !== null) {
-            const s2 = this.options.maxScale;
-            e2.x = typeof s2.x > "u" ? null : s2.x, e2.y = typeof s2.y > "u" ? null : s2.y;
-          }
-          let n2 = this.parent.scale.x, i2 = this.parent.scale.y;
-          t2.x !== null && n2 < t2.x && (n2 = t2.x), e2.x !== null && n2 > e2.x && (n2 = e2.x), t2.y !== null && i2 < t2.y && (i2 = t2.y), e2.y !== null && i2 > e2.y && (i2 = e2.y), (n2 !== this.parent.scale.x || i2 !== this.parent.scale.y) && (this.parent.scale.set(n2, i2), this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" }));
-        }
-      }
-    }
-    reset() {
-      this.clamp();
-    }
-  };
-  L = {
-    friction: 0.98,
-    bounce: 0.8,
-    minSpeed: 0.01
-  };
-  E = class E extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, L, e2), this.saved = [], this.timeSinceRelease = 0, this.reset(), this.parent.on("moved", (n2) => this.handleMoved(n2));
-    }
-    down() {
-      return this.saved = [], this.x = this.y = null, false;
-    }
-    isActive() {
-      return !!(this.x || this.y);
-    }
-    move() {
-      if (this.paused)
-        return false;
-      const t2 = this.parent.input.count();
-      return (t2 === 1 || t2 > 1 && !this.parent.plugins.get("pinch", true)) && (this.saved.push({ x: this.parent.x, y: this.parent.y, time: performance.now() }), this.saved.length > 60 && this.saved.splice(0, 30)), false;
-    }
-    handleMoved(t2) {
-      if (this.saved.length) {
-        const e2 = this.saved[this.saved.length - 1];
-        t2.type === "clamp-x" && t2.original ? e2.x === t2.original.x && (e2.x = this.parent.x) : t2.type === "clamp-y" && t2.original && e2.y === t2.original.y && (e2.y = this.parent.y);
-      }
-    }
-    up() {
-      if (this.parent.input.count() === 0 && this.saved.length) {
-        const t2 = performance.now();
-        for (const e2 of this.saved)
-          if (e2.time >= t2 - 100) {
-            const n2 = t2 - e2.time;
-            this.x = (this.parent.x - e2.x) / n2, this.y = (this.parent.y - e2.y) / n2, this.percentChangeX = this.percentChangeY = this.options.friction, this.timeSinceRelease = 0;
+  }
+  reset() {
+    this.toX = this.toY = null, this.bounce();
+  }
+}
+var z = {
+  left: false,
+  right: false,
+  top: false,
+  bottom: false,
+  direction: null,
+  underflow: "center"
+};
+
+class A extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, z, e2), this.options.direction && (this.options.left = this.options.direction === "x" || this.options.direction === "all" ? true : null, this.options.right = this.options.direction === "x" || this.options.direction === "all" ? true : null, this.options.top = this.options.direction === "y" || this.options.direction === "all" ? true : null, this.options.bottom = this.options.direction === "y" || this.options.direction === "all" ? true : null), this.parseUnderflow(), this.last = { x: null, y: null, scaleX: null, scaleY: null }, this.update();
+  }
+  parseUnderflow() {
+    const t2 = this.options.underflow.toLowerCase();
+    t2 === "none" ? this.noUnderflow = true : t2 === "center" ? (this.underflowX = this.underflowY = 0, this.noUnderflow = false) : (this.underflowX = t2.indexOf("left") !== -1 ? -1 : t2.indexOf("right") !== -1 ? 1 : 0, this.underflowY = t2.indexOf("top") !== -1 ? -1 : t2.indexOf("bottom") !== -1 ? 1 : 0, this.noUnderflow = false);
+  }
+  move() {
+    return this.update(), false;
+  }
+  update() {
+    if (this.paused || this.parent.x === this.last.x && this.parent.y === this.last.y && this.parent.scale.x === this.last.scaleX && this.parent.scale.y === this.last.scaleY)
+      return;
+    const t2 = new Point(this.parent.x, this.parent.y), e2 = this.parent.plugins.decelerate || {};
+    if (this.options.left !== null || this.options.right !== null) {
+      let n2 = false;
+      if (!this.noUnderflow && this.parent.screenWorldWidth < this.parent.screenWidth)
+        switch (this.underflowX) {
+          case -1:
+            this.parent.x !== 0 && (this.parent.x = 0, n2 = true);
             break;
-          }
-      }
-      return false;
-    }
-    activate(t2) {
-      t2 = t2 || {}, typeof t2.x < "u" && (this.x = t2.x, this.percentChangeX = this.options.friction), typeof t2.y < "u" && (this.y = t2.y, this.percentChangeY = this.options.friction);
-    }
-    update(t2) {
-      if (this.paused)
-        return;
-      const e2 = this.x || this.y, n2 = this.timeSinceRelease, i2 = this.timeSinceRelease + t2;
-      if (this.x) {
-        const s2 = this.percentChangeX, h2 = Math.log(s2);
-        this.parent.x += this.x * d2 / h2 * (Math.pow(s2, i2 / d2) - Math.pow(s2, n2 / d2)), this.x *= Math.pow(this.percentChangeX, t2 / d2);
-      }
-      if (this.y) {
-        const s2 = this.percentChangeY, h2 = Math.log(s2);
-        this.parent.y += this.y * d2 / h2 * (Math.pow(s2, i2 / d2) - Math.pow(s2, n2 / d2)), this.y *= Math.pow(this.percentChangeY, t2 / d2);
-      }
-      this.timeSinceRelease += t2, this.x && this.y ? Math.abs(this.x) < this.options.minSpeed && Math.abs(this.y) < this.options.minSpeed && (this.x = 0, this.y = 0) : (Math.abs(this.x || 0) < this.options.minSpeed && (this.x = 0), Math.abs(this.y || 0) < this.options.minSpeed && (this.y = 0)), e2 && this.parent.emit("moved", { viewport: this.parent, type: "decelerate" });
-    }
-    reset() {
-      this.x = this.y = null;
-    }
-  };
-  D = {
-    direction: "all",
-    pressDrag: true,
-    wheel: true,
-    wheelScroll: 1,
-    reverse: false,
-    clampWheel: false,
-    underflow: "center",
-    factor: 1,
-    mouseButtons: "all",
-    keyToPress: null,
-    ignoreKeyToPressOnTouch: false,
-    lineHeight: 20,
-    wheelSwapAxes: false
-  };
-  U = class U extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.windowEventHandlers = [], this.options = Object.assign({}, D, e2), this.moved = false, this.reverse = this.options.reverse ? 1 : -1, this.xDirection = !this.options.direction || this.options.direction === "all" || this.options.direction === "x", this.yDirection = !this.options.direction || this.options.direction === "all" || this.options.direction === "y", this.keyIsPressed = false, this.parseUnderflow(), this.mouseButtons(this.options.mouseButtons), this.options.keyToPress && this.handleKeyPresses(this.options.keyToPress);
-    }
-    handleKeyPresses(t2) {
-      const e2 = (i2) => {
-        t2.includes(i2.code) && (this.keyIsPressed = true);
-      }, n2 = (i2) => {
-        t2.includes(i2.code) && (this.keyIsPressed = false);
-      };
-      this.addWindowEventHandler("keyup", n2), this.addWindowEventHandler("keydown", e2);
-    }
-    addWindowEventHandler(t2, e2) {
-      typeof window > "u" || (window.addEventListener(t2, e2), this.windowEventHandlers.push({ event: t2, handler: e2 }));
-    }
-    destroy() {
-      typeof window > "u" || this.windowEventHandlers.forEach(({ event: t2, handler: e2 }) => {
-        window.removeEventListener(t2, e2);
+          case 1:
+            this.parent.x !== this.parent.screenWidth - this.parent.screenWorldWidth && (this.parent.x = this.parent.screenWidth - this.parent.screenWorldWidth, n2 = true);
+            break;
+          default:
+            this.parent.x !== (this.parent.screenWidth - this.parent.screenWorldWidth) / 2 && (this.parent.x = (this.parent.screenWidth - this.parent.screenWorldWidth) / 2, n2 = true);
+        }
+      else
+        this.options.left !== null && this.parent.left < (this.options.left === true ? 0 : this.options.left) && (this.parent.x = -(this.options.left === true ? 0 : this.options.left) * this.parent.scale.x, e2.x = 0, n2 = true), this.options.right !== null && this.parent.right > (this.options.right === true ? this.parent.worldWidth : this.options.right) && (this.parent.x = -(this.options.right === true ? this.parent.worldWidth : this.options.right) * this.parent.scale.x + this.parent.screenWidth, e2.x = 0, n2 = true);
+      n2 && this.parent.emit("moved", {
+        viewport: this.parent,
+        original: t2,
+        type: "clamp-x"
       });
     }
-    mouseButtons(t2) {
-      !t2 || t2 === "all" ? this.mouse = [true, true, true] : this.mouse = [
-        t2.indexOf("left") !== -1,
-        t2.indexOf("middle") !== -1,
-        t2.indexOf("right") !== -1
-      ];
-    }
-    parseUnderflow() {
-      const t2 = this.options.underflow.toLowerCase();
-      t2 === "center" ? (this.underflowX = 0, this.underflowY = 0) : (t2.includes("left") ? this.underflowX = -1 : t2.includes("right") ? this.underflowX = 1 : this.underflowX = 0, t2.includes("top") ? this.underflowY = -1 : t2.includes("bottom") ? this.underflowY = 1 : this.underflowY = 0);
-    }
-    checkButtons(t2) {
-      const e2 = t2.pointerType === "mouse", n2 = this.parent.input.count();
-      return !!((n2 === 1 || n2 > 1 && !this.parent.plugins.get("pinch", true)) && (!e2 || this.mouse[t2.button]));
-    }
-    checkKeyPress(t2) {
-      return !this.options.keyToPress || this.keyIsPressed || this.options.ignoreKeyToPressOnTouch && t2.data.pointerType === "touch";
-    }
-    down(t2) {
-      return this.paused || !this.options.pressDrag ? false : this.checkButtons(t2) && this.checkKeyPress(t2) ? (this.last = { x: t2.global.x, y: t2.global.y }, (this.parent.parent || this.parent).toLocal(this.last, undefined, this.last), this.current = t2.pointerId, true) : (this.last = null, false);
-    }
-    get active() {
-      return this.moved;
-    }
-    move(t2) {
-      if (this.paused || !this.options.pressDrag)
-        return false;
-      if (this.last && this.current === t2.data.pointerId) {
-        const e2 = t2.global.x, n2 = t2.global.y, i2 = this.parent.input.count();
-        if (i2 === 1 || i2 > 1 && !this.parent.plugins.get("pinch", true)) {
-          const s2 = { x: e2, y: n2 };
-          (this.parent.parent || this.parent).toLocal(s2, undefined, s2);
-          const h2 = s2.x - this.last.x, o2 = s2.y - this.last.y;
-          if (this.moved || this.xDirection && this.parent.input.checkThreshold(h2) || this.yDirection && this.parent.input.checkThreshold(o2))
-            return this.xDirection && (this.parent.x += (s2.x - this.last.x) * this.options.factor), this.yDirection && (this.parent.y += (s2.y - this.last.y) * this.options.factor), this.last = s2, this.moved || this.parent.emit("drag-start", {
-              event: t2,
-              screen: new Point(this.last.x, this.last.y),
-              world: this.parent.toWorld(new Point(this.last.x, this.last.y)),
-              viewport: this.parent
-            }), this.moved = true, this.parent.emit("moved", { viewport: this.parent, type: "drag" }), true;
-        } else
-          this.moved = false;
-      }
-      return false;
-    }
-    up(t2) {
-      if (this.paused)
-        return false;
-      const e2 = this.parent.input.touches;
-      if (e2.length === 1) {
-        const n2 = e2[0];
-        return n2.last && (this.last = { x: n2.last.x, y: n2.last.y }, this.current = n2.id), this.moved = false, true;
-      } else if (this.last && this.moved) {
-        const n2 = new Point(this.last.x, this.last.y);
-        return (this.parent.parent || this.parent).toGlobal(n2, n2, true), this.parent.emit("drag-end", {
-          event: t2,
-          screen: n2,
-          world: this.parent.toWorld(n2),
-          viewport: this.parent
-        }), this.last = null, this.moved = false, true;
-      }
-      return false;
-    }
-    wheel(t2) {
-      if (this.paused)
-        return false;
-      if (this.options.wheel) {
-        const e2 = this.parent.plugins.get("wheel", true);
-        if (!e2 || !e2.options.wheelZoom && !t2.ctrlKey) {
-          const n2 = t2.deltaMode ? this.options.lineHeight : 1, i2 = [t2.deltaX, t2.deltaY], [s2, h2] = this.options.wheelSwapAxes ? i2.reverse() : i2;
-          return this.xDirection && (this.parent.x += s2 * n2 * this.options.wheelScroll * this.reverse), this.yDirection && (this.parent.y += h2 * n2 * this.options.wheelScroll * this.reverse), this.options.clampWheel && this.clamp(), this.parent.emit("wheel-scroll", this.parent), this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.parent.options.passiveWheel || t2.preventDefault(), this.parent.options.stopPropagation && t2.stopPropagation(), true;
+    if (this.options.top !== null || this.options.bottom !== null) {
+      let n2 = false;
+      if (!this.noUnderflow && this.parent.screenWorldHeight < this.parent.screenHeight)
+        switch (this.underflowY) {
+          case -1:
+            this.parent.y !== 0 && (this.parent.y = 0, n2 = true);
+            break;
+          case 1:
+            this.parent.y !== this.parent.screenHeight - this.parent.screenWorldHeight && (this.parent.y = this.parent.screenHeight - this.parent.screenWorldHeight, n2 = true);
+            break;
+          default:
+            this.parent.y !== (this.parent.screenHeight - this.parent.screenWorldHeight) / 2 && (this.parent.y = (this.parent.screenHeight - this.parent.screenWorldHeight) / 2, n2 = true);
         }
+      else
+        this.options.top !== null && this.parent.top < (this.options.top === true ? 0 : this.options.top) && (this.parent.y = -(this.options.top === true ? 0 : this.options.top) * this.parent.scale.y, e2.y = 0, n2 = true), this.options.bottom !== null && this.parent.bottom > (this.options.bottom === true ? this.parent.worldHeight : this.options.bottom) && (this.parent.y = -(this.options.bottom === true ? this.parent.worldHeight : this.options.bottom) * this.parent.scale.y + this.parent.screenHeight, e2.y = 0, n2 = true);
+      n2 && this.parent.emit("moved", {
+        viewport: this.parent,
+        original: t2,
+        type: "clamp-y"
+      });
+    }
+    this.last.x = this.parent.x, this.last.y = this.parent.y, this.last.scaleX = this.parent.scale.x, this.last.scaleY = this.parent.scale.y;
+  }
+  reset() {
+    this.update();
+  }
+}
+var T = {
+  minWidth: null,
+  minHeight: null,
+  maxWidth: null,
+  maxHeight: null,
+  minScale: null,
+  maxScale: null
+};
+
+class _ extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, T, e2), this.clamp();
+  }
+  resize() {
+    this.clamp();
+  }
+  clamp() {
+    if (!this.paused) {
+      if (this.options.minWidth || this.options.minHeight || this.options.maxWidth || this.options.maxHeight) {
+        let t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight;
+        if (this.options.minWidth !== null && t2 < this.options.minWidth) {
+          const n2 = this.parent.scale.x;
+          this.parent.fitWidth(this.options.minWidth, false, false, true), this.parent.scale.y *= this.parent.scale.x / n2, t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
+        }
+        if (this.options.maxWidth !== null && t2 > this.options.maxWidth) {
+          const n2 = this.parent.scale.x;
+          this.parent.fitWidth(this.options.maxWidth, false, false, true), this.parent.scale.y *= this.parent.scale.x / n2, t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
+        }
+        if (this.options.minHeight !== null && e2 < this.options.minHeight) {
+          const n2 = this.parent.scale.y;
+          this.parent.fitHeight(this.options.minHeight, false, false, true), this.parent.scale.x *= this.parent.scale.y / n2, t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
+        }
+        if (this.options.maxHeight !== null && e2 > this.options.maxHeight) {
+          const n2 = this.parent.scale.y;
+          this.parent.fitHeight(this.options.maxHeight, false, false, true), this.parent.scale.x *= this.parent.scale.y / n2, this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" });
+        }
+      } else if (this.options.minScale || this.options.maxScale) {
+        const t2 = { x: null, y: null }, e2 = { x: null, y: null };
+        if (typeof this.options.minScale == "number")
+          t2.x = this.options.minScale, t2.y = this.options.minScale;
+        else if (this.options.minScale !== null) {
+          const s2 = this.options.minScale;
+          t2.x = typeof s2.x > "u" ? null : s2.x, t2.y = typeof s2.y > "u" ? null : s2.y;
+        }
+        if (typeof this.options.maxScale == "number")
+          e2.x = this.options.maxScale, e2.y = this.options.maxScale;
+        else if (this.options.maxScale !== null) {
+          const s2 = this.options.maxScale;
+          e2.x = typeof s2.x > "u" ? null : s2.x, e2.y = typeof s2.y > "u" ? null : s2.y;
+        }
+        let n2 = this.parent.scale.x, i2 = this.parent.scale.y;
+        t2.x !== null && n2 < t2.x && (n2 = t2.x), e2.x !== null && n2 > e2.x && (n2 = e2.x), t2.y !== null && i2 < t2.y && (i2 = t2.y), e2.y !== null && i2 > e2.y && (i2 = e2.y), (n2 !== this.parent.scale.x || i2 !== this.parent.scale.y) && (this.parent.scale.set(n2, i2), this.parent.emit("zoomed", { viewport: this.parent, type: "clamp-zoom" }));
       }
+    }
+  }
+  reset() {
+    this.clamp();
+  }
+}
+var L = {
+  friction: 0.98,
+  bounce: 0.8,
+  minSpeed: 0.01
+};
+var d2 = 16;
+
+class E extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, L, e2), this.saved = [], this.timeSinceRelease = 0, this.reset(), this.parent.on("moved", (n2) => this.handleMoved(n2));
+  }
+  down() {
+    return this.saved = [], this.x = this.y = null, false;
+  }
+  isActive() {
+    return !!(this.x || this.y);
+  }
+  move() {
+    if (this.paused)
       return false;
+    const t2 = this.parent.input.count();
+    return (t2 === 1 || t2 > 1 && !this.parent.plugins.get("pinch", true)) && (this.saved.push({ x: this.parent.x, y: this.parent.y, time: performance.now() }), this.saved.length > 60 && this.saved.splice(0, 30)), false;
+  }
+  handleMoved(t2) {
+    if (this.saved.length) {
+      const e2 = this.saved[this.saved.length - 1];
+      t2.type === "clamp-x" && t2.original ? e2.x === t2.original.x && (e2.x = this.parent.x) : t2.type === "clamp-y" && t2.original && e2.y === t2.original.y && (e2.y = this.parent.y);
     }
-    resume() {
-      this.last = null, this.paused = false;
+  }
+  up() {
+    if (this.parent.input.count() === 0 && this.saved.length) {
+      const t2 = performance.now();
+      for (const e2 of this.saved)
+        if (e2.time >= t2 - 100) {
+          const n2 = t2 - e2.time;
+          this.x = (this.parent.x - e2.x) / n2, this.y = (this.parent.y - e2.y) / n2, this.percentChangeX = this.percentChangeY = this.options.friction, this.timeSinceRelease = 0;
+          break;
+        }
     }
-    clamp() {
-      const t2 = this.parent.plugins.get("decelerate", true) || {};
-      if (this.options.clampWheel !== "y")
-        if (this.parent.screenWorldWidth < this.parent.screenWidth)
-          switch (this.underflowX) {
-            case -1:
-              this.parent.x = 0;
-              break;
-            case 1:
-              this.parent.x = this.parent.screenWidth - this.parent.screenWorldWidth;
-              break;
-            default:
-              this.parent.x = (this.parent.screenWidth - this.parent.screenWorldWidth) / 2;
-          }
-        else
-          this.parent.left < 0 ? (this.parent.x = 0, t2.x = 0) : this.parent.right > this.parent.worldWidth && (this.parent.x = -this.parent.worldWidth * this.parent.scale.x + this.parent.screenWidth, t2.x = 0);
-      if (this.options.clampWheel !== "x")
-        if (this.parent.screenWorldHeight < this.parent.screenHeight)
-          switch (this.underflowY) {
-            case -1:
-              this.parent.y = 0;
-              break;
-            case 1:
-              this.parent.y = this.parent.screenHeight - this.parent.screenWorldHeight;
-              break;
-            default:
-              this.parent.y = (this.parent.screenHeight - this.parent.screenWorldHeight) / 2;
-          }
-        else
-          this.parent.top < 0 && (this.parent.y = 0, t2.y = 0), this.parent.bottom > this.parent.worldHeight && (this.parent.y = -this.parent.worldHeight * this.parent.scale.y + this.parent.screenHeight, t2.y = 0);
+    return false;
+  }
+  activate(t2) {
+    t2 = t2 || {}, typeof t2.x < "u" && (this.x = t2.x, this.percentChangeX = this.options.friction), typeof t2.y < "u" && (this.y = t2.y, this.percentChangeY = this.options.friction);
+  }
+  update(t2) {
+    if (this.paused)
+      return;
+    const e2 = this.x || this.y, n2 = this.timeSinceRelease, i2 = this.timeSinceRelease + t2;
+    if (this.x) {
+      const s2 = this.percentChangeX, h2 = Math.log(s2);
+      this.parent.x += this.x * d2 / h2 * (Math.pow(s2, i2 / d2) - Math.pow(s2, n2 / d2)), this.x *= Math.pow(this.percentChangeX, t2 / d2);
     }
-  };
-  F = {
-    speed: 0,
-    acceleration: null,
-    radius: null
-  };
-  B = class B extends u2 {
-    constructor(t2, e2, n2 = {}) {
-      super(t2), this.target = e2, this.options = Object.assign({}, F, n2), this.velocity = { x: 0, y: 0 };
+    if (this.y) {
+      const s2 = this.percentChangeY, h2 = Math.log(s2);
+      this.parent.y += this.y * d2 / h2 * (Math.pow(s2, i2 / d2) - Math.pow(s2, n2 / d2)), this.y *= Math.pow(this.percentChangeY, t2 / d2);
     }
-    update(t2) {
-      if (this.paused)
-        return;
-      const e2 = this.parent.center;
-      let n2 = this.target.x, i2 = this.target.y;
-      if (this.options.radius)
-        if (Math.sqrt(Math.pow(this.target.y - e2.y, 2) + Math.pow(this.target.x - e2.x, 2)) > this.options.radius) {
-          const r2 = Math.atan2(this.target.y - e2.y, this.target.x - e2.x);
-          n2 = this.target.x - Math.cos(r2) * this.options.radius, i2 = this.target.y - Math.sin(r2) * this.options.radius;
-        } else
-          return;
-      const s2 = n2 - e2.x, h2 = i2 - e2.y;
-      if (s2 || h2)
-        if (this.options.speed)
-          if (this.options.acceleration) {
-            const o2 = Math.atan2(i2 - e2.y, n2 - e2.x), r2 = Math.sqrt(Math.pow(s2, 2) + Math.pow(h2, 2));
-            if (r2) {
-              const a2 = (Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)) / (2 * this.options.acceleration);
-              r2 > a2 ? this.velocity = {
-                x: Math.min(this.velocity.x + (this.options.acceleration * t2, this.options.speed)),
-                y: Math.min(this.velocity.y + (this.options.acceleration * t2, this.options.speed))
-              } : this.velocity = {
-                x: Math.max(this.velocity.x - this.options.acceleration * this.options.speed, 0),
-                y: Math.max(this.velocity.y - this.options.acceleration * this.options.speed, 0)
-              };
-              const p2 = Math.cos(o2) * this.velocity.x, f2 = Math.sin(o2) * this.velocity.y, g2 = Math.abs(p2) > Math.abs(s2) ? n2 : e2.x + p2, w2 = Math.abs(f2) > Math.abs(h2) ? i2 : e2.y + f2;
-              this.parent.moveCenter(g2, w2), this.parent.emit("moved", { viewport: this.parent, type: "follow" });
-            }
-          } else {
-            const o2 = Math.atan2(i2 - e2.y, n2 - e2.x), r2 = Math.cos(o2) * this.options.speed, a2 = Math.sin(o2) * this.options.speed, p2 = Math.abs(r2) > Math.abs(s2) ? n2 : e2.x + r2, f2 = Math.abs(a2) > Math.abs(h2) ? i2 : e2.y + a2;
-            this.parent.moveCenter(p2, f2), this.parent.emit("moved", { viewport: this.parent, type: "follow" });
-          }
-        else
-          this.parent.moveCenter(n2, i2), this.parent.emit("moved", { viewport: this.parent, type: "follow" });
-    }
-  };
-  N2 = {
-    radius: null,
-    distance: null,
-    top: null,
-    bottom: null,
-    left: null,
-    right: null,
-    speed: 8,
-    reverse: false,
-    noDecelerate: false,
-    linear: false,
-    allowButtons: false
-  };
-  V = class V extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, N2, e2), this.reverse = this.options.reverse ? 1 : -1, this.radiusSquared = typeof this.options.radius == "number" ? Math.pow(this.options.radius, 2) : null, this.resize();
-    }
-    resize() {
-      const t2 = this.options.distance;
-      t2 !== null ? (this.left = t2, this.top = t2, this.right = this.parent.screenWidth - t2, this.bottom = this.parent.screenHeight - t2) : this.options.radius || (this.left = this.options.left, this.top = this.options.top, this.right = this.options.right === null ? null : this.parent.screenWidth - this.options.right, this.bottom = this.options.bottom === null ? null : this.parent.screenHeight - this.options.bottom);
-    }
-    down() {
-      return this.paused || this.options.allowButtons || (this.horizontal = this.vertical = null), false;
-    }
-    move(t2) {
-      if (this.paused || t2.pointerType !== "mouse" && t2.pointerId !== 1 || !this.options.allowButtons && t2.buttons !== 0)
-        return false;
-      const e2 = t2.global.x, n2 = t2.global.y;
-      if (this.radiusSquared) {
-        const i2 = this.parent.toScreen(this.parent.center);
-        if (Math.pow(i2.x - e2, 2) + Math.pow(i2.y - n2, 2) >= this.radiusSquared) {
-          const h2 = Math.atan2(i2.y - n2, i2.x - e2);
-          this.options.linear ? (this.horizontal = Math.round(Math.cos(h2)) * this.options.speed * this.reverse * (60 / 1000), this.vertical = Math.round(Math.sin(h2)) * this.options.speed * this.reverse * (60 / 1000)) : (this.horizontal = Math.cos(h2) * this.options.speed * this.reverse * (60 / 1000), this.vertical = Math.sin(h2) * this.options.speed * this.reverse * (60 / 1000));
-        } else
-          this.horizontal && this.decelerateHorizontal(), this.vertical && this.decelerateVertical(), this.horizontal = this.vertical = 0;
+    this.timeSinceRelease += t2, this.x && this.y ? Math.abs(this.x) < this.options.minSpeed && Math.abs(this.y) < this.options.minSpeed && (this.x = 0, this.y = 0) : (Math.abs(this.x || 0) < this.options.minSpeed && (this.x = 0), Math.abs(this.y || 0) < this.options.minSpeed && (this.y = 0)), e2 && this.parent.emit("moved", { viewport: this.parent, type: "decelerate" });
+  }
+  reset() {
+    this.x = this.y = null;
+  }
+}
+var D = {
+  direction: "all",
+  pressDrag: true,
+  wheel: true,
+  wheelScroll: 1,
+  reverse: false,
+  clampWheel: false,
+  underflow: "center",
+  factor: 1,
+  mouseButtons: "all",
+  keyToPress: null,
+  ignoreKeyToPressOnTouch: false,
+  lineHeight: 20,
+  wheelSwapAxes: false
+};
+
+class U extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.windowEventHandlers = [], this.options = Object.assign({}, D, e2), this.moved = false, this.reverse = this.options.reverse ? 1 : -1, this.xDirection = !this.options.direction || this.options.direction === "all" || this.options.direction === "x", this.yDirection = !this.options.direction || this.options.direction === "all" || this.options.direction === "y", this.keyIsPressed = false, this.parseUnderflow(), this.mouseButtons(this.options.mouseButtons), this.options.keyToPress && this.handleKeyPresses(this.options.keyToPress);
+  }
+  handleKeyPresses(t2) {
+    const e2 = (i2) => {
+      t2.includes(i2.code) && (this.keyIsPressed = true);
+    }, n2 = (i2) => {
+      t2.includes(i2.code) && (this.keyIsPressed = false);
+    };
+    this.addWindowEventHandler("keyup", n2), this.addWindowEventHandler("keydown", e2);
+  }
+  addWindowEventHandler(t2, e2) {
+    typeof window > "u" || (window.addEventListener(t2, e2), this.windowEventHandlers.push({ event: t2, handler: e2 }));
+  }
+  destroy() {
+    typeof window > "u" || this.windowEventHandlers.forEach(({ event: t2, handler: e2 }) => {
+      window.removeEventListener(t2, e2);
+    });
+  }
+  mouseButtons(t2) {
+    !t2 || t2 === "all" ? this.mouse = [true, true, true] : this.mouse = [
+      t2.indexOf("left") !== -1,
+      t2.indexOf("middle") !== -1,
+      t2.indexOf("right") !== -1
+    ];
+  }
+  parseUnderflow() {
+    const t2 = this.options.underflow.toLowerCase();
+    t2 === "center" ? (this.underflowX = 0, this.underflowY = 0) : (t2.includes("left") ? this.underflowX = -1 : t2.includes("right") ? this.underflowX = 1 : this.underflowX = 0, t2.includes("top") ? this.underflowY = -1 : t2.includes("bottom") ? this.underflowY = 1 : this.underflowY = 0);
+  }
+  checkButtons(t2) {
+    const e2 = t2.pointerType === "mouse", n2 = this.parent.input.count();
+    return !!((n2 === 1 || n2 > 1 && !this.parent.plugins.get("pinch", true)) && (!e2 || this.mouse[t2.button]));
+  }
+  checkKeyPress(t2) {
+    return !this.options.keyToPress || this.keyIsPressed || this.options.ignoreKeyToPressOnTouch && t2.data.pointerType === "touch";
+  }
+  down(t2) {
+    return this.paused || !this.options.pressDrag ? false : this.checkButtons(t2) && this.checkKeyPress(t2) ? (this.last = { x: t2.global.x, y: t2.global.y }, (this.parent.parent || this.parent).toLocal(this.last, undefined, this.last), this.current = t2.pointerId, true) : (this.last = null, false);
+  }
+  get active() {
+    return this.moved;
+  }
+  move(t2) {
+    if (this.paused || !this.options.pressDrag)
+      return false;
+    if (this.last && this.current === t2.data.pointerId) {
+      const e2 = t2.global.x, n2 = t2.global.y, i2 = this.parent.input.count();
+      if (i2 === 1 || i2 > 1 && !this.parent.plugins.get("pinch", true)) {
+        const s2 = { x: e2, y: n2 };
+        (this.parent.parent || this.parent).toLocal(s2, undefined, s2);
+        const h2 = s2.x - this.last.x, o2 = s2.y - this.last.y;
+        if (this.moved || this.xDirection && this.parent.input.checkThreshold(h2) || this.yDirection && this.parent.input.checkThreshold(o2))
+          return this.xDirection && (this.parent.x += (s2.x - this.last.x) * this.options.factor), this.yDirection && (this.parent.y += (s2.y - this.last.y) * this.options.factor), this.last = s2, this.moved || this.parent.emit("drag-start", {
+            event: t2,
+            screen: new Point(this.last.x, this.last.y),
+            world: this.parent.toWorld(new Point(this.last.x, this.last.y)),
+            viewport: this.parent
+          }), this.moved = true, this.parent.emit("moved", { viewport: this.parent, type: "drag" }), true;
       } else
-        this.left !== null && e2 < this.left ? this.horizontal = Number(this.reverse) * this.options.speed * (60 / 1000) : this.right !== null && e2 > this.right ? this.horizontal = -1 * this.reverse * this.options.speed * (60 / 1000) : (this.decelerateHorizontal(), this.horizontal = 0), this.top !== null && n2 < this.top ? this.vertical = Number(this.reverse) * this.options.speed * (60 / 1000) : this.bottom !== null && n2 > this.bottom ? this.vertical = -1 * this.reverse * this.options.speed * (60 / 1000) : (this.decelerateVertical(), this.vertical = 0);
+        this.moved = false;
+    }
+    return false;
+  }
+  up(t2) {
+    if (this.paused)
       return false;
+    const e2 = this.parent.input.touches;
+    if (e2.length === 1) {
+      const n2 = e2[0];
+      return n2.last && (this.last = { x: n2.last.x, y: n2.last.y }, this.current = n2.id), this.moved = false, true;
+    } else if (this.last && this.moved) {
+      const n2 = new Point(this.last.x, this.last.y);
+      return (this.parent.parent || this.parent).toGlobal(n2, n2, true), this.parent.emit("drag-end", {
+        event: t2,
+        screen: n2,
+        world: this.parent.toWorld(n2),
+        viewport: this.parent
+      }), this.last = null, this.moved = false, true;
     }
-    decelerateHorizontal() {
-      const t2 = this.parent.plugins.get("decelerate", true);
-      this.horizontal && t2 && !this.options.noDecelerate && t2.activate({ x: this.horizontal * this.options.speed * this.reverse / (1000 / 60) });
-    }
-    decelerateVertical() {
-      const t2 = this.parent.plugins.get("decelerate", true);
-      this.vertical && t2 && !this.options.noDecelerate && t2.activate({ y: this.vertical * this.options.speed * this.reverse / (1000 / 60) });
-    }
-    up() {
-      return this.paused || (this.horizontal && this.decelerateHorizontal(), this.vertical && this.decelerateVertical(), this.horizontal = this.vertical = null), false;
-    }
-    update() {
-      if (!this.paused && (this.horizontal || this.vertical)) {
-        const t2 = this.parent.center;
-        this.horizontal && (t2.x += this.horizontal * this.options.speed), this.vertical && (t2.y += this.vertical * this.options.speed), this.parent.moveCenter(t2), this.parent.emit("moved", { viewport: this.parent, type: "mouse-edges" });
+    return false;
+  }
+  wheel(t2) {
+    if (this.paused)
+      return false;
+    if (this.options.wheel) {
+      const e2 = this.parent.plugins.get("wheel", true);
+      if (!e2 || !e2.options.wheelZoom && !t2.ctrlKey) {
+        const n2 = t2.deltaMode ? this.options.lineHeight : 1, i2 = [t2.deltaX, t2.deltaY], [s2, h2] = this.options.wheelSwapAxes ? i2.reverse() : i2;
+        return this.xDirection && (this.parent.x += s2 * n2 * this.options.wheelScroll * this.reverse), this.yDirection && (this.parent.y += h2 * n2 * this.options.wheelScroll * this.reverse), this.options.clampWheel && this.clamp(), this.parent.emit("wheel-scroll", this.parent), this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.parent.options.passiveWheel || t2.preventDefault(), this.parent.options.stopPropagation && t2.stopPropagation(), true;
       }
     }
-  };
-  Z = {
-    noDrag: false,
-    percent: 1,
-    center: null,
-    factor: 1,
-    axis: "all"
-  };
-  R = new Point;
-  j2 = class j2 extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.active = false, this.pinching = false, this.moved = false, this.options = Object.assign({}, Z, e2);
-    }
-    down() {
-      return this.parent.input.count() >= 2 ? (this.active = true, true) : false;
-    }
-    isAxisX() {
-      return ["all", "x"].includes(this.options.axis);
-    }
-    isAxisY() {
-      return ["all", "y"].includes(this.options.axis);
-    }
-    move(t2) {
-      if (this.paused || !this.active)
-        return false;
-      const { x: e2, y: n2 } = (this.parent.parent || this.parent).toLocal(t2.global, undefined, R), i2 = this.parent.input.touches;
-      if (i2.length >= 2) {
-        const s2 = i2[0], h2 = i2[1], o2 = s2.last && h2.last ? Math.sqrt(Math.pow(h2.last.x - s2.last.x, 2) + Math.pow(h2.last.y - s2.last.y, 2)) : null;
-        if (s2.id === t2.pointerId ? s2.last = { x: e2, y: n2, data: t2 } : h2.id === t2.pointerId && (h2.last = { x: e2, y: n2, data: t2 }), o2) {
-          let r2;
-          const a2 = new Point(s2.last.x + (h2.last.x - s2.last.x) / 2, s2.last.y + (h2.last.y - s2.last.y) / 2);
-          this.options.center || (r2 = this.parent.toLocal(a2, this.parent.parent || this.parent));
-          let p2 = Math.sqrt(Math.pow(h2.last.x - s2.last.x, 2) + Math.pow(h2.last.y - s2.last.y, 2));
-          p2 = p2 === 0 ? p2 = 0.0000000001 : p2;
-          const f2 = (1 - o2 / p2) * this.options.percent * (this.isAxisX() ? this.parent.scale.x : this.parent.scale.y);
-          this.isAxisX() && (this.parent.scale.x += f2), this.isAxisY() && (this.parent.scale.y += f2), this.parent.emit("zoomed", {
-            viewport: this.parent,
-            type: "pinch",
-            center: a2
-          });
-          const g2 = this.parent.plugins.get("clamp-zoom", true);
-          if (g2 && g2.clamp(), this.options.center)
-            this.parent.moveCenter(this.options.center);
-          else {
-            const w2 = (this.parent.parent || this.parent).toLocal(r2, this.parent);
-            this.parent.x += (a2.x - w2.x) * this.options.factor, this.parent.y += (a2.y - w2.y) * this.options.factor, this.parent.emit("moved", { viewport: this.parent, type: "pinch" });
-          }
-          !this.options.noDrag && this.lastCenter && (this.parent.x += (a2.x - this.lastCenter.x) * this.options.factor, this.parent.y += (a2.y - this.lastCenter.y) * this.options.factor, this.parent.emit("moved", { viewport: this.parent, type: "pinch" })), this.lastCenter = a2, this.moved = true;
-        } else
-          this.pinching || (this.parent.emit("pinch-start", this.parent), this.pinching = true);
-        return true;
-      }
-      return false;
-    }
-    up() {
-      return this.pinching && this.parent.input.touches.length <= 1 ? (this.active = false, this.lastCenter = null, this.pinching = false, this.moved = false, this.parent.emit("pinch-end", this.parent), true) : false;
-    }
-  };
-  K = {
-    topLeft: false,
-    friction: 0.8,
-    time: 1000,
-    ease: "easeInOutSine",
-    interrupt: true,
-    removeOnComplete: false,
-    removeOnInterrupt: false,
-    forceStart: false
-  };
-  q = class q extends u2 {
-    constructor(t2, e2, n2, i2 = {}) {
-      super(t2), this.options = Object.assign({}, K, i2), this.ease = x2(i2.ease, "easeInOutSine"), this.x = e2, this.y = n2, this.options.forceStart && this.snapStart();
-    }
-    snapStart() {
-      this.percent = 0, this.snapping = { time: 0 };
-      const t2 = this.options.topLeft ? this.parent.corner : this.parent.center;
-      this.deltaX = this.x - t2.x, this.deltaY = this.y - t2.y, this.startX = t2.x, this.startY = t2.y, this.parent.emit("snap-start", this.parent);
-    }
-    wheel() {
-      return this.options.removeOnInterrupt && this.parent.plugins.remove("snap"), false;
-    }
-    down() {
-      return this.options.removeOnInterrupt ? this.parent.plugins.remove("snap") : this.options.interrupt && (this.snapping = null), false;
-    }
-    up() {
-      if (this.parent.input.count() === 0) {
-        const t2 = this.parent.plugins.get("decelerate", true);
-        t2 && (t2.x || t2.y) && (t2.percentChangeX = t2.percentChangeY = this.options.friction);
-      }
-      return false;
-    }
-    update(t2) {
-      if (!this.paused && !(this.options.interrupt && this.parent.input.count() !== 0))
-        if (this.snapping) {
-          const e2 = this.snapping;
-          e2.time += t2;
-          let n2, i2, s2;
-          const h2 = this.startX, o2 = this.startY, r2 = this.deltaX, a2 = this.deltaY;
-          if (e2.time > this.options.time)
-            n2 = true, i2 = h2 + r2, s2 = o2 + a2;
-          else {
-            const p2 = this.ease(e2.time, 0, 1, this.options.time);
-            i2 = h2 + r2 * p2, s2 = o2 + a2 * p2;
-          }
-          this.options.topLeft ? this.parent.moveCorner(i2, s2) : this.parent.moveCenter(i2, s2), this.parent.emit("moved", { viewport: this.parent, type: "snap" }), n2 && (this.options.removeOnComplete && this.parent.plugins.remove("snap"), this.parent.emit("snap-end", this.parent), this.snapping = null);
-        } else {
-          const e2 = this.options.topLeft ? this.parent.corner : this.parent.center;
-          (e2.x !== this.x || e2.y !== this.y) && this.snapStart();
+    return false;
+  }
+  resume() {
+    this.last = null, this.paused = false;
+  }
+  clamp() {
+    const t2 = this.parent.plugins.get("decelerate", true) || {};
+    if (this.options.clampWheel !== "y")
+      if (this.parent.screenWorldWidth < this.parent.screenWidth)
+        switch (this.underflowX) {
+          case -1:
+            this.parent.x = 0;
+            break;
+          case 1:
+            this.parent.x = this.parent.screenWidth - this.parent.screenWorldWidth;
+            break;
+          default:
+            this.parent.x = (this.parent.screenWidth - this.parent.screenWorldWidth) / 2;
         }
-    }
-  };
-  Q = {
-    width: 0,
-    height: 0,
-    time: 1000,
-    ease: "easeInOutSine",
-    center: null,
-    interrupt: true,
-    removeOnComplete: false,
-    removeOnInterrupt: false,
-    forceStart: false,
-    noMove: false
-  };
-  G = class G extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, Q, e2), this.ease = x2(this.options.ease), this.xIndependent = false, this.yIndependent = false, this.xScale = 0, this.yScale = 0, this.options.width > 0 && (this.xScale = t2.screenWidth / this.options.width, this.xIndependent = true), this.options.height > 0 && (this.yScale = t2.screenHeight / this.options.height, this.yIndependent = true), this.xScale = this.xIndependent ? this.xScale : this.yScale, this.yScale = this.yIndependent ? this.yScale : this.xScale, this.options.time === 0 ? (t2.container.scale.x = this.xScale, t2.container.scale.y = this.yScale, this.options.removeOnComplete && this.parent.plugins.remove("snap-zoom")) : e2.forceStart && this.createSnapping();
-    }
-    createSnapping() {
-      const t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, n2 = this.parent.screenWidth / this.xScale, i2 = this.parent.screenHeight / this.yScale;
-      this.snapping = {
-        time: 0,
-        startX: t2,
-        startY: e2,
-        deltaX: n2 - t2,
-        deltaY: i2 - e2
-      }, this.parent.emit("snap-zoom-start", this.parent);
-    }
-    resize() {
-      this.snapping = null, this.options.width > 0 && (this.xScale = this.parent.screenWidth / this.options.width), this.options.height > 0 && (this.yScale = this.parent.screenHeight / this.options.height), this.xScale = this.xIndependent ? this.xScale : this.yScale, this.yScale = this.yIndependent ? this.yScale : this.xScale;
-    }
-    wheel() {
-      return this.options.removeOnInterrupt && this.parent.plugins.remove("snap-zoom"), false;
-    }
-    down() {
-      return this.options.removeOnInterrupt ? this.parent.plugins.remove("snap-zoom") : this.options.interrupt && (this.snapping = null), false;
-    }
-    update(t2) {
-      if (this.paused || this.options.interrupt && this.parent.input.count() !== 0)
+      else
+        this.parent.left < 0 ? (this.parent.x = 0, t2.x = 0) : this.parent.right > this.parent.worldWidth && (this.parent.x = -this.parent.worldWidth * this.parent.scale.x + this.parent.screenWidth, t2.x = 0);
+    if (this.options.clampWheel !== "x")
+      if (this.parent.screenWorldHeight < this.parent.screenHeight)
+        switch (this.underflowY) {
+          case -1:
+            this.parent.y = 0;
+            break;
+          case 1:
+            this.parent.y = this.parent.screenHeight - this.parent.screenWorldHeight;
+            break;
+          default:
+            this.parent.y = (this.parent.screenHeight - this.parent.screenWorldHeight) / 2;
+        }
+      else
+        this.parent.top < 0 && (this.parent.y = 0, t2.y = 0), this.parent.bottom > this.parent.worldHeight && (this.parent.y = -this.parent.worldHeight * this.parent.scale.y + this.parent.screenHeight, t2.y = 0);
+  }
+}
+var F = {
+  speed: 0,
+  acceleration: null,
+  radius: null
+};
+
+class B extends u2 {
+  constructor(t2, e2, n2 = {}) {
+    super(t2), this.target = e2, this.options = Object.assign({}, F, n2), this.velocity = { x: 0, y: 0 };
+  }
+  update(t2) {
+    if (this.paused)
+      return;
+    const e2 = this.parent.center;
+    let n2 = this.target.x, i2 = this.target.y;
+    if (this.options.radius)
+      if (Math.sqrt(Math.pow(this.target.y - e2.y, 2) + Math.pow(this.target.x - e2.x, 2)) > this.options.radius) {
+        const r2 = Math.atan2(this.target.y - e2.y, this.target.x - e2.x);
+        n2 = this.target.x - Math.cos(r2) * this.options.radius, i2 = this.target.y - Math.sin(r2) * this.options.radius;
+      } else
         return;
-      let e2;
-      if (!this.options.center && !this.options.noMove && (e2 = this.parent.center), !this.snapping)
-        (this.parent.scale.x !== this.xScale || this.parent.scale.y !== this.yScale) && this.createSnapping();
-      else if (this.snapping) {
-        const n2 = this.snapping;
-        if (n2.time += t2, n2.time >= this.options.time)
-          this.parent.scale.set(this.xScale, this.yScale), this.options.removeOnComplete && this.parent.plugins.remove("snap-zoom"), this.parent.emit("snap-zoom-end", this.parent), this.snapping = null;
-        else {
-          const s2 = this.snapping, h2 = this.ease(s2.time, s2.startX, s2.deltaX, this.options.time), o2 = this.ease(s2.time, s2.startY, s2.deltaY, this.options.time);
-          this.parent.scale.x = this.parent.screenWidth / h2, this.parent.scale.y = this.parent.screenHeight / o2;
+    const s2 = n2 - e2.x, h2 = i2 - e2.y;
+    if (s2 || h2)
+      if (this.options.speed)
+        if (this.options.acceleration) {
+          const o2 = Math.atan2(i2 - e2.y, n2 - e2.x), r2 = Math.sqrt(Math.pow(s2, 2) + Math.pow(h2, 2));
+          if (r2) {
+            const a2 = (Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)) / (2 * this.options.acceleration);
+            r2 > a2 ? this.velocity = {
+              x: Math.min(this.velocity.x + (this.options.acceleration * t2, this.options.speed)),
+              y: Math.min(this.velocity.y + (this.options.acceleration * t2, this.options.speed))
+            } : this.velocity = {
+              x: Math.max(this.velocity.x - this.options.acceleration * this.options.speed, 0),
+              y: Math.max(this.velocity.y - this.options.acceleration * this.options.speed, 0)
+            };
+            const p2 = Math.cos(o2) * this.velocity.x, f2 = Math.sin(o2) * this.velocity.y, g2 = Math.abs(p2) > Math.abs(s2) ? n2 : e2.x + p2, w2 = Math.abs(f2) > Math.abs(h2) ? i2 : e2.y + f2;
+            this.parent.moveCenter(g2, w2), this.parent.emit("moved", { viewport: this.parent, type: "follow" });
+          }
+        } else {
+          const o2 = Math.atan2(i2 - e2.y, n2 - e2.x), r2 = Math.cos(o2) * this.options.speed, a2 = Math.sin(o2) * this.options.speed, p2 = Math.abs(r2) > Math.abs(s2) ? n2 : e2.x + r2, f2 = Math.abs(a2) > Math.abs(h2) ? i2 : e2.y + a2;
+          this.parent.moveCenter(p2, f2), this.parent.emit("moved", { viewport: this.parent, type: "follow" });
         }
-        const i2 = this.parent.plugins.get("clamp-zoom", true);
-        i2 && i2.clamp(), this.options.noMove || (this.options.center ? this.parent.moveCenter(this.options.center) : this.parent.moveCenter(e2));
-      }
+      else
+        this.parent.moveCenter(n2, i2), this.parent.emit("moved", { viewport: this.parent, type: "follow" });
+  }
+}
+var N2 = {
+  radius: null,
+  distance: null,
+  top: null,
+  bottom: null,
+  left: null,
+  right: null,
+  speed: 8,
+  reverse: false,
+  noDecelerate: false,
+  linear: false,
+  allowButtons: false
+};
+
+class V extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, N2, e2), this.reverse = this.options.reverse ? 1 : -1, this.radiusSquared = typeof this.options.radius == "number" ? Math.pow(this.options.radius, 2) : null, this.resize();
+  }
+  resize() {
+    const t2 = this.options.distance;
+    t2 !== null ? (this.left = t2, this.top = t2, this.right = this.parent.screenWidth - t2, this.bottom = this.parent.screenHeight - t2) : this.options.radius || (this.left = this.options.left, this.top = this.options.top, this.right = this.options.right === null ? null : this.parent.screenWidth - this.options.right, this.bottom = this.options.bottom === null ? null : this.parent.screenHeight - this.options.bottom);
+  }
+  down() {
+    return this.paused || this.options.allowButtons || (this.horizontal = this.vertical = null), false;
+  }
+  move(t2) {
+    if (this.paused || t2.pointerType !== "mouse" && t2.pointerId !== 1 || !this.options.allowButtons && t2.buttons !== 0)
+      return false;
+    const e2 = t2.global.x, n2 = t2.global.y;
+    if (this.radiusSquared) {
+      const i2 = this.parent.toScreen(this.parent.center);
+      if (Math.pow(i2.x - e2, 2) + Math.pow(i2.y - n2, 2) >= this.radiusSquared) {
+        const h2 = Math.atan2(i2.y - n2, i2.x - e2);
+        this.options.linear ? (this.horizontal = Math.round(Math.cos(h2)) * this.options.speed * this.reverse * (60 / 1000), this.vertical = Math.round(Math.sin(h2)) * this.options.speed * this.reverse * (60 / 1000)) : (this.horizontal = Math.cos(h2) * this.options.speed * this.reverse * (60 / 1000), this.vertical = Math.sin(h2) * this.options.speed * this.reverse * (60 / 1000));
+      } else
+        this.horizontal && this.decelerateHorizontal(), this.vertical && this.decelerateVertical(), this.horizontal = this.vertical = 0;
+    } else
+      this.left !== null && e2 < this.left ? this.horizontal = Number(this.reverse) * this.options.speed * (60 / 1000) : this.right !== null && e2 > this.right ? this.horizontal = -1 * this.reverse * this.options.speed * (60 / 1000) : (this.decelerateHorizontal(), this.horizontal = 0), this.top !== null && n2 < this.top ? this.vertical = Number(this.reverse) * this.options.speed * (60 / 1000) : this.bottom !== null && n2 > this.bottom ? this.vertical = -1 * this.reverse * this.options.speed * (60 / 1000) : (this.decelerateVertical(), this.vertical = 0);
+    return false;
+  }
+  decelerateHorizontal() {
+    const t2 = this.parent.plugins.get("decelerate", true);
+    this.horizontal && t2 && !this.options.noDecelerate && t2.activate({ x: this.horizontal * this.options.speed * this.reverse / (1000 / 60) });
+  }
+  decelerateVertical() {
+    const t2 = this.parent.plugins.get("decelerate", true);
+    this.vertical && t2 && !this.options.noDecelerate && t2.activate({ y: this.vertical * this.options.speed * this.reverse / (1000 / 60) });
+  }
+  up() {
+    return this.paused || (this.horizontal && this.decelerateHorizontal(), this.vertical && this.decelerateVertical(), this.horizontal = this.vertical = null), false;
+  }
+  update() {
+    if (!this.paused && (this.horizontal || this.vertical)) {
+      const t2 = this.parent.center;
+      this.horizontal && (t2.x += this.horizontal * this.options.speed), this.vertical && (t2.y += this.vertical * this.options.speed), this.parent.moveCenter(t2), this.parent.emit("moved", { viewport: this.parent, type: "mouse-edges" });
     }
-    resume() {
-      this.snapping = null, super.resume();
-    }
-  };
-  J = {
-    percent: 0.1,
-    smooth: false,
-    interrupt: true,
-    reverse: false,
-    center: null,
-    lineHeight: 20,
-    axis: "all",
-    keyToPress: null,
-    trackpadPinch: false,
-    wheelZoom: true
-  };
-  $2 = class $2 extends u2 {
-    constructor(t2, e2 = {}) {
-      super(t2), this.options = Object.assign({}, J, e2), this.keyIsPressed = false, this.options.keyToPress && this.handleKeyPresses(this.options.keyToPress);
-    }
-    handleKeyPresses(t2) {
-      typeof window > "u" || (window.addEventListener("keydown", (e2) => {
-        t2.includes(e2.code) && (this.keyIsPressed = true);
-      }), window.addEventListener("keyup", (e2) => {
-        t2.includes(e2.code) && (this.keyIsPressed = false);
-      }));
-    }
-    checkKeyPress() {
-      return !this.options.keyToPress || this.keyIsPressed;
-    }
-    down() {
-      return this.options.interrupt && (this.smoothing = null), false;
-    }
-    isAxisX() {
-      return ["all", "x"].includes(this.options.axis);
-    }
-    isAxisY() {
-      return ["all", "y"].includes(this.options.axis);
-    }
-    update() {
-      if (this.smoothing) {
-        const t2 = this.smoothingCenter, e2 = this.smoothing;
-        let n2;
-        this.options.center || (n2 = this.parent.toLocal(t2)), this.isAxisX() && (this.parent.scale.x += e2.x), this.isAxisY() && (this.parent.scale.y += e2.y), this.parent.emit("zoomed", { viewport: this.parent, type: "wheel" });
-        const i2 = this.parent.plugins.get("clamp-zoom", true);
-        if (i2 && i2.clamp(), this.options.center)
+  }
+}
+var Z = {
+  noDrag: false,
+  percent: 1,
+  center: null,
+  factor: 1,
+  axis: "all"
+};
+var R = new Point;
+
+class j2 extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.active = false, this.pinching = false, this.moved = false, this.options = Object.assign({}, Z, e2);
+  }
+  down() {
+    return this.parent.input.count() >= 2 ? (this.active = true, true) : false;
+  }
+  isAxisX() {
+    return ["all", "x"].includes(this.options.axis);
+  }
+  isAxisY() {
+    return ["all", "y"].includes(this.options.axis);
+  }
+  move(t2) {
+    if (this.paused || !this.active)
+      return false;
+    const { x: e2, y: n2 } = (this.parent.parent || this.parent).toLocal(t2.global, undefined, R), i2 = this.parent.input.touches;
+    if (i2.length >= 2) {
+      const s2 = i2[0], h2 = i2[1], o2 = s2.last && h2.last ? Math.sqrt(Math.pow(h2.last.x - s2.last.x, 2) + Math.pow(h2.last.y - s2.last.y, 2)) : null;
+      if (s2.id === t2.pointerId ? s2.last = { x: e2, y: n2, data: t2 } : h2.id === t2.pointerId && (h2.last = { x: e2, y: n2, data: t2 }), o2) {
+        let r2;
+        const a2 = new Point(s2.last.x + (h2.last.x - s2.last.x) / 2, s2.last.y + (h2.last.y - s2.last.y) / 2);
+        this.options.center || (r2 = this.parent.toLocal(a2, this.parent.parent || this.parent));
+        let p2 = Math.sqrt(Math.pow(h2.last.x - s2.last.x, 2) + Math.pow(h2.last.y - s2.last.y, 2));
+        p2 = p2 === 0 ? p2 = 0.0000000001 : p2;
+        const f2 = (1 - o2 / p2) * this.options.percent * (this.isAxisX() ? this.parent.scale.x : this.parent.scale.y);
+        this.isAxisX() && (this.parent.scale.x += f2), this.isAxisY() && (this.parent.scale.y += f2), this.parent.emit("zoomed", {
+          viewport: this.parent,
+          type: "pinch",
+          center: a2
+        });
+        const g2 = this.parent.plugins.get("clamp-zoom", true);
+        if (g2 && g2.clamp(), this.options.center)
           this.parent.moveCenter(this.options.center);
         else {
-          const s2 = this.parent.parent || this.parent;
-          s2.toLocal(n2, this.parent, n2);
-          const h2 = s2.toLocal(t2);
-          this.parent.x += h2.x - n2.x, this.parent.y += h2.y - n2.y;
+          const w2 = (this.parent.parent || this.parent).toLocal(r2, this.parent);
+          this.parent.x += (a2.x - w2.x) * this.options.factor, this.parent.y += (a2.y - w2.y) * this.options.factor, this.parent.emit("moved", { viewport: this.parent, type: "pinch" });
         }
-        this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.smoothingCount++, typeof this.options.smooth == "number" && this.smoothingCount >= this.options.smooth && (this.smoothing = null);
-      }
+        !this.options.noDrag && this.lastCenter && (this.parent.x += (a2.x - this.lastCenter.x) * this.options.factor, this.parent.y += (a2.y - this.lastCenter.y) * this.options.factor, this.parent.emit("moved", { viewport: this.parent, type: "pinch" })), this.lastCenter = a2, this.moved = true;
+      } else
+        this.pinching || (this.parent.emit("pinch-start", this.parent), this.pinching = true);
+      return true;
     }
-    pinch(t2) {
-      if (this.paused)
-        return;
-      const e2 = this.parent.input.getPointerPosition(t2), n2 = -t2.deltaY * (t2.deltaMode ? this.options.lineHeight : 1) / 200, i2 = Math.pow(2, (1 + this.options.percent) * n2);
-      let s2;
-      this.options.center || (s2 = this.parent.toLocal(e2)), this.isAxisX() && (this.parent.scale.x *= i2), this.isAxisY() && (this.parent.scale.y *= i2), this.parent.emit("zoomed", { viewport: this.parent, type: "wheel" });
-      const h2 = this.parent.plugins.get("clamp-zoom", true);
-      if (h2 && h2.clamp(), this.options.center)
+    return false;
+  }
+  up() {
+    return this.pinching && this.parent.input.touches.length <= 1 ? (this.active = false, this.lastCenter = null, this.pinching = false, this.moved = false, this.parent.emit("pinch-end", this.parent), true) : false;
+  }
+}
+var K = {
+  topLeft: false,
+  friction: 0.8,
+  time: 1000,
+  ease: "easeInOutSine",
+  interrupt: true,
+  removeOnComplete: false,
+  removeOnInterrupt: false,
+  forceStart: false
+};
+
+class q extends u2 {
+  constructor(t2, e2, n2, i2 = {}) {
+    super(t2), this.options = Object.assign({}, K, i2), this.ease = x2(i2.ease, "easeInOutSine"), this.x = e2, this.y = n2, this.options.forceStart && this.snapStart();
+  }
+  snapStart() {
+    this.percent = 0, this.snapping = { time: 0 };
+    const t2 = this.options.topLeft ? this.parent.corner : this.parent.center;
+    this.deltaX = this.x - t2.x, this.deltaY = this.y - t2.y, this.startX = t2.x, this.startY = t2.y, this.parent.emit("snap-start", this.parent);
+  }
+  wheel() {
+    return this.options.removeOnInterrupt && this.parent.plugins.remove("snap"), false;
+  }
+  down() {
+    return this.options.removeOnInterrupt ? this.parent.plugins.remove("snap") : this.options.interrupt && (this.snapping = null), false;
+  }
+  up() {
+    if (this.parent.input.count() === 0) {
+      const t2 = this.parent.plugins.get("decelerate", true);
+      t2 && (t2.x || t2.y) && (t2.percentChangeX = t2.percentChangeY = this.options.friction);
+    }
+    return false;
+  }
+  update(t2) {
+    if (!this.paused && !(this.options.interrupt && this.parent.input.count() !== 0))
+      if (this.snapping) {
+        const e2 = this.snapping;
+        e2.time += t2;
+        let n2, i2, s2;
+        const h2 = this.startX, o2 = this.startY, r2 = this.deltaX, a2 = this.deltaY;
+        if (e2.time > this.options.time)
+          n2 = true, i2 = h2 + r2, s2 = o2 + a2;
+        else {
+          const p2 = this.ease(e2.time, 0, 1, this.options.time);
+          i2 = h2 + r2 * p2, s2 = o2 + a2 * p2;
+        }
+        this.options.topLeft ? this.parent.moveCorner(i2, s2) : this.parent.moveCenter(i2, s2), this.parent.emit("moved", { viewport: this.parent, type: "snap" }), n2 && (this.options.removeOnComplete && this.parent.plugins.remove("snap"), this.parent.emit("snap-end", this.parent), this.snapping = null);
+      } else {
+        const e2 = this.options.topLeft ? this.parent.corner : this.parent.center;
+        (e2.x !== this.x || e2.y !== this.y) && this.snapStart();
+      }
+  }
+}
+var Q = {
+  width: 0,
+  height: 0,
+  time: 1000,
+  ease: "easeInOutSine",
+  center: null,
+  interrupt: true,
+  removeOnComplete: false,
+  removeOnInterrupt: false,
+  forceStart: false,
+  noMove: false
+};
+
+class G extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, Q, e2), this.ease = x2(this.options.ease), this.xIndependent = false, this.yIndependent = false, this.xScale = 0, this.yScale = 0, this.options.width > 0 && (this.xScale = t2.screenWidth / this.options.width, this.xIndependent = true), this.options.height > 0 && (this.yScale = t2.screenHeight / this.options.height, this.yIndependent = true), this.xScale = this.xIndependent ? this.xScale : this.yScale, this.yScale = this.yIndependent ? this.yScale : this.xScale, this.options.time === 0 ? (t2.container.scale.x = this.xScale, t2.container.scale.y = this.yScale, this.options.removeOnComplete && this.parent.plugins.remove("snap-zoom")) : e2.forceStart && this.createSnapping();
+  }
+  createSnapping() {
+    const t2 = this.parent.worldScreenWidth, e2 = this.parent.worldScreenHeight, n2 = this.parent.screenWidth / this.xScale, i2 = this.parent.screenHeight / this.yScale;
+    this.snapping = {
+      time: 0,
+      startX: t2,
+      startY: e2,
+      deltaX: n2 - t2,
+      deltaY: i2 - e2
+    }, this.parent.emit("snap-zoom-start", this.parent);
+  }
+  resize() {
+    this.snapping = null, this.options.width > 0 && (this.xScale = this.parent.screenWidth / this.options.width), this.options.height > 0 && (this.yScale = this.parent.screenHeight / this.options.height), this.xScale = this.xIndependent ? this.xScale : this.yScale, this.yScale = this.yIndependent ? this.yScale : this.xScale;
+  }
+  wheel() {
+    return this.options.removeOnInterrupt && this.parent.plugins.remove("snap-zoom"), false;
+  }
+  down() {
+    return this.options.removeOnInterrupt ? this.parent.plugins.remove("snap-zoom") : this.options.interrupt && (this.snapping = null), false;
+  }
+  update(t2) {
+    if (this.paused || this.options.interrupt && this.parent.input.count() !== 0)
+      return;
+    let e2;
+    if (!this.options.center && !this.options.noMove && (e2 = this.parent.center), !this.snapping)
+      (this.parent.scale.x !== this.xScale || this.parent.scale.y !== this.yScale) && this.createSnapping();
+    else if (this.snapping) {
+      const n2 = this.snapping;
+      if (n2.time += t2, n2.time >= this.options.time)
+        this.parent.scale.set(this.xScale, this.yScale), this.options.removeOnComplete && this.parent.plugins.remove("snap-zoom"), this.parent.emit("snap-zoom-end", this.parent), this.snapping = null;
+      else {
+        const s2 = this.snapping, h2 = this.ease(s2.time, s2.startX, s2.deltaX, this.options.time), o2 = this.ease(s2.time, s2.startY, s2.deltaY, this.options.time);
+        this.parent.scale.x = this.parent.screenWidth / h2, this.parent.scale.y = this.parent.screenHeight / o2;
+      }
+      const i2 = this.parent.plugins.get("clamp-zoom", true);
+      i2 && i2.clamp(), this.options.noMove || (this.options.center ? this.parent.moveCenter(this.options.center) : this.parent.moveCenter(e2));
+    }
+  }
+  resume() {
+    this.snapping = null, super.resume();
+  }
+}
+var J = {
+  percent: 0.1,
+  smooth: false,
+  interrupt: true,
+  reverse: false,
+  center: null,
+  lineHeight: 20,
+  axis: "all",
+  keyToPress: null,
+  trackpadPinch: false,
+  wheelZoom: true
+};
+
+class $2 extends u2 {
+  constructor(t2, e2 = {}) {
+    super(t2), this.options = Object.assign({}, J, e2), this.keyIsPressed = false, this.options.keyToPress && this.handleKeyPresses(this.options.keyToPress);
+  }
+  handleKeyPresses(t2) {
+    typeof window > "u" || (window.addEventListener("keydown", (e2) => {
+      t2.includes(e2.code) && (this.keyIsPressed = true);
+    }), window.addEventListener("keyup", (e2) => {
+      t2.includes(e2.code) && (this.keyIsPressed = false);
+    }));
+  }
+  checkKeyPress() {
+    return !this.options.keyToPress || this.keyIsPressed;
+  }
+  down() {
+    return this.options.interrupt && (this.smoothing = null), false;
+  }
+  isAxisX() {
+    return ["all", "x"].includes(this.options.axis);
+  }
+  isAxisY() {
+    return ["all", "y"].includes(this.options.axis);
+  }
+  update() {
+    if (this.smoothing) {
+      const t2 = this.smoothingCenter, e2 = this.smoothing;
+      let n2;
+      this.options.center || (n2 = this.parent.toLocal(t2)), this.isAxisX() && (this.parent.scale.x += e2.x), this.isAxisY() && (this.parent.scale.y += e2.y), this.parent.emit("zoomed", { viewport: this.parent, type: "wheel" });
+      const i2 = this.parent.plugins.get("clamp-zoom", true);
+      if (i2 && i2.clamp(), this.options.center)
         this.parent.moveCenter(this.options.center);
       else {
-        const o2 = this.parent.parent || this.parent;
-        o2.toLocal(s2, this.parent, s2);
-        const r2 = o2.toLocal(e2);
-        this.parent.x += r2.x - s2.x, this.parent.y += r2.y - s2.y;
+        const s2 = this.parent.parent || this.parent;
+        s2.toLocal(n2, this.parent, n2);
+        const h2 = s2.toLocal(t2);
+        this.parent.x += h2.x - n2.x, this.parent.y += h2.y - n2.y;
+      }
+      this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.smoothingCount++, typeof this.options.smooth == "number" && this.smoothingCount >= this.options.smooth && (this.smoothing = null);
+    }
+  }
+  pinch(t2) {
+    if (this.paused)
+      return;
+    const e2 = this.parent.input.getPointerPosition(t2), n2 = -t2.deltaY * (t2.deltaMode ? this.options.lineHeight : 1) / 200, i2 = Math.pow(2, (1 + this.options.percent) * n2);
+    let s2;
+    this.options.center || (s2 = this.parent.toLocal(e2)), this.isAxisX() && (this.parent.scale.x *= i2), this.isAxisY() && (this.parent.scale.y *= i2), this.parent.emit("zoomed", { viewport: this.parent, type: "wheel" });
+    const h2 = this.parent.plugins.get("clamp-zoom", true);
+    if (h2 && h2.clamp(), this.options.center)
+      this.parent.moveCenter(this.options.center);
+    else {
+      const o2 = this.parent.parent || this.parent;
+      o2.toLocal(s2, this.parent, s2);
+      const r2 = o2.toLocal(e2);
+      this.parent.x += r2.x - s2.x, this.parent.y += r2.y - s2.y;
+    }
+    this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.parent.emit("wheel-start", { event: t2, viewport: this.parent });
+  }
+  wheel(t2) {
+    if (this.paused || !this.checkKeyPress())
+      return false;
+    if (t2.ctrlKey && this.options.trackpadPinch)
+      this.pinch(t2);
+    else if (this.options.wheelZoom) {
+      const e2 = this.parent.input.getPointerPosition(t2), i2 = (this.options.reverse ? -1 : 1) * -t2.deltaY * (t2.deltaMode ? this.options.lineHeight : 1) / 500, s2 = Math.pow(2, (1 + this.options.percent) * i2);
+      if (this.options.smooth) {
+        const h2 = {
+          x: this.smoothing ? this.smoothing.x * (this.options.smooth - this.smoothingCount) : 0,
+          y: this.smoothing ? this.smoothing.y * (this.options.smooth - this.smoothingCount) : 0
+        };
+        this.smoothing = {
+          x: ((this.parent.scale.x + h2.x) * s2 - this.parent.scale.x) / this.options.smooth,
+          y: ((this.parent.scale.y + h2.y) * s2 - this.parent.scale.y) / this.options.smooth
+        }, this.smoothingCount = 0, this.smoothingCenter = e2;
+      } else {
+        let h2;
+        this.options.center || (h2 = this.parent.toLocal(e2)), this.isAxisX() && (this.parent.scale.x *= s2), this.isAxisY() && (this.parent.scale.y *= s2), this.parent.emit("zoomed", { viewport: this.parent, type: "wheel" });
+        const o2 = this.parent.plugins.get("clamp-zoom", true);
+        if (o2 && o2.clamp(), this.options.center)
+          this.parent.moveCenter(this.options.center);
+        else {
+          const r2 = this.parent.parent || this.parent;
+          r2.toLocal(h2, this.parent, h2);
+          const a2 = r2.toLocal(e2);
+          this.parent.x += a2.x - h2.x, this.parent.y += a2.y - h2.y;
+        }
       }
       this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.parent.emit("wheel-start", { event: t2, viewport: this.parent });
     }
-    wheel(t2) {
-      if (this.paused || !this.checkKeyPress())
-        return false;
-      if (t2.ctrlKey && this.options.trackpadPinch)
-        this.pinch(t2);
-      else if (this.options.wheelZoom) {
-        const e2 = this.parent.input.getPointerPosition(t2), i2 = (this.options.reverse ? -1 : 1) * -t2.deltaY * (t2.deltaMode ? this.options.lineHeight : 1) / 500, s2 = Math.pow(2, (1 + this.options.percent) * i2);
-        if (this.options.smooth) {
-          const h2 = {
-            x: this.smoothing ? this.smoothing.x * (this.options.smooth - this.smoothingCount) : 0,
-            y: this.smoothing ? this.smoothing.y * (this.options.smooth - this.smoothingCount) : 0
-          };
-          this.smoothing = {
-            x: ((this.parent.scale.x + h2.x) * s2 - this.parent.scale.x) / this.options.smooth,
-            y: ((this.parent.scale.y + h2.y) * s2 - this.parent.scale.y) / this.options.smooth
-          }, this.smoothingCount = 0, this.smoothingCenter = e2;
-        } else {
-          let h2;
-          this.options.center || (h2 = this.parent.toLocal(e2)), this.isAxisX() && (this.parent.scale.x *= s2), this.isAxisY() && (this.parent.scale.y *= s2), this.parent.emit("zoomed", { viewport: this.parent, type: "wheel" });
-          const o2 = this.parent.plugins.get("clamp-zoom", true);
-          if (o2 && o2.clamp(), this.options.center)
-            this.parent.moveCenter(this.options.center);
-          else {
-            const r2 = this.parent.parent || this.parent;
-            r2.toLocal(h2, this.parent, h2);
-            const a2 = r2.toLocal(e2);
-            this.parent.x += a2.x - h2.x, this.parent.y += a2.y - h2.y;
-          }
-        }
-        this.parent.emit("moved", { viewport: this.parent, type: "wheel" }), this.parent.emit("wheel-start", { event: t2, viewport: this.parent });
-      }
-      return !this.parent.options.passiveWheel;
-    }
-  };
-  tt = {
-    screenWidth: typeof window > "u" ? 0 : window.innerWidth,
-    screenHeight: typeof window > "u" ? 0 : window.innerHeight,
-    worldWidth: null,
-    worldHeight: null,
-    threshold: 5,
-    passiveWheel: true,
-    stopPropagation: false,
-    forceHitArea: null,
-    noTicker: false,
-    disableOnContextMenu: false,
-    ticker: Ticker.shared,
-    allowPreserveDragOutside: false
-  };
-  it = class it extends Container {
-    constructor(t2) {
-      super(), this._disableOnContextMenu = (e2) => e2.preventDefault(), this.options = {
-        ...tt,
-        ...t2
-      }, this.screenWidth = this.options.screenWidth, this.screenHeight = this.options.screenHeight, this._worldWidth = this.options.worldWidth, this._worldHeight = this.options.worldHeight, this.forceHitArea = this.options.forceHitArea, this.threshold = this.options.threshold, this.options.disableOnContextMenu && this.options.events.domElement.addEventListener("contextmenu", this._disableOnContextMenu), this.options.noTicker || (this.tickerFunction = () => this.update(this.options.ticker.elapsedMS), this.options.ticker.add(this.tickerFunction)), this.input = new P(this), this.plugins = new C(this);
-    }
-    destroy(t2) {
-      var e2;
-      !this.options.noTicker && this.tickerFunction && this.options.ticker.remove(this.tickerFunction), this.options.disableOnContextMenu && ((e2 = this.options.events.domElement) == null || e2.removeEventListener("contextmenu", this._disableOnContextMenu)), this.input.destroy(), super.destroy(t2);
-    }
-    update(t2) {
-      this.pause || (this.plugins.update(t2), this.lastViewport && (this.lastViewport.x !== this.x || this.lastViewport.y !== this.y ? this.moving = true : this.moving && (this.emit("moved-end", this), this.moving = false), this.lastViewport.scaleX !== this.scale.x || this.lastViewport.scaleY !== this.scale.y ? this.zooming = true : this.zooming && (this.emit("zoomed-end", this), this.zooming = false)), this.forceHitArea || (this._hitAreaDefault = new Rectangle(this.left, this.top, this.worldScreenWidth, this.worldScreenHeight), this.hitArea = this._hitAreaDefault), this._dirty = this._dirty || !this.lastViewport || this.lastViewport.x !== this.x || this.lastViewport.y !== this.y || this.lastViewport.scaleX !== this.scale.x || this.lastViewport.scaleY !== this.scale.y, this.lastViewport = {
-        x: this.x,
-        y: this.y,
-        scaleX: this.scale.x,
-        scaleY: this.scale.y
-      }, this.emit("frame-end", this));
-    }
-    resize(t2 = typeof window > "u" ? 0 : window.innerWidth, e2 = typeof window > "u" ? 0 : window.innerHeight, n2, i2) {
-      this.screenWidth = t2, this.screenHeight = e2, typeof n2 < "u" && (this._worldWidth = n2), typeof i2 < "u" && (this._worldHeight = i2), this.plugins.resize(), this.dirty = true;
-    }
-    get worldWidth() {
-      return this._worldWidth ? this._worldWidth : this.width / this.scale.x;
-    }
-    set worldWidth(t2) {
-      this._worldWidth = t2, this.plugins.resize();
-    }
-    get worldHeight() {
-      return this._worldHeight ? this._worldHeight : this.height / this.scale.y;
-    }
-    set worldHeight(t2) {
-      this._worldHeight = t2, this.plugins.resize();
-    }
-    getVisibleBounds() {
-      return new Rectangle(this.left, this.top, this.worldScreenWidth, this.worldScreenHeight);
-    }
-    toWorld(t2, e2) {
-      return arguments.length === 2 ? this.toLocal(new Point(t2, e2)) : this.toLocal(t2);
-    }
-    toScreen(t2, e2) {
-      return arguments.length === 2 ? this.toGlobal(new Point(t2, e2)) : this.toGlobal(t2);
-    }
-    get worldScreenWidth() {
-      return this.screenWidth / this.scale.x;
-    }
-    get worldScreenHeight() {
-      return this.screenHeight / this.scale.y;
-    }
-    get screenWorldWidth() {
-      return this.worldWidth * this.scale.x;
-    }
-    get screenWorldHeight() {
-      return this.worldHeight * this.scale.y;
-    }
-    get center() {
-      return new Point(this.worldScreenWidth / 2 - this.x / this.scale.x, this.worldScreenHeight / 2 - this.y / this.scale.y);
-    }
-    set center(t2) {
-      this.moveCenter(t2);
-    }
-    moveCenter(...t2) {
-      let e2, n2;
-      typeof t2[0] == "number" ? (e2 = t2[0], n2 = t2[1]) : (e2 = t2[0].x, n2 = t2[0].y);
-      const i2 = (this.worldScreenWidth / 2 - e2) * this.scale.x, s2 = (this.worldScreenHeight / 2 - n2) * this.scale.y;
-      return (this.x !== i2 || this.y !== s2) && (this.position.set(i2, s2), this.plugins.reset(), this.dirty = true), this;
-    }
-    get corner() {
-      return new Point(-this.x / this.scale.x, -this.y / this.scale.y);
-    }
-    set corner(t2) {
-      this.moveCorner(t2);
-    }
-    moveCorner(...t2) {
-      let e2, n2;
-      return t2.length === 1 ? (e2 = -t2[0].x * this.scale.x, n2 = -t2[0].y * this.scale.y) : (e2 = -t2[0] * this.scale.x, n2 = -t2[1] * this.scale.y), (e2 !== this.x || n2 !== this.y) && (this.position.set(e2, n2), this.plugins.reset(), this.dirty = true), this;
-    }
-    get screenWidthInWorldPixels() {
-      return this.screenWidth / this.scale.x;
-    }
-    get screenHeightInWorldPixels() {
-      return this.screenHeight / this.scale.y;
-    }
-    findFitWidth(t2) {
-      return this.screenWidth / t2;
-    }
-    findFitHeight(t2) {
-      return this.screenHeight / t2;
-    }
-    findFit(t2, e2) {
-      const n2 = this.screenWidth / t2, i2 = this.screenHeight / e2;
-      return Math.min(n2, i2);
-    }
-    findCover(t2, e2) {
-      const n2 = this.screenWidth / t2, i2 = this.screenHeight / e2;
-      return Math.max(n2, i2);
-    }
-    fitWidth(t2 = this.worldWidth, e2, n2 = true, i2) {
-      let s2;
-      e2 && (s2 = this.center), this.scale.x = this.screenWidth / t2, n2 && (this.scale.y = this.scale.x);
-      const h2 = this.plugins.get("clamp-zoom", true);
-      return !i2 && h2 && h2.clamp(), e2 && s2 && this.moveCenter(s2), this;
-    }
-    fitHeight(t2 = this.worldHeight, e2, n2 = true, i2) {
-      let s2;
-      e2 && (s2 = this.center), this.scale.y = this.screenHeight / t2, n2 && (this.scale.x = this.scale.y);
-      const h2 = this.plugins.get("clamp-zoom", true);
-      return !i2 && h2 && h2.clamp(), e2 && s2 && this.moveCenter(s2), this;
-    }
-    fitWorld(t2) {
-      let e2;
-      t2 && (e2 = this.center), this.scale.x = this.screenWidth / this.worldWidth, this.scale.y = this.screenHeight / this.worldHeight, this.scale.x < this.scale.y ? this.scale.y = this.scale.x : this.scale.x = this.scale.y;
-      const n2 = this.plugins.get("clamp-zoom", true);
-      return n2 && n2.clamp(), t2 && e2 && this.moveCenter(e2), this;
-    }
-    fit(t2, e2 = this.worldWidth, n2 = this.worldHeight) {
-      let i2;
-      t2 && (i2 = this.center), this.scale.x = this.screenWidth / e2, this.scale.y = this.screenHeight / n2, this.scale.x < this.scale.y ? this.scale.y = this.scale.x : this.scale.x = this.scale.y;
-      const s2 = this.plugins.get("clamp-zoom", true);
-      return s2 && s2.clamp(), t2 && i2 && this.moveCenter(i2), this;
-    }
-    setZoom(t2, e2) {
-      let n2;
-      e2 && (n2 = this.center), this.scale.set(t2);
-      const i2 = this.plugins.get("clamp-zoom", true);
-      return i2 && i2.clamp(), e2 && n2 && this.moveCenter(n2), this;
-    }
-    zoomPercent(t2, e2) {
-      return this.setZoom(this.scale.x + this.scale.x * t2, e2);
-    }
-    zoom(t2, e2) {
-      return this.fitWidth(t2 + this.worldScreenWidth, e2), this;
-    }
-    get scaled() {
-      return this.scale.x;
-    }
-    set scaled(t2) {
-      this.setZoom(t2, true);
-    }
-    snapZoom(t2) {
-      return this.plugins.add("snap-zoom", new G(this, t2)), this;
-    }
-    OOB() {
-      return {
-        left: this.left < 0,
-        right: this.right > this.worldWidth,
-        top: this.top < 0,
-        bottom: this.bottom > this.worldHeight,
-        cornerPoint: new Point(this.worldWidth * this.scale.x - this.screenWidth, this.worldHeight * this.scale.y - this.screenHeight)
-      };
-    }
-    get right() {
-      return -this.x / this.scale.x + this.worldScreenWidth;
-    }
-    set right(t2) {
-      this.x = -t2 * this.scale.x + this.screenWidth, this.plugins.reset();
-    }
-    get left() {
-      return -this.x / this.scale.x;
-    }
-    set left(t2) {
-      this.x = -t2 * this.scale.x, this.plugins.reset();
-    }
-    get top() {
-      return -this.y / this.scale.y;
-    }
-    set top(t2) {
-      this.y = -t2 * this.scale.y, this.plugins.reset();
-    }
-    get bottom() {
-      return -this.y / this.scale.y + this.worldScreenHeight;
-    }
-    set bottom(t2) {
-      this.y = -t2 * this.scale.y + this.screenHeight, this.plugins.reset();
-    }
-    get dirty() {
-      return !!this._dirty;
-    }
-    set dirty(t2) {
-      this._dirty = t2;
-    }
-    get forceHitArea() {
-      return this._forceHitArea;
-    }
-    set forceHitArea(t2) {
-      t2 ? (this._forceHitArea = t2, this.hitArea = t2) : (this._forceHitArea = null, this.hitArea = new Rectangle(0, 0, this.worldWidth, this.worldHeight));
-    }
-    drag(t2) {
-      return this.plugins.add("drag", new U(this, t2)), this;
-    }
-    clamp(t2) {
-      return this.plugins.add("clamp", new A(this, t2)), this;
-    }
-    decelerate(t2) {
-      return this.plugins.add("decelerate", new E(this, t2)), this;
-    }
-    bounce(t2) {
-      return this.plugins.add("bounce", new X(this, t2)), this;
-    }
-    pinch(t2) {
-      return this.plugins.add("pinch", new j2(this, t2)), this;
-    }
-    snap(t2, e2, n2) {
-      return this.plugins.add("snap", new q(this, t2, e2, n2)), this;
-    }
-    follow(t2, e2) {
-      return this.plugins.add("follow", new B(this, t2, e2)), this;
-    }
-    wheel(t2) {
-      return this.plugins.add("wheel", new $2(this, t2)), this;
-    }
-    animate(t2) {
-      return this.plugins.add("animate", new k2(this, t2)), this;
-    }
-    clampZoom(t2) {
-      return this.plugins.add("clamp-zoom", new _(this, t2)), this;
-    }
-    mouseEdges(t2) {
-      return this.plugins.add("mouse-edges", new V(this, t2)), this;
-    }
-    get pause() {
-      return !!this._pause;
-    }
-    set pause(t2) {
-      this._pause = t2, this.lastViewport = null, this.moving = false, this.zooming = false, t2 && this.input.pause();
-    }
-    ensureVisible(t2, e2, n2, i2, s2) {
-      s2 && (n2 > this.worldScreenWidth || i2 > this.worldScreenHeight) && (this.fit(true, n2, i2), this.emit("zoomed", { viewport: this, type: "ensureVisible" }));
-      let h2 = false;
-      t2 < this.left ? (this.left = t2, h2 = true) : t2 + n2 > this.right && (this.right = t2 + n2, h2 = true), e2 < this.top ? (this.top = e2, h2 = true) : e2 + i2 > this.bottom && (this.bottom = e2 + i2, h2 = true), h2 && this.emit("moved", { viewport: this, type: "ensureVisible" });
-    }
-  };
-});
+    return !this.parent.options.passiveWheel;
+  }
+}
+var tt = {
+  screenWidth: typeof window > "u" ? 0 : window.innerWidth,
+  screenHeight: typeof window > "u" ? 0 : window.innerHeight,
+  worldWidth: null,
+  worldHeight: null,
+  threshold: 5,
+  passiveWheel: true,
+  stopPropagation: false,
+  forceHitArea: null,
+  noTicker: false,
+  disableOnContextMenu: false,
+  ticker: Ticker.shared,
+  allowPreserveDragOutside: false
+};
+
+class it extends Container {
+  constructor(t2) {
+    super(), this._disableOnContextMenu = (e2) => e2.preventDefault(), this.options = {
+      ...tt,
+      ...t2
+    }, this.screenWidth = this.options.screenWidth, this.screenHeight = this.options.screenHeight, this._worldWidth = this.options.worldWidth, this._worldHeight = this.options.worldHeight, this.forceHitArea = this.options.forceHitArea, this.threshold = this.options.threshold, this.options.disableOnContextMenu && this.options.events.domElement.addEventListener("contextmenu", this._disableOnContextMenu), this.options.noTicker || (this.tickerFunction = () => this.update(this.options.ticker.elapsedMS), this.options.ticker.add(this.tickerFunction)), this.input = new P(this), this.plugins = new C(this);
+  }
+  destroy(t2) {
+    var e2;
+    !this.options.noTicker && this.tickerFunction && this.options.ticker.remove(this.tickerFunction), this.options.disableOnContextMenu && ((e2 = this.options.events.domElement) == null || e2.removeEventListener("contextmenu", this._disableOnContextMenu)), this.input.destroy(), super.destroy(t2);
+  }
+  update(t2) {
+    this.pause || (this.plugins.update(t2), this.lastViewport && (this.lastViewport.x !== this.x || this.lastViewport.y !== this.y ? this.moving = true : this.moving && (this.emit("moved-end", this), this.moving = false), this.lastViewport.scaleX !== this.scale.x || this.lastViewport.scaleY !== this.scale.y ? this.zooming = true : this.zooming && (this.emit("zoomed-end", this), this.zooming = false)), this.forceHitArea || (this._hitAreaDefault = new Rectangle(this.left, this.top, this.worldScreenWidth, this.worldScreenHeight), this.hitArea = this._hitAreaDefault), this._dirty = this._dirty || !this.lastViewport || this.lastViewport.x !== this.x || this.lastViewport.y !== this.y || this.lastViewport.scaleX !== this.scale.x || this.lastViewport.scaleY !== this.scale.y, this.lastViewport = {
+      x: this.x,
+      y: this.y,
+      scaleX: this.scale.x,
+      scaleY: this.scale.y
+    }, this.emit("frame-end", this));
+  }
+  resize(t2 = typeof window > "u" ? 0 : window.innerWidth, e2 = typeof window > "u" ? 0 : window.innerHeight, n2, i2) {
+    this.screenWidth = t2, this.screenHeight = e2, typeof n2 < "u" && (this._worldWidth = n2), typeof i2 < "u" && (this._worldHeight = i2), this.plugins.resize(), this.dirty = true;
+  }
+  get worldWidth() {
+    return this._worldWidth ? this._worldWidth : this.width / this.scale.x;
+  }
+  set worldWidth(t2) {
+    this._worldWidth = t2, this.plugins.resize();
+  }
+  get worldHeight() {
+    return this._worldHeight ? this._worldHeight : this.height / this.scale.y;
+  }
+  set worldHeight(t2) {
+    this._worldHeight = t2, this.plugins.resize();
+  }
+  getVisibleBounds() {
+    return new Rectangle(this.left, this.top, this.worldScreenWidth, this.worldScreenHeight);
+  }
+  toWorld(t2, e2) {
+    return arguments.length === 2 ? this.toLocal(new Point(t2, e2)) : this.toLocal(t2);
+  }
+  toScreen(t2, e2) {
+    return arguments.length === 2 ? this.toGlobal(new Point(t2, e2)) : this.toGlobal(t2);
+  }
+  get worldScreenWidth() {
+    return this.screenWidth / this.scale.x;
+  }
+  get worldScreenHeight() {
+    return this.screenHeight / this.scale.y;
+  }
+  get screenWorldWidth() {
+    return this.worldWidth * this.scale.x;
+  }
+  get screenWorldHeight() {
+    return this.worldHeight * this.scale.y;
+  }
+  get center() {
+    return new Point(this.worldScreenWidth / 2 - this.x / this.scale.x, this.worldScreenHeight / 2 - this.y / this.scale.y);
+  }
+  set center(t2) {
+    this.moveCenter(t2);
+  }
+  moveCenter(...t2) {
+    let e2, n2;
+    typeof t2[0] == "number" ? (e2 = t2[0], n2 = t2[1]) : (e2 = t2[0].x, n2 = t2[0].y);
+    const i2 = (this.worldScreenWidth / 2 - e2) * this.scale.x, s2 = (this.worldScreenHeight / 2 - n2) * this.scale.y;
+    return (this.x !== i2 || this.y !== s2) && (this.position.set(i2, s2), this.plugins.reset(), this.dirty = true), this;
+  }
+  get corner() {
+    return new Point(-this.x / this.scale.x, -this.y / this.scale.y);
+  }
+  set corner(t2) {
+    this.moveCorner(t2);
+  }
+  moveCorner(...t2) {
+    let e2, n2;
+    return t2.length === 1 ? (e2 = -t2[0].x * this.scale.x, n2 = -t2[0].y * this.scale.y) : (e2 = -t2[0] * this.scale.x, n2 = -t2[1] * this.scale.y), (e2 !== this.x || n2 !== this.y) && (this.position.set(e2, n2), this.plugins.reset(), this.dirty = true), this;
+  }
+  get screenWidthInWorldPixels() {
+    return this.screenWidth / this.scale.x;
+  }
+  get screenHeightInWorldPixels() {
+    return this.screenHeight / this.scale.y;
+  }
+  findFitWidth(t2) {
+    return this.screenWidth / t2;
+  }
+  findFitHeight(t2) {
+    return this.screenHeight / t2;
+  }
+  findFit(t2, e2) {
+    const n2 = this.screenWidth / t2, i2 = this.screenHeight / e2;
+    return Math.min(n2, i2);
+  }
+  findCover(t2, e2) {
+    const n2 = this.screenWidth / t2, i2 = this.screenHeight / e2;
+    return Math.max(n2, i2);
+  }
+  fitWidth(t2 = this.worldWidth, e2, n2 = true, i2) {
+    let s2;
+    e2 && (s2 = this.center), this.scale.x = this.screenWidth / t2, n2 && (this.scale.y = this.scale.x);
+    const h2 = this.plugins.get("clamp-zoom", true);
+    return !i2 && h2 && h2.clamp(), e2 && s2 && this.moveCenter(s2), this;
+  }
+  fitHeight(t2 = this.worldHeight, e2, n2 = true, i2) {
+    let s2;
+    e2 && (s2 = this.center), this.scale.y = this.screenHeight / t2, n2 && (this.scale.x = this.scale.y);
+    const h2 = this.plugins.get("clamp-zoom", true);
+    return !i2 && h2 && h2.clamp(), e2 && s2 && this.moveCenter(s2), this;
+  }
+  fitWorld(t2) {
+    let e2;
+    t2 && (e2 = this.center), this.scale.x = this.screenWidth / this.worldWidth, this.scale.y = this.screenHeight / this.worldHeight, this.scale.x < this.scale.y ? this.scale.y = this.scale.x : this.scale.x = this.scale.y;
+    const n2 = this.plugins.get("clamp-zoom", true);
+    return n2 && n2.clamp(), t2 && e2 && this.moveCenter(e2), this;
+  }
+  fit(t2, e2 = this.worldWidth, n2 = this.worldHeight) {
+    let i2;
+    t2 && (i2 = this.center), this.scale.x = this.screenWidth / e2, this.scale.y = this.screenHeight / n2, this.scale.x < this.scale.y ? this.scale.y = this.scale.x : this.scale.x = this.scale.y;
+    const s2 = this.plugins.get("clamp-zoom", true);
+    return s2 && s2.clamp(), t2 && i2 && this.moveCenter(i2), this;
+  }
+  setZoom(t2, e2) {
+    let n2;
+    e2 && (n2 = this.center), this.scale.set(t2);
+    const i2 = this.plugins.get("clamp-zoom", true);
+    return i2 && i2.clamp(), e2 && n2 && this.moveCenter(n2), this;
+  }
+  zoomPercent(t2, e2) {
+    return this.setZoom(this.scale.x + this.scale.x * t2, e2);
+  }
+  zoom(t2, e2) {
+    return this.fitWidth(t2 + this.worldScreenWidth, e2), this;
+  }
+  get scaled() {
+    return this.scale.x;
+  }
+  set scaled(t2) {
+    this.setZoom(t2, true);
+  }
+  snapZoom(t2) {
+    return this.plugins.add("snap-zoom", new G(this, t2)), this;
+  }
+  OOB() {
+    return {
+      left: this.left < 0,
+      right: this.right > this.worldWidth,
+      top: this.top < 0,
+      bottom: this.bottom > this.worldHeight,
+      cornerPoint: new Point(this.worldWidth * this.scale.x - this.screenWidth, this.worldHeight * this.scale.y - this.screenHeight)
+    };
+  }
+  get right() {
+    return -this.x / this.scale.x + this.worldScreenWidth;
+  }
+  set right(t2) {
+    this.x = -t2 * this.scale.x + this.screenWidth, this.plugins.reset();
+  }
+  get left() {
+    return -this.x / this.scale.x;
+  }
+  set left(t2) {
+    this.x = -t2 * this.scale.x, this.plugins.reset();
+  }
+  get top() {
+    return -this.y / this.scale.y;
+  }
+  set top(t2) {
+    this.y = -t2 * this.scale.y, this.plugins.reset();
+  }
+  get bottom() {
+    return -this.y / this.scale.y + this.worldScreenHeight;
+  }
+  set bottom(t2) {
+    this.y = -t2 * this.scale.y + this.screenHeight, this.plugins.reset();
+  }
+  get dirty() {
+    return !!this._dirty;
+  }
+  set dirty(t2) {
+    this._dirty = t2;
+  }
+  get forceHitArea() {
+    return this._forceHitArea;
+  }
+  set forceHitArea(t2) {
+    t2 ? (this._forceHitArea = t2, this.hitArea = t2) : (this._forceHitArea = null, this.hitArea = new Rectangle(0, 0, this.worldWidth, this.worldHeight));
+  }
+  drag(t2) {
+    return this.plugins.add("drag", new U(this, t2)), this;
+  }
+  clamp(t2) {
+    return this.plugins.add("clamp", new A(this, t2)), this;
+  }
+  decelerate(t2) {
+    return this.plugins.add("decelerate", new E(this, t2)), this;
+  }
+  bounce(t2) {
+    return this.plugins.add("bounce", new X(this, t2)), this;
+  }
+  pinch(t2) {
+    return this.plugins.add("pinch", new j2(this, t2)), this;
+  }
+  snap(t2, e2, n2) {
+    return this.plugins.add("snap", new q(this, t2, e2, n2)), this;
+  }
+  follow(t2, e2) {
+    return this.plugins.add("follow", new B(this, t2, e2)), this;
+  }
+  wheel(t2) {
+    return this.plugins.add("wheel", new $2(this, t2)), this;
+  }
+  animate(t2) {
+    return this.plugins.add("animate", new k2(this, t2)), this;
+  }
+  clampZoom(t2) {
+    return this.plugins.add("clamp-zoom", new _(this, t2)), this;
+  }
+  mouseEdges(t2) {
+    return this.plugins.add("mouse-edges", new V(this, t2)), this;
+  }
+  get pause() {
+    return !!this._pause;
+  }
+  set pause(t2) {
+    this._pause = t2, this.lastViewport = null, this.moving = false, this.zooming = false, t2 && this.input.pause();
+  }
+  ensureVisible(t2, e2, n2, i2, s2) {
+    s2 && (n2 > this.worldScreenWidth || i2 > this.worldScreenHeight) && (this.fit(true, n2, i2), this.emit("zoomed", { viewport: this, type: "ensureVisible" }));
+    let h2 = false;
+    t2 < this.left ? (this.left = t2, h2 = true) : t2 + n2 > this.right && (this.right = t2 + n2, h2 = true), e2 < this.top ? (this.top = e2, h2 = true) : e2 + i2 > this.bottom && (this.bottom = e2 + i2, h2 = true), h2 && this.emit("moved", { viewport: this, type: "ensureVisible" });
+  }
+}
 
 // src/lib/app.ts
+var active_viewport = null;
 async function app_create() {
   const app = new Application;
   await app.init({
@@ -34042,847 +33931,44 @@ async function app_viewport_create(app) {
 function app_viewport_get() {
   return active_viewport;
 }
-var active_viewport = null;
-var init_app = __esm(() => {
-  init_lib();
-  init_pixi_viewport();
-});
 
-// src/lib/hud.ts
-function hud_create() {
-  const hud = [];
-  hud.push(hud_create_header());
-  hud.push(hud_create_side_left());
-  hud.push(hud_create_side_right());
-  hud.push(hud_create_footer());
-  return hud;
-}
-function hud_create_header() {
-  const header = document.createElement("div");
-  header.classList.add("hud-header");
-  const resources = document.createElement("div");
-  resources.classList.add("hud-resources");
-  resources.id = "hud-resources";
-  header.appendChild(resources);
-  const date = document.createElement("div");
-  date.classList.add("hud-date");
-  date.id = "hud-date";
-  const time = document.createElement("div");
-  time.classList.add("hud-time");
-  time.id = "hud-time";
-  const time_before = document.createElement("div");
-  time_before.classList.add("hud-time");
-  time_before.id = "hud-time-before";
-  time_before.innerHTML = `
-    <i id="btn-time-slow-max" class="fa-solid fa-backward-fast btn-time"></i>
-    &nbsp;
-    <i id="btn-time-slow-single" class="fa-solid fa-backward-step btn-time"></i>
-  `;
-  const time_after = document.createElement("div");
-  time_after.classList.add("hud-time");
-  time_after.id = "hud-time-after";
-  time_after.innerHTML = `
-    <i id="btn-time-fast-single" class="fa-solid fa-forward-step btn-time"></i>
-    &nbsp;
-    <i id="btn-time-fast-max" class="fa-solid fa-forward-fast btn-time"></i>
-  `;
-  const time_message = document.createElement("div");
-  time_message.classList.add("hud-time-message");
-  time_message.id = "hud-time-message";
-  date.appendChild(time_before);
-  date.appendChild(time);
-  date.appendChild(time_after);
-  date.appendChild(time_message);
-  header.appendChild(date);
-  return header;
-}
-function hud_create_footer() {
-  const footer = document.createElement("div");
-  footer.classList.add("hud-footer");
-  return footer;
-}
-function hud_create_side_left() {
-  const side_left = document.createElement("div");
-  side_left.classList.add("hud-side-left");
-  return side_left;
-}
-function hud_create_side_right() {
-  const side_right = document.createElement("div");
-  side_right.classList.add("hud-side-right");
-  return side_right;
-}
-
-// src/lib/notifications.ts
-function notifications_init() {
-  const notifications = document.createElement("div");
-  notifications.classList.add("notifications");
-  notifications.id = "notifications";
-  return notifications;
-}
-function notifications_create(html, type = "success", duration = 0) {
-  const notifications_wrapper = document.getElementById("notifications");
-  if (!notifications_wrapper) {
-    should_never_happen("Notifications wrapper not found");
-    return;
+// src/lib/player.ts
+function player_generate_random_attributes(min = 1, max = 4, min_total = 7, max_total = 12) {
+  if (min_total > max_total || min > max || min_total < 5) {
+    should_never_happen("Invalid attribute values");
+    return {
+      strength: 0,
+      stealth: 0,
+      charisma: 0,
+      agility: 0,
+      luck: 0
+    };
   }
-  const delete_button = document.createElement("button");
-  delete_button.className = "notification-close delete";
-  const notification = document.createElement("div");
-  notification.classList.add("notification");
-  notification.classList.add(type);
-  notification.appendChild(delete_button);
-  const message_html = document.createElement("div");
-  message_html.classList.add("notification-message");
-  message_html.innerHTML = html;
-  notification.appendChild(message_html);
-  notifications_wrapper.appendChild(notification);
-  delete_button.addEventListener("click", () => {
-    try {
-      notifications_wrapper.removeChild(notification);
-    } catch (_2) {}
-  });
-  if (duration > 0) {
-    setTimeout(() => {
-      try {
-        notifications_wrapper.removeChild(notification);
-      } catch (_2) {}
-    }, duration);
-  }
-}
-var init_notifications = () => {};
-
-// src/lib/resources.ts
-function resources_init(cash) {
-  const resources_container = document.getElementById("hud-resources");
-  if (!resources_container) {
-    should_never_happen("Resources container not found");
-    return;
-  }
-  resources_container.innerHTML = `
-    <i class="fa-solid fa-sack-dollar"></i>
-    <span id="hud-resources-cash">${cash}</span>
-  `;
-}
-var init_resources = () => {};
-
-// src/lib/roads.ts
-async function roads_create(x3, y2, width, height) {
-  const road_container = new Container;
-  const background_texture = await Assets.load("/build/images/texture.webp");
-  const background = new TilingSprite({
-    texture: background_texture,
-    width,
-    height
-  });
-  background.tileScale.set(0.35, 0.35);
-  road_container.addChild(background);
-  road_container.x = x3;
-  road_container.y = y2;
-  return road_container;
-}
-var init_roads = __esm(() => {
-  init_lib();
-});
-
-// node_modules/valibot/dist/index.js
-function getGlobalConfig(config2) {
-  return {
-    lang: config2?.lang ?? store?.lang,
-    message: config2?.message,
-    abortEarly: config2?.abortEarly ?? store?.abortEarly,
-    abortPipeEarly: config2?.abortPipeEarly ?? store?.abortPipeEarly
+  let attributes = {
+    strength: min,
+    stealth: min,
+    charisma: min,
+    agility: min,
+    luck: min
   };
-}
-function getGlobalMessage(lang) {
-  return store2?.get(lang);
-}
-function getSchemaMessage(lang) {
-  return store3?.get(lang);
-}
-function getSpecificMessage(reference, lang) {
-  return store4?.get(reference)?.get(lang);
-}
-function _stringify(input) {
-  const type = typeof input;
-  if (type === "string") {
-    return `"${input}"`;
-  }
-  if (type === "number" || type === "bigint" || type === "boolean") {
-    return `${input}`;
-  }
-  if (type === "object" || type === "function") {
-    return (input && Object.getPrototypeOf(input)?.constructor?.name) ?? "null";
-  }
-  return type;
-}
-function _addIssue(context2, label, dataset, config2, other) {
-  const input = other && "input" in other ? other.input : dataset.value;
-  const expected = other?.expected ?? context2.expects ?? null;
-  const received = other?.received ?? _stringify(input);
-  const issue = {
-    kind: context2.kind,
-    type: context2.type,
-    input,
-    expected,
-    received,
-    message: `Invalid ${label}: ${expected ? `Expected ${expected} but r` : "R"}eceived ${received}`,
-    requirement: context2.requirement,
-    path: other?.path,
-    issues: other?.issues,
-    lang: config2.lang,
-    abortEarly: config2.abortEarly,
-    abortPipeEarly: config2.abortPipeEarly
-  };
-  const isSchema = context2.kind === "schema";
-  const message2 = other?.message ?? context2.message ?? getSpecificMessage(context2.reference, issue.lang) ?? (isSchema ? getSchemaMessage(issue.lang) : null) ?? config2.message ?? getGlobalMessage(issue.lang);
-  if (message2 !== undefined) {
-    issue.message = typeof message2 === "function" ? message2(issue) : message2;
-  }
-  if (isSchema) {
-    dataset.typed = false;
-  }
-  if (dataset.issues) {
-    dataset.issues.push(issue);
-  } else {
-    dataset.issues = [issue];
-  }
-}
-function _getStandardProps(context2) {
-  return {
-    version: 1,
-    vendor: "valibot",
-    validate(value2) {
-      return context2["~run"]({ value: value2 }, getGlobalConfig());
-    }
-  };
-}
-function _isValidObjectKey(object2, key) {
-  return Object.hasOwn(object2, key) && key !== "__proto__" && key !== "prototype" && key !== "constructor";
-}
-function _joinExpects(values2, separator) {
-  const list = [...new Set(values2)];
-  if (list.length > 1) {
-    return `(${list.join(` ${separator} `)})`;
-  }
-  return list[0] ?? "never";
-}
-function getFallback(schema, dataset, config2) {
-  return typeof schema.fallback === "function" ? schema.fallback(dataset, config2) : schema.fallback;
-}
-function getDefault(schema, dataset, config2) {
-  return typeof schema.default === "function" ? schema.default(dataset, config2) : schema.default;
-}
-function array(item, message2) {
-  return {
-    kind: "schema",
-    type: "array",
-    reference: array,
-    expects: "Array",
-    async: false,
-    item,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      const input = dataset.value;
-      if (Array.isArray(input)) {
-        dataset.typed = true;
-        dataset.value = [];
-        for (let key = 0;key < input.length; key++) {
-          const value2 = input[key];
-          const itemDataset = this.item["~run"]({ value: value2 }, config2);
-          if (itemDataset.issues) {
-            const pathItem = {
-              type: "array",
-              origin: "value",
-              input,
-              key,
-              value: value2
-            };
-            for (const issue of itemDataset.issues) {
-              if (issue.path) {
-                issue.path.unshift(pathItem);
-              } else {
-                issue.path = [pathItem];
-              }
-              dataset.issues?.push(issue);
-            }
-            if (!dataset.issues) {
-              dataset.issues = itemDataset.issues;
-            }
-            if (config2.abortEarly) {
-              dataset.typed = false;
-              break;
-            }
-          }
-          if (!itemDataset.typed) {
-            dataset.typed = false;
-          }
-          dataset.value.push(itemDataset.value);
-        }
-      } else {
-        _addIssue(this, "type", dataset, config2);
-      }
-      return dataset;
-    }
-  };
-}
-function custom(check2, message2) {
-  return {
-    kind: "schema",
-    type: "custom",
-    reference: custom,
-    expects: "unknown",
-    async: false,
-    check: check2,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      if (this.check(dataset.value)) {
-        dataset.typed = true;
-      } else {
-        _addIssue(this, "type", dataset, config2);
-      }
-      return dataset;
-    }
-  };
-}
-function number(message2) {
-  return {
-    kind: "schema",
-    type: "number",
-    reference: number,
-    expects: "number",
-    async: false,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      if (typeof dataset.value === "number" && !isNaN(dataset.value)) {
-        dataset.typed = true;
-      } else {
-        _addIssue(this, "type", dataset, config2);
-      }
-      return dataset;
-    }
-  };
-}
-function object(entries2, message2) {
-  return {
-    kind: "schema",
-    type: "object",
-    reference: object,
-    expects: "Object",
-    async: false,
-    entries: entries2,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      const input = dataset.value;
-      if (input && typeof input === "object") {
-        dataset.typed = true;
-        dataset.value = {};
-        for (const key in this.entries) {
-          const valueSchema = this.entries[key];
-          if (key in input || (valueSchema.type === "exact_optional" || valueSchema.type === "optional" || valueSchema.type === "nullish") && valueSchema.default !== undefined) {
-            const value2 = key in input ? input[key] : getDefault(valueSchema);
-            const valueDataset = valueSchema["~run"]({ value: value2 }, config2);
-            if (valueDataset.issues) {
-              const pathItem = {
-                type: "object",
-                origin: "value",
-                input,
-                key,
-                value: value2
-              };
-              for (const issue of valueDataset.issues) {
-                if (issue.path) {
-                  issue.path.unshift(pathItem);
-                } else {
-                  issue.path = [pathItem];
-                }
-                dataset.issues?.push(issue);
-              }
-              if (!dataset.issues) {
-                dataset.issues = valueDataset.issues;
-              }
-              if (config2.abortEarly) {
-                dataset.typed = false;
-                break;
-              }
-            }
-            if (!valueDataset.typed) {
-              dataset.typed = false;
-            }
-            dataset.value[key] = valueDataset.value;
-          } else if (valueSchema.fallback !== undefined) {
-            dataset.value[key] = getFallback(valueSchema);
-          } else if (valueSchema.type !== "exact_optional" && valueSchema.type !== "optional" && valueSchema.type !== "nullish") {
-            _addIssue(this, "key", dataset, config2, {
-              input: undefined,
-              expected: `"${key}"`,
-              path: [
-                {
-                  type: "object",
-                  origin: "key",
-                  input,
-                  key,
-                  value: input[key]
-                }
-              ]
-            });
-            if (config2.abortEarly) {
-              break;
-            }
-          }
-        }
-      } else {
-        _addIssue(this, "type", dataset, config2);
-      }
-      return dataset;
-    }
-  };
-}
-function optional(wrapped, default_) {
-  return {
-    kind: "schema",
-    type: "optional",
-    reference: optional,
-    expects: `(${wrapped.expects} | undefined)`,
-    async: false,
-    wrapped,
-    default: default_,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      if (dataset.value === undefined) {
-        if (this.default !== undefined) {
-          dataset.value = getDefault(this, dataset, config2);
-        }
-        if (dataset.value === undefined) {
-          dataset.typed = true;
-          return dataset;
-        }
-      }
-      return this.wrapped["~run"](dataset, config2);
-    }
-  };
-}
-function record(key, value2, message2) {
-  return {
-    kind: "schema",
-    type: "record",
-    reference: record,
-    expects: "Object",
-    async: false,
-    key,
-    value: value2,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      const input = dataset.value;
-      if (input && typeof input === "object") {
-        dataset.typed = true;
-        dataset.value = {};
-        for (const entryKey in input) {
-          if (_isValidObjectKey(input, entryKey)) {
-            const entryValue = input[entryKey];
-            const keyDataset = this.key["~run"]({ value: entryKey }, config2);
-            if (keyDataset.issues) {
-              const pathItem = {
-                type: "object",
-                origin: "key",
-                input,
-                key: entryKey,
-                value: entryValue
-              };
-              for (const issue of keyDataset.issues) {
-                issue.path = [pathItem];
-                dataset.issues?.push(issue);
-              }
-              if (!dataset.issues) {
-                dataset.issues = keyDataset.issues;
-              }
-              if (config2.abortEarly) {
-                dataset.typed = false;
-                break;
-              }
-            }
-            const valueDataset = this.value["~run"]({ value: entryValue }, config2);
-            if (valueDataset.issues) {
-              const pathItem = {
-                type: "object",
-                origin: "value",
-                input,
-                key: entryKey,
-                value: entryValue
-              };
-              for (const issue of valueDataset.issues) {
-                if (issue.path) {
-                  issue.path.unshift(pathItem);
-                } else {
-                  issue.path = [pathItem];
-                }
-                dataset.issues?.push(issue);
-              }
-              if (!dataset.issues) {
-                dataset.issues = valueDataset.issues;
-              }
-              if (config2.abortEarly) {
-                dataset.typed = false;
-                break;
-              }
-            }
-            if (!keyDataset.typed || !valueDataset.typed) {
-              dataset.typed = false;
-            }
-            if (keyDataset.typed) {
-              dataset.value[keyDataset.value] = valueDataset.value;
-            }
-          }
-        }
-      } else {
-        _addIssue(this, "type", dataset, config2);
-      }
-      return dataset;
-    }
-  };
-}
-function string(message2) {
-  return {
-    kind: "schema",
-    type: "string",
-    reference: string,
-    expects: "string",
-    async: false,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      if (typeof dataset.value === "string") {
-        dataset.typed = true;
-      } else {
-        _addIssue(this, "type", dataset, config2);
-      }
-      return dataset;
-    }
-  };
-}
-function _subIssues(datasets) {
-  let issues;
-  if (datasets) {
-    for (const dataset of datasets) {
-      if (issues) {
-        issues.push(...dataset.issues);
-      } else {
-        issues = dataset.issues;
-      }
+  let remaining_points = min_total - min * 5;
+  if (remaining_points <= 0)
+    return attributes;
+  let remaining_points_max = max_total - min * 5;
+  let points_to_distribute = Math.floor(Math.random() * (remaining_points_max - remaining_points + 1)) + remaining_points;
+  while (points_to_distribute > 0) {
+    const attribute_keys = Object.keys(attributes);
+    const random_attribute = attribute_keys[Math.floor(Math.random() * attribute_keys.length)];
+    if (!random_attribute)
+      continue;
+    const current_value = attributes[random_attribute];
+    if (current_value < max) {
+      attributes[random_attribute] += 1;
+      points_to_distribute -= 1;
     }
   }
-  return issues;
+  return attributes;
 }
-function union(options, message2) {
-  return {
-    kind: "schema",
-    type: "union",
-    reference: union,
-    expects: _joinExpects(options.map((option) => option.expects), "|"),
-    async: false,
-    options,
-    message: message2,
-    get "~standard"() {
-      return _getStandardProps(this);
-    },
-    "~run"(dataset, config2) {
-      let validDataset;
-      let typedDatasets;
-      let untypedDatasets;
-      for (const schema of this.options) {
-        const optionDataset = schema["~run"]({ value: dataset.value }, config2);
-        if (optionDataset.typed) {
-          if (optionDataset.issues) {
-            if (typedDatasets) {
-              typedDatasets.push(optionDataset);
-            } else {
-              typedDatasets = [optionDataset];
-            }
-          } else {
-            validDataset = optionDataset;
-            break;
-          }
-        } else {
-          if (untypedDatasets) {
-            untypedDatasets.push(optionDataset);
-          } else {
-            untypedDatasets = [optionDataset];
-          }
-        }
-      }
-      if (validDataset) {
-        return validDataset;
-      }
-      if (typedDatasets) {
-        if (typedDatasets.length === 1) {
-          return typedDatasets[0];
-        }
-        _addIssue(this, "type", dataset, config2, {
-          issues: _subIssues(typedDatasets)
-        });
-        dataset.typed = true;
-      } else if (untypedDatasets?.length === 1) {
-        return untypedDatasets[0];
-      } else {
-        _addIssue(this, "type", dataset, config2, {
-          issues: _subIssues(untypedDatasets)
-        });
-      }
-      return dataset;
-    }
-  };
-}
-function safeParse(schema, input, config2) {
-  const dataset = schema["~run"]({ value: input }, getGlobalConfig(config2));
-  return {
-    typed: dataset.typed,
-    success: !dataset.issues,
-    output: dataset.value,
-    issues: dataset.issues
-  };
-}
-var store, store2, store3, store4;
-var init_dist = () => {};
-
-// src/lib/util.ts
-function util_event_handler(handler_item) {
-  const result = safeParse(UtilEventHandlerItemSchema, handler_item);
-  if (!result.success) {
-    console.error(result.issues);
-    return;
-  }
-  const event_name = handler_item.event_name;
-  if (!util_handlers_cache[event_name]) {
-    util_handlers_cache[event_name] = [];
-    document.addEventListener(event_name, (event) => {
-      util_handlers_cache[event_name]?.forEach(({ id, class_name, handler }) => {
-        if (!(event.target instanceof HTMLElement))
-          return;
-        const target = event.target;
-        if (class_name && target.classList.contains(class_name) || id && target.id === id) {
-          handler(event);
-        }
-      });
-    });
-  }
-  const cache_item = util_handlers_cache[event_name];
-  const cache_index = cache_item.findIndex((h2) => h2.handler_id === handler_item.handler_id);
-  if (cache_index !== -1) {
-    cache_item.splice(cache_index, 1, handler_item);
-  } else {
-    cache_item.push(handler_item);
-  }
-}
-var util_handlers_cache, UtilEventHandlerFuncSchema, UtilEventHandlerItemSchema, UtilHandlersCacheSchema;
-var init_util = __esm(() => {
-  init_dist();
-  util_handlers_cache = {};
-  UtilEventHandlerFuncSchema = custom((input) => typeof input === "function", "Handler must be a function");
-  UtilEventHandlerItemSchema = union([
-    object({
-      id: string(),
-      class_name: optional(string()),
-      event_name: string(),
-      handler_id: string(),
-      handler: UtilEventHandlerFuncSchema
-    }),
-    object({
-      id: optional(string()),
-      class_name: string(),
-      event_name: string(),
-      handler_id: string(),
-      handler: UtilEventHandlerFuncSchema
-    })
-  ]);
-  UtilHandlersCacheSchema = record(string(), array(UtilEventHandlerItemSchema));
-});
-
-// src/lib/time.ts
-function time_start(start_date, speed = 25) {
-  current_speed = speed;
-  current_date = start_date;
-  const time_container = document.getElementById("hud-time");
-  if (!time_container) {
-    should_never_happen("Time container not found");
-    return new Ticker;
-  }
-  ticker.minFPS = 30;
-  ticker.maxFPS = 60;
-  ticker.add((time) => {
-    current_date.setSeconds(current_date.getSeconds() + time.deltaTime * current_speed);
-    time_container.textContent = current_date.toDateString() + " " + String(current_date.getHours()).padStart(2, "0") + ":" + String(current_date.getMinutes()).padStart(2, "0");
-    if (current_date >= end_date) {
-      notifications_create("Game Over!");
-      ticker.stop();
-      paused = true;
-    }
-  });
-  time_handlers_setup();
-  ticker.start();
-  paused = false;
-  return ticker;
-}
-function time_end(end) {
-  end_date = end;
-}
-function time_speed_increase_single() {
-  let current_speed_index = speed_factor.indexOf(current_speed);
-  if (current_speed_index < speed_factor.length - 1) {
-    let new_speed_factor = speed_factor[current_speed_index + 1];
-    if (new_speed_factor) {
-      current_speed = new_speed_factor;
-    }
-  }
-  return current_speed;
-}
-function time_speed_increase_max() {
-  let new_speed = speed_factor[speed_factor.length - 1];
-  if (new_speed) {
-    current_speed = new_speed;
-  }
-  return current_speed;
-}
-function time_speed_decrease_single() {
-  let current_speed_index = speed_factor.indexOf(current_speed);
-  if (current_speed_index > 0) {
-    let new_speed_factor = speed_factor[current_speed_index - 1];
-    if (new_speed_factor) {
-      current_speed = new_speed_factor;
-    }
-  }
-  return current_speed;
-}
-function time_speed_decrease_max() {
-  let new_speed = speed_factor[0];
-  if (new_speed) {
-    current_speed = new_speed;
-  }
-  return current_speed;
-}
-function time_pause_toggle() {
-  const message_container = document.getElementById("hud-time-message");
-  if (!message_container) {
-    should_never_happen("Time message container not found");
-    return;
-  }
-  if (paused) {
-    message_container.style.display = "none";
-    ticker.start();
-    paused = false;
-  } else {
-    time_message_show("Paused", 0);
-    ticker.stop();
-    paused = true;
-  }
-}
-function time_message_show(message, disappear = 1000) {
-  const message_container = document.getElementById("hud-time-message");
-  if (!message_container) {
-    should_never_happen("Time message container not found");
-    return;
-  }
-  message_container.textContent = message;
-  message_container.style.display = "block";
-  if (disappear > 0) {
-    setTimeout(() => {
-      message_container.style.display = "none";
-    }, disappear);
-  }
-}
-function time_handlers_setup() {
-  util_event_handler({
-    event_name: "click",
-    handler_id: "btn-time-slow-max",
-    id: "btn-time-slow-max",
-    handler: () => {
-      let speed = time_speed_decrease_max();
-      let speed_string = String(speed / 5) + "x";
-      time_message_show(speed_string);
-    }
-  });
-  util_event_handler({
-    event_name: "click",
-    handler_id: "btn-time-slow-single",
-    id: "btn-time-slow-single",
-    handler: () => {
-      let speed = time_speed_decrease_single();
-      let speed_string = String(speed / 5) + "x";
-      time_message_show(speed_string);
-    }
-  });
-  util_event_handler({
-    event_name: "click",
-    handler_id: "btn-time-fast-max",
-    id: "btn-time-fast-max",
-    handler: () => {
-      let speed = time_speed_increase_max();
-      let speed_string = String(speed / 5) + "x";
-      time_message_show(speed_string);
-    }
-  });
-  util_event_handler({
-    event_name: "click",
-    handler_id: "btn-time-fast-single",
-    id: "btn-time-fast-single",
-    handler: () => {
-      let speed = time_speed_increase_single();
-      let speed_string = String(speed / 5) + "x";
-      time_message_show(speed_string);
-    }
-  });
-  util_event_handler({
-    event_name: "click",
-    handler_id: "hud-time",
-    id: "hud-time",
-    handler: () => {
-      time_pause_toggle();
-    }
-  });
-  util_event_handler({
-    event_name: "click",
-    handler_id: "hud-time-message",
-    id: "hud-time-message",
-    handler: () => {
-      time_pause_toggle();
-    }
-  });
-}
-var current_date, speed_factor, current_speed = 0, paused = true, ticker, end_date;
-var init_time = __esm(() => {
-  init_lib();
-  init_util();
-  init_notifications();
-  current_date = new Date;
-  speed_factor = [
-    1,
-    2,
-    5,
-    25,
-    50,
-    100,
-    500
-  ];
-  ticker = new Ticker;
-  end_date = new Date("1800-11-11T00:00:00.000Z");
-});
 
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
@@ -34928,369 +34014,73 @@ function helpers_pixi_remove_container_by_label(label, parent = null) {
     container.destroy({ children: true, texture: true });
   }
 }
-function helpers_generate_random_attribute_values(min = 1, max = 4, min_total = 7, max_total = 12) {
-  if (min_total > max_total || min > max || min_total < 5) {
-    should_never_happen("Invalid attribute values");
-    return {
-      strength: 0,
-      stealth: 0,
-      charisma: 0,
-      agility: 0,
-      luck: 0
-    };
+function helpers_has_saved_obj() {
+  return localStorage.getItem("mobsmen") !== null;
+}
+function helpers_get_saved_obj() {
+  const saved_obj = localStorage.getItem("mobsmen");
+  if (!saved_obj) {
+    should_never_happen("Saved object not found");
+    return helpers_get_empty_save_object();
   }
-  let attributes = {
-    strength: min,
-    stealth: min,
-    charisma: min,
-    agility: min,
-    luck: min
-  };
-  let remaining_points = min_total - min * 5;
-  if (remaining_points <= 0)
-    return attributes;
-  let remaining_points_max = max_total - min * 5;
-  let points_to_distribute = Math.floor(Math.random() * (remaining_points_max - remaining_points + 1)) + remaining_points;
-  while (points_to_distribute > 0) {
-    const attribute_keys = Object.keys(attributes);
-    const random_attribute = attribute_keys[Math.floor(Math.random() * attribute_keys.length)];
-    if (!random_attribute)
-      continue;
-    const current_value = attributes[random_attribute];
-    if (current_value < max) {
-      attributes[random_attribute] += 1;
-      points_to_distribute -= 1;
+  try {
+    return JSON.parse(saved_obj);
+  } catch (e2) {
+    should_never_happen("Saved object could not be parsed");
+    return helpers_get_empty_save_object();
+  }
+}
+function helpers_set_saved_obj(obj) {
+  localStorage.setItem("mobsmen", JSON.stringify(obj));
+}
+function helpers_get_first_save_object(version) {
+  return {
+    version,
+    mission: "m001",
+    player: {
+      attributes: player_generate_random_attributes()
     }
-  }
-  return attributes;
-}
-var init_helpers = __esm(() => {
-  init_lib();
-  init_app();
-});
-
-// src/lib/building.ts
-async function building_create(options) {
-  const building_container = new Container;
-  building_container.label = options.name + "_container";
-  building_container.x = options.x;
-  building_container.y = options.y;
-  const building_texture = await Assets.load("/build/images/house.png");
-  const building = new Sprite(building_texture);
-  building.label = options.name;
-  building.cursor = "pointer";
-  building.eventMode = "static";
-  building.hitArea = new Rectangle(25, 25, 250, 250);
-  const description = options.name;
-  building.on("pointerover", (_2) => {
-    const tooltip = helpers_pixi_tooltip_create(description, new Point(building_container.x + building.width / 2, building_container.y + building.height / 2));
-    app_viewport_get()?.addChild(tooltip);
-    app_viewport_get()?.sortChildren();
-  });
-  building.on("pointerout", () => {
-    helpers_pixi_remove_container_by_label("tooltip");
-  });
-  building.on("pointerup", () => {
-    building_selection_show(options);
-  });
-  building_container.addChild(building);
-  return building_container;
-}
-function building_selection_show(options) {
-  const footer = document.querySelector(".hud-footer");
-  if (!footer) {
-    should_never_happen("Footer not found");
-    return;
-  }
-  footer.innerHTML = "";
-  const building_info_container = document.createElement("div");
-  building_info_container.classList.add("building-info");
-  building_info_container.innerHTML = `
-    <div class="title">
-      <div class="building-info-name">${options.name}</div>
-    </div>
-    <hr class="footer-divider">
-    <div class="columns mm-text-sans">
-      <div class="column is-one-third">
-        <div class="building-info-story">${options.story}</div>
-      </div>
-      <div class="column is-one-third">
-        <div class="building-info-entry building-info-occupants">
-          <span class="building-info-title mm-text-slab">
-            Occupants:
-          </span>
-          ${options.occupants}
-        </div>
-        <div class="building-info-entry building-info-type">
-          <span class="building-info-title mm-text-slab">
-            Type:
-          </span>
-          ${options.type}
-        </div>
-        <div class="building-info-entry building-info-availability">
-          <span class="building-info-title mm-text-slab">
-            Availability:
-          </span>
-          ${options.availability}
-        </div>
-        <div class="building-info-entry building-info-cash">
-          <span class="building-info-title mm-text-slab">
-            Cash:
-          </span>
-          $${options.cash}
-        </div>
-      </div>
-      <div class="column is-one-third">
-        <div class="building-actions">
-          <button class="button is-dark is-danger is-large is-fullwidth mb-4">
-            <span class="icon">
-              <i class="fa-solid fa-gun"></i>
-            </span>
-            <span>Extort</span>
-          </button>
-          <button class="button is-dark is-warning is-large is-fullwidth mb-4">
-            <span class="icon">
-              <i class="fa-solid fa-people-robbery"></i>
-            </span>
-            <span>Steal</span>
-          </button>
-          <button class="button is-dark is-info is-large is-fullwidth">
-            <span class="icon">
-              <i class="fa-solid fa-user-secret"></i>
-            </span>
-            <span>Scout</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-  const close_button = document.createElement("button");
-  close_button.classList.add("footer-close-button");
-  close_button.innerHTML = '<i class="fa-solid fa-square-xmark"></i>';
-  close_button.addEventListener("click", () => {
-    footer.innerHTML = "";
-  });
-  building_info_container.appendChild(close_button);
-  footer.appendChild(building_info_container);
-}
-var BuildingOptionsSchema;
-var init_building = __esm(() => {
-  init_dist();
-  init_lib();
-  init_helpers();
-  init_app();
-  BuildingOptionsSchema = object({
-    name: string(),
-    story: string(),
-    occupants: string(),
-    type: string(),
-    availability: string(),
-    cash: number(),
-    x: number(),
-    y: number(),
-    texture: optional(string())
-  });
-});
-
-// src/missions/m001.toml
-var m001_default;
-var init_m001 = __esm(() => {
-  m001_default = {
-    buildings: [
-      {
-        name: "Giuseppe's Corner Grocery",
-        story: "In the shadow of the bustling Lower East Side, Giuseppe Rossi, a Sicilian immigrant who arrived in 1905, runs this modest grocery store. Having lost his son in the trenches of France during the Great War, Giuseppe now struggles with post-war shortages, stocking canned goods, bread, and whatever rationed items he can afford. The Armistice on November 11 brings fleeting celebrations, but for Giuseppe, it's a time of quiet grief and mounting debts to suppliers.",
-        occupants: "Giuseppe Rossi (owner, age 52, widowed), occasional part-time helper (young nephew)",
-        type: "Small commercial shop",
-        availability: "Open daytime (6 AM - 8 PM)",
-        x: 200,
-        y: 0,
-        cash: 200,
-        resistance: 4,
-        security: 3,
-        alertness: 2
-      },
-      {
-        name: "The O'Malley Tenement",
-        story: "This cramped tenement houses the O'Malley family, Irish immigrants who scraped by during the war years. Patrick O'Malley, a dockworker and returning veteran from the 69th Infantry Regiment, came home on November 11 to find his wife Mary and their three children facing eviction due to unpaid rent amid wartime inflation. Patrick drowns his shell shock in cheap whiskey, while Mary takes in laundry to make ends meet. The building buzzes with post-Armistice hope, but underlying tensions from ethnic rivalries simmer—Irish vs. Italian gangs are already forming lines.",
-        occupants: "Patrick O'Malley (age 35, veteran), Mary O'Malley (age 32, homemaker), 3 children (ages 5-12)",
-        type: "Residential Tenement",
-        availability: "Accessible anytime, but family more present at night",
-        x: 200,
-        y: 300,
-        cash: 150,
-        resistance: 6,
-        security: 2,
-        alertness: 4
-      },
-      {
-        name: "Madame Lefevre's Boarding House",
-        story: "Run by Elise Lefevre, a French war widow who fled Paris after losing her husband at Verdun, this boarding house shelters transient workers and returning soldiers celebrating the Armistice. Elise, sharp-tongued and resourceful, charges steep rates for dingy rooms filled with the smells of cabbage soup and cigarette smoke. On November 11, the house echoes with toasts to peace, but Elise worries about unpaid boarders amid economic uncertainty. Hidden in the basement is a small still for homemade spirits.",
-        occupants: "Elise Lefevre (owner, age 45), 4-6 rotating boarders (mix of veterans and laborers)",
-        type: "Boarding House",
-        availability: "Busy evenings (peak interactions); quiet mornings",
-        x: 200,
-        y: 600,
-        cash: 250,
-        resistance: 5,
-        security: 4,
-        alertness: 5
-      },
-      {
-        name: "Schwartz's Pawn Shop",
-        story: "Owned by Abraham Schwartz, a Jewish pawnbroker who emigrated from Poland in 1910, this shop is cluttered with war relics—soldiers' watches, medals, and household goods pawned during shortages. Abraham, a shrewd negotiator, survived anti-Semitic tensions and now eyes the Armistice as a boom for redemptions, but fears rising street crime. His daughter Rebecca helps behind the counter, dreaming of Broadway amid the celebrations. The shop's back room holds fenced goods.",
-        occupants: "Abraham Schwartz (age 48), Rebecca Schwartz (age 19, assistant)",
-        type: "Pawn Shop",
-        availability: "Open day and night; fortified",
-        x: 550,
-        y: 0,
-        cash: 750,
-        resistance: 3,
-        security: 6,
-        alertness: 3
-      },
-      {
-        name: "The Vacant Warehouse",
-        story: "This abandoned warehouse, once a munitions storage during the war, stands empty after the Armistice, its doors boarded up but easily pried. Owned absentee by a shipping company, it's become a haunt for vagrants and petty crooks seeking shelter on cold November nights. Echoes of wartime booms linger in the dusty crates, and rumors of hidden stashes from deserters add allure. On November 11, fireworks from celebrations light the alley, drawing opportunistic scavengers.",
-        occupants: "Occasional vagrants (1-2 random, non-hostile unless provoked)",
-        type: "Abandoned industrial",
-        availability: "Always accessible",
-        x: 550,
-        y: 300,
-        cash: 100,
-        resistance: 2,
-        security: 1,
-        alertness: 1
-      },
-      {
-        name: "Dr. Harlan's Clinic",
-        story: "Dr. Elias Harlan, a weary physician who treated influenza victims during the 1918 pandemic, operates this small clinic serving the neighborhood's poor. With the Armistice, he's overwhelmed by returning soldiers with wounds and shell shock, charging what he can while dispensing morphine sparingly. His nurse, Clara, harbors secrets of her own—smuggling meds for extra cash. The clinic's sterile facade hides a back office with valuables, and November 11 brings a surge of patients celebrating too hard.",
-        occupants: "Dr. Elias Harlan (age 50), Nurse Clara (age 28), variable patients",
-        type: "Medical clinic",
-        availability: "Open daytime; emergency access at night",
-        x: 550,
-        y: 600,
-        cash: 300,
-        resistance: 5,
-        security: 5,
-        alertness: 4
-      }
-    ]
   };
-});
-
-// src/missions/m001.ts
-var exports_m001 = {};
-__export(exports_m001, {
-  init: () => init2
-});
-async function init2() {
-  const root_element = document.getElementById("app");
-  if (!root_element) {
-    should_never_happen("Root element not found");
-    return;
-  }
-  const notifications_wrapper = notifications_init();
-  root_element.appendChild(notifications_wrapper);
-  const hud = hud_create();
-  for (const h2 of hud) {
-    root_element.appendChild(h2);
-  }
-  const app = await app_create();
-  const canvas = app_canvas_setup(app);
-  root_element.appendChild(canvas);
-  const viewport = await app_viewport_create(app);
-  app.stage.addChild(viewport);
-  await m001_roads_create(viewport);
-  await m001_buildings_create(viewport);
-  time_start(new Date("1918-11-11T00:00:00.000Z"));
-  time_end(new Date("1918-11-18T00:00:00.000Z"));
-  resources_init(0);
-  viewport.animate({
-    scale: 0.75,
-    time: 1000,
-    position: {
-      x: 500,
-      y: 500
-    },
-    ease: "easeInOutQuad"
-  });
-  notifications_create(`
-    The time has been paused!<br>
-    You have one week to get $100 in cash.<br>
-    <span style="color: red;">Good Luck!</span>
-    `);
-  time_pause_toggle();
 }
-async function m001_buildings_create(viewport) {
-  const buildings_container = m001_container_create("buildings");
-  buildings_container.sortableChildren = true;
-  for (let i2 = 0;i2 < m001_default.buildings.length; i2++) {
-    const building = m001_default.buildings[i2];
-    const building_instance = await building_create(building);
-    buildings_container.addChild(building_instance);
-  }
-  viewport.addChild(buildings_container);
+function helpers_validate_version(version) {
+  const saved_obj = helpers_get_saved_obj();
+  if (saved_obj.version !== version)
+    helpers_reset_save_and_reload();
 }
-async function m001_roads_create(viewport) {
-  const roads_container = m001_container_create("roads");
-  const road_1 = await roads_create(500, 0, 50, 900);
-  const road_2 = await roads_create(100, 900, 850, 50);
-  const road_3 = await roads_create(100, 0, 50, 900);
-  const road_4 = await roads_create(900, 0, 50, 900);
-  const road_5 = await roads_create(100, 0, 850, 50);
-  roads_container.addChild(road_1);
-  roads_container.addChild(road_2);
-  roads_container.addChild(road_3);
-  roads_container.addChild(road_4);
-  roads_container.addChild(road_5);
-  viewport.addChild(roads_container);
+function helpers_reset_save_and_reload() {
+  localStorage.removeItem("mobsmen");
+  location.reload();
 }
-function m001_container_create(label) {
-  const container = new Container;
-  container.label = label;
-  return container;
+function helpers_get_empty_save_object() {
+  return {
+    version: "",
+    mission: "m001",
+    player: {
+      attributes: {
+        strength: 0,
+        stealth: 0,
+        charisma: 0,
+        agility: 0,
+        luck: 0
+      }
+    }
+  };
 }
-var init_m0012 = __esm(() => {
-  init_lib();
-  init_app();
-  init_notifications();
-  init_resources();
-  init_roads();
-  init_time();
-  init_building();
-  init_m001();
-});
 
 // src/web.ts
-init_helpers();
-var VERSION2 = "0.0.3";
+var VERSION2 = "0.0.6";
 async function main() {
   const root_element = document.getElementById("app");
   if (!root_element) {
     should_never_happen("Root element not found");
     return;
   }
-  const saved = window.localStorage.getItem("mobsmen");
-  if (!saved) {
-    window.localStorage.setItem("mobsmen", JSON.stringify({
-      version: VERSION2,
-      mission: "m001",
-      attributes: helpers_generate_random_attribute_values()
-    }));
-    const first_mission = await Promise.resolve().then(() => (init_m0012(), exports_m001));
-    first_mission.init();
-  } else {
-    const saved_obj = JSON.parse(saved);
-    const saved_version = saved_obj.version;
-    if (!saved_version || VERSION2 !== saved_version) {
-      window.localStorage.removeItem("mobsmen");
-      location.reload();
-    }
-    const mission = await import(`./missions/${saved_obj.mission}.js`);
-    mission.init();
+  if (!helpers_has_saved_obj()) {
+    helpers_set_saved_obj(helpers_get_first_save_object(VERSION2));
   }
+  helpers_validate_version(VERSION2);
+  import(`./missions/${helpers_get_saved_obj().mission}.js`).then((m3) => m3.init());
 }
 main();
 
-//# debugId=44BB0DA33B716BEA64756E2164756E21
+//# debugId=0203891EE4D3438964756E2164756E21

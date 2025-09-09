@@ -1,7 +1,7 @@
 import { should_never_happen } from "../../lib/src/should";
-import { helpers_generate_random_attribute_values } from "./lib/helpers";
+import { helpers_get_first_save_object, helpers_get_saved_obj, helpers_has_saved_obj, helpers_set_saved_obj, helpers_validate_version } from "./lib/helpers";
 
-const VERSION = "0.0.3";
+const VERSION = "0.0.6";
 
 async function main() {
   const root_element = document.getElementById("app");
@@ -9,27 +9,11 @@ async function main() {
     should_never_happen("Root element not found");
     return;
   }
-  const saved = window.localStorage.getItem("mobsmen");
-  if (!saved) {
-    // Create the save
-    window.localStorage.setItem("mobsmen", JSON.stringify({
-      version: VERSION,
-      mission: "m001",
-      attributes: helpers_generate_random_attribute_values(),
-    }));
-    // Import the first mission
-    const first_mission = await import("./missions/m001");
-    first_mission.init();
-  } else {
-    const saved_obj = JSON.parse(saved);
-    const saved_version = saved_obj.version;
-    if (!saved_version || VERSION !== saved_version) {
-      window.localStorage.removeItem("mobsmen");
-      location.reload();
-    }
-    const mission = await import(`./missions/${saved_obj.mission}.js`);
-    mission.init();
+  if (!helpers_has_saved_obj()) {
+    helpers_set_saved_obj(helpers_get_first_save_object(VERSION));
   }
+  helpers_validate_version(VERSION);
+  import(`./missions/${helpers_get_saved_obj().mission}.js`).then(m => m.init());
 }
 
 main();
