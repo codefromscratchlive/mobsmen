@@ -22,6 +22,11 @@ async function main() {
     first_mission.init();
   } else {
     const saved_obj = JSON.parse(saved);
+    const saved_version = saved_obj.version;
+    if (!saved_version || VERSION !== saved_version) {
+      window.localStorage.removeItem("mobsmen");
+      location.reload();
+    }
     const mission = await import(`./missions/${saved_obj.mission}.js`);
     mission.init();
   }

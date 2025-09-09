@@ -5728,7 +5728,7 @@ class EventBoundary {
     propagationPath.reverse();
     return propagationPath;
   }
-  hitTestMoveRecursive(currentTarget, eventMode, location, testFn, pruneFn, ignore = false) {
+  hitTestMoveRecursive(currentTarget, eventMode, location2, testFn, pruneFn, ignore = false) {
     let shouldReturn = false;
     if (this._interactivePrune(currentTarget))
       return null;
@@ -5739,7 +5739,7 @@ class EventBoundary {
       const children = currentTarget.children;
       for (let i2 = children.length - 1;i2 >= 0; i2--) {
         const child = children[i2];
-        const nestedHit = this.hitTestMoveRecursive(child, this._isInteractive(eventMode) ? eventMode : child.eventMode, location, testFn, pruneFn, ignore || pruneFn(currentTarget, location));
+        const nestedHit = this.hitTestMoveRecursive(child, this._isInteractive(eventMode) ? eventMode : child.eventMode, location2, testFn, pruneFn, ignore || pruneFn(currentTarget, location2));
         if (nestedHit) {
           if (nestedHit.length > 0 && !nestedHit[nestedHit.length - 1].parent) {
             continue;
@@ -5764,13 +5764,13 @@ class EventBoundary {
       return null;
     if (shouldReturn)
       return this._hitElements;
-    if (isInteractiveMode && (!pruneFn(currentTarget, location) && testFn(currentTarget, location))) {
+    if (isInteractiveMode && (!pruneFn(currentTarget, location2) && testFn(currentTarget, location2))) {
       return isInteractiveTarget ? [currentTarget] : [];
     }
     return null;
   }
-  hitTestRecursive(currentTarget, eventMode, location, testFn, pruneFn) {
-    if (this._interactivePrune(currentTarget) || pruneFn(currentTarget, location)) {
+  hitTestRecursive(currentTarget, eventMode, location2, testFn, pruneFn) {
+    if (this._interactivePrune(currentTarget) || pruneFn(currentTarget, location2)) {
       return null;
     }
     if (currentTarget.eventMode === "dynamic" || eventMode === "dynamic") {
@@ -5778,7 +5778,7 @@ class EventBoundary {
     }
     if (currentTarget.interactiveChildren && currentTarget.children) {
       const children = currentTarget.children;
-      const relativeLocation = location;
+      const relativeLocation = location2;
       for (let i2 = children.length - 1;i2 >= 0; i2--) {
         const child = children[i2];
         const nestedHit = this.hitTestRecursive(child, this._isInteractive(eventMode) ? eventMode : child.eventMode, relativeLocation, testFn, pruneFn);
@@ -5795,7 +5795,7 @@ class EventBoundary {
     }
     const isInteractiveMode = this._isInteractive(eventMode);
     const isInteractiveTarget = currentTarget.isInteractive();
-    if (isInteractiveMode && testFn(currentTarget, location)) {
+    if (isInteractiveMode && testFn(currentTarget, location2)) {
       return isInteractiveTarget ? [currentTarget] : [];
     }
     return null;
@@ -5815,9 +5815,9 @@ class EventBoundary {
     }
     return false;
   }
-  hitPruneFn(container, location) {
+  hitPruneFn(container, location2) {
     if (container.hitArea) {
-      container.worldTransform.applyInverse(location, tempLocalMapping);
+      container.worldTransform.applyInverse(location2, tempLocalMapping);
       if (!container.hitArea.contains(tempLocalMapping.x, tempLocalMapping.y)) {
         return true;
       }
@@ -5826,7 +5826,7 @@ class EventBoundary {
       for (let i2 = 0;i2 < container.effects.length; i2++) {
         const effect = container.effects[i2];
         if (effect.containsPoint) {
-          const effectContainsPoint = effect.containsPoint(location, this.hitTestFn);
+          const effectContainsPoint = effect.containsPoint(location2, this.hitTestFn);
           if (!effectContainsPoint) {
             return true;
           }
@@ -5835,12 +5835,12 @@ class EventBoundary {
     }
     return false;
   }
-  hitTestFn(container, location) {
+  hitTestFn(container, location2) {
     if (container.hitArea) {
       return true;
     }
     if (container?.containsPoint) {
-      container.worldTransform.applyInverse(location, tempLocalMapping);
+      container.worldTransform.applyInverse(location2, tempLocalMapping);
       return container.containsPoint(tempLocalMapping);
     }
     return false;
@@ -27789,19 +27789,19 @@ class GlGeometrySystem {
           bufferSystem.bind(buffer);
           lastBuffer = glBuffer;
         }
-        const location = programAttrib.location;
-        gl.enableVertexAttribArray(location);
+        const location2 = programAttrib.location;
+        gl.enableVertexAttribArray(location2);
         const attributeInfo = getAttributeInfoFromFormat(attribute.format);
         const type = getGlTypeFromFormat(attribute.format);
         if (programAttrib.format?.substring(1, 4) === "int") {
-          gl.vertexAttribIPointer(location, attributeInfo.size, type, attribute.stride, attribute.offset);
+          gl.vertexAttribIPointer(location2, attributeInfo.size, type, attribute.stride, attribute.offset);
         } else {
-          gl.vertexAttribPointer(location, attributeInfo.size, type, attributeInfo.normalised, attribute.stride, attribute.offset);
+          gl.vertexAttribPointer(location2, attributeInfo.size, type, attributeInfo.normalised, attribute.stride, attribute.offset);
         }
         if (attribute.instance) {
           if (this.hasInstance) {
             const divisor = attribute.divisor ?? 1;
-            gl.vertexAttribDivisor(location, divisor);
+            gl.vertexAttribDivisor(location2, divisor);
           } else {
             throw new Error("geometry error, GPU Instancing is not supported on this device");
           }
@@ -29994,42 +29994,42 @@ class GlTextureSystem {
   initSource(source2) {
     this.bind(source2);
   }
-  bind(texture, location = 0) {
+  bind(texture, location2 = 0) {
     const source2 = texture.source;
     if (texture) {
-      this.bindSource(source2, location);
+      this.bindSource(source2, location2);
       if (this._useSeparateSamplers) {
-        this._bindSampler(source2.style, location);
+        this._bindSampler(source2.style, location2);
       }
     } else {
-      this.bindSource(null, location);
+      this.bindSource(null, location2);
       if (this._useSeparateSamplers) {
-        this._bindSampler(null, location);
+        this._bindSampler(null, location2);
       }
     }
   }
-  bindSource(source2, location = 0) {
+  bindSource(source2, location2 = 0) {
     const gl = this._gl;
     source2._touched = this._renderer.textureGC.count;
-    if (this._boundTextures[location] !== source2) {
-      this._boundTextures[location] = source2;
-      this._activateLocation(location);
+    if (this._boundTextures[location2] !== source2) {
+      this._boundTextures[location2] = source2;
+      this._activateLocation(location2);
       source2 || (source2 = Texture.EMPTY.source);
       const glTexture = this.getGlSource(source2);
       gl.bindTexture(glTexture.target, glTexture.texture);
     }
   }
-  _bindSampler(style, location = 0) {
+  _bindSampler(style, location2 = 0) {
     const gl = this._gl;
     if (!style) {
-      this._boundSamplers[location] = null;
-      gl.bindSampler(location, null);
+      this._boundSamplers[location2] = null;
+      gl.bindSampler(location2, null);
       return;
     }
     const sampler = this._getGlSampler(style);
-    if (this._boundSamplers[location] !== sampler) {
-      this._boundSamplers[location] = sampler;
-      gl.bindSampler(location, sampler);
+    if (this._boundSamplers[location2] !== sampler) {
+      this._boundSamplers[location2] = sampler;
+      gl.bindSampler(location2, sampler);
     }
   }
   unbind(texture) {
@@ -30045,10 +30045,10 @@ class GlTextureSystem {
       }
     }
   }
-  _activateLocation(location) {
-    if (this._activeTextureLocation !== location) {
-      this._activeTextureLocation = location;
-      this._gl.activeTexture(this._gl.TEXTURE0 + location);
+  _activateLocation(location2) {
+    if (this._activeTextureLocation !== location2) {
+      this._activeTextureLocation = location2;
+      this._gl.activeTexture(this._gl.TEXTURE0 + location2);
     }
   }
   _initSource(source2) {
@@ -35206,10 +35206,15 @@ async function main() {
     first_mission.init();
   } else {
     const saved_obj = JSON.parse(saved);
+    const saved_version = saved_obj.version;
+    if (!saved_version || VERSION2 !== saved_version) {
+      window.localStorage.removeItem("mobsmen");
+      location.reload();
+    }
     const mission = await import(`./missions/${saved_obj.mission}.js`);
     mission.init();
   }
 }
 main();
 
-//# debugId=764704531230ABE764756E2164756E21
+//# debugId=498917E5D297C04764756E2164756E21
