@@ -14,7 +14,7 @@ async function main() {
     // Create the save
     window.localStorage.setItem("mobsmen", JSON.stringify({
       version: VERSION,
-      mission: "001",
+      mission: "m001",
       save: "",
     }));
     // Import the first mission

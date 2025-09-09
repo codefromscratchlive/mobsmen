@@ -34845,7 +34845,7 @@ async function main() {
   if (!saved) {
     window.localStorage.setItem("mobsmen", JSON.stringify({
       version: VERSION2,
-      mission: "001",
+      mission: "m001",
       save: ""
     }));
     const first_mission = await Promise.resolve().then(() => (init_m001(), exports_m001));
@@ -34858,4 +34858,4 @@ async function main() {
 }
 main();
 
-//# debugId=CC13D8F8006226EA64756E2164756E21
+//# debugId=90ED75C41E7EEA8764756E2164756E21
