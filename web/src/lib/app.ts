@@ -1,6 +1,8 @@
 import * as PIXI from "pixi.js";
 import { Viewport } from "pixi-viewport";
 
+let active_viewport: Viewport | null = null;
+
 export async function app_create(): Promise<PIXI.Application> {
   const app = new PIXI.Application();
   await app.init({
@@ -34,5 +36,11 @@ export async function app_viewport_create(app: PIXI.Application): Promise<Viewpo
     disableOnContextMenu: true
   });
   viewport.drag().pinch().wheel().decelerate();
+  viewport.sortableChildren = true;
+  active_viewport = viewport;
   return viewport;
+}
+
+export function app_viewport_get(): Viewport | null {
+  return active_viewport;
 }

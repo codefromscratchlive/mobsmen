@@ -63,6 +63,8 @@ export async function init(): Promise<void> {
 
 async function m001_buildings_create(viewport: Viewport): Promise<void> {
   const buildings_container = m001_container_create("buildings");
+  buildings_container.sortableChildren = true;
+
   const building_1 = await building_create({
     name: "building_1",
     x: 200,

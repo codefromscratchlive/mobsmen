@@ -32352,6 +32352,195 @@ var init_TilingSprite = __esm(() => {
   TilingSprite = _TilingSprite;
 });
 
+// node_modules/pixi.js/lib/scene/text/AbstractText.mjs
+function ensureTextOptions(args, name) {
+  let options = args[0] ?? {};
+  if (typeof options === "string" || args[1]) {
+    deprecation(v8_0_0, `use new ${name}({ text: "hi!", style }) instead`);
+    options = {
+      text: options,
+      style: args[1]
+    };
+  }
+  return options;
+}
+var AbstractText;
+var init_AbstractText = __esm(() => {
+  init_ObservablePoint();
+  init_deprecation();
+  init_ViewContainer();
+  AbstractText = class AbstractText extends ViewContainer {
+    constructor(options, styleClass) {
+      const { text, resolution, style, anchor, width, height, roundPixels, ...rest } = options;
+      super({
+        ...rest
+      });
+      this.batched = true;
+      this._resolution = null;
+      this._autoResolution = true;
+      this._didTextUpdate = true;
+      this._styleClass = styleClass;
+      this.text = text ?? "";
+      this.style = style;
+      this.resolution = resolution ?? null;
+      this.allowChildren = false;
+      this._anchor = new ObservablePoint({
+        _onUpdate: () => {
+          this.onViewUpdate();
+        }
+      });
+      if (anchor)
+        this.anchor = anchor;
+      this.roundPixels = roundPixels ?? false;
+      if (width !== undefined)
+        this.width = width;
+      if (height !== undefined)
+        this.height = height;
+    }
+    get anchor() {
+      return this._anchor;
+    }
+    set anchor(value) {
+      typeof value === "number" ? this._anchor.set(value) : this._anchor.copyFrom(value);
+    }
+    set text(value) {
+      value = value.toString();
+      if (this._text === value)
+        return;
+      this._text = value;
+      this.onViewUpdate();
+    }
+    get text() {
+      return this._text;
+    }
+    set resolution(value) {
+      this._autoResolution = value === null;
+      this._resolution = value;
+      this.onViewUpdate();
+    }
+    get resolution() {
+      return this._resolution;
+    }
+    get style() {
+      return this._style;
+    }
+    set style(style) {
+      style || (style = {});
+      this._style?.off("update", this.onViewUpdate, this);
+      if (style instanceof this._styleClass) {
+        this._style = style;
+      } else {
+        this._style = new this._styleClass(style);
+      }
+      this._style.on("update", this.onViewUpdate, this);
+      this.onViewUpdate();
+    }
+    get width() {
+      return Math.abs(this.scale.x) * this.bounds.width;
+    }
+    set width(value) {
+      this._setWidth(value, this.bounds.width);
+    }
+    get height() {
+      return Math.abs(this.scale.y) * this.bounds.height;
+    }
+    set height(value) {
+      this._setHeight(value, this.bounds.height);
+    }
+    getSize(out2) {
+      out2 || (out2 = {});
+      out2.width = Math.abs(this.scale.x) * this.bounds.width;
+      out2.height = Math.abs(this.scale.y) * this.bounds.height;
+      return out2;
+    }
+    setSize(value, height) {
+      if (typeof value === "object") {
+        height = value.height ?? value.width;
+        value = value.width;
+      } else {
+        height ?? (height = value);
+      }
+      value !== undefined && this._setWidth(value, this.bounds.width);
+      height !== undefined && this._setHeight(height, this.bounds.height);
+    }
+    containsPoint(point) {
+      const width = this.bounds.width;
+      const height = this.bounds.height;
+      const x1 = -width * this.anchor.x;
+      let y1 = 0;
+      if (point.x >= x1 && point.x <= x1 + width) {
+        y1 = -height * this.anchor.y;
+        if (point.y >= y1 && point.y <= y1 + height)
+          return true;
+      }
+      return false;
+    }
+    onViewUpdate() {
+      if (!this.didViewUpdate)
+        this._didTextUpdate = true;
+      super.onViewUpdate();
+    }
+    destroy(options = false) {
+      super.destroy(options);
+      this.owner = null;
+      this._bounds = null;
+      this._anchor = null;
+      if (typeof options === "boolean" ? options : options?.style) {
+        this._style.destroy(options);
+      }
+      this._style = null;
+      this._text = null;
+    }
+    get styleKey() {
+      return `${this._text}:${this._style.styleKey}:${this._resolution}`;
+    }
+  };
+});
+
+// node_modules/pixi.js/lib/scene/text/Text.mjs
+var Text;
+var init_Text = __esm(() => {
+  init_TextureStyle();
+  init_AbstractText();
+  init_CanvasTextGenerator();
+  init_CanvasTextMetrics();
+  init_TextStyle();
+  Text = class Text extends AbstractText {
+    constructor(...args) {
+      const options = ensureTextOptions(args, "Text");
+      super(options, TextStyle);
+      this.renderPipeId = "text";
+      if (options.textureStyle) {
+        this.textureStyle = options.textureStyle instanceof TextureStyle ? options.textureStyle : new TextureStyle(options.textureStyle);
+      }
+    }
+    updateBounds() {
+      const bounds = this._bounds;
+      const anchor = this._anchor;
+      let width = 0;
+      let height = 0;
+      if (this._style.trim) {
+        const { frame, canvasAndContext } = CanvasTextGenerator.getCanvasAndContext({
+          text: this.text,
+          style: this._style,
+          resolution: 1
+        });
+        CanvasTextGenerator.returnCanvasAndContext(canvasAndContext);
+        width = frame.width;
+        height = frame.height;
+      } else {
+        const canvasMeasurement = CanvasTextMetrics.measureText(this._text, this._style);
+        width = canvasMeasurement.width;
+        height = canvasMeasurement.height;
+      }
+      bounds.minX = -anchor._x * width;
+      bounds.maxX = bounds.minX + width;
+      bounds.minY = -anchor._y * height;
+      bounds.maxY = bounds.minY + height;
+    }
+  };
+});
+
 // node_modules/pixi.js/lib/index.mjs
 var init_lib = __esm(() => {
   init_browserExt();
@@ -32365,8 +32554,10 @@ var init_lib = __esm(() => {
   init_Rectangle();
   init_textureFrom();
   init_Container();
+  init_Graphics();
   init_TilingSprite();
   init_Sprite();
+  init_Text();
   init_Ticker();
   init_eventemitter3();
   extensions.add(browserExt, webworkerExt);
@@ -33844,8 +34035,14 @@ async function app_viewport_create(app) {
     disableOnContextMenu: true
   });
   viewport.drag().pinch().wheel().decelerate();
+  viewport.sortableChildren = true;
+  active_viewport = viewport;
   return viewport;
 }
+function app_viewport_get() {
+  return active_viewport;
+}
+var active_viewport = null;
 var init_app = __esm(() => {
   init_lib();
   init_pixi_viewport();
@@ -34687,6 +34884,52 @@ var init_time = __esm(() => {
   end_date = new Date("1800-11-11T00:00:00.000Z");
 });
 
+// src/lib/helpers.ts
+function helpers_pixi_tooltip_create(text, position) {
+  const tooltip_container = new Container;
+  const background = new Graphics;
+  background.rect(0, 0, 150, 40).fill({
+    color: 0,
+    alpha: 0.8
+  });
+  tooltip_container.addChild(background);
+  const tooltip_text = new Text({
+    text,
+    style: {
+      fontFamily: "Epunda Slab",
+      fontSize: 24,
+      fill: 16777215,
+      align: "center"
+    }
+  });
+  tooltip_text.position.set(10, 10);
+  tooltip_container.addChild(tooltip_text);
+  tooltip_container.position.set(position.x + 10, position.y - 50);
+  tooltip_container.label = "tooltip";
+  tooltip_container.zIndex = 1000;
+  return tooltip_container;
+}
+function helpers_pixi_remove_container_by_label(label, parent = null) {
+  if (!parent) {
+    parent = app_viewport_get();
+    if (!parent)
+      return;
+  }
+  const container = parent.children.find((child) => child.label === label);
+  if (container) {
+    if (container.parent) {
+      container.parent.removeChild(container);
+    }
+    container.destroy({ children: true, texture: true });
+  } else {
+    console.warn(`No container found with label: ${label}`);
+  }
+}
+var init_helpers = __esm(() => {
+  init_lib();
+  init_app();
+});
+
 // src/lib/building.ts
 async function building_create(options) {
   const building_container = new Container;
@@ -34696,8 +34939,18 @@ async function building_create(options) {
   const building_texture = await Assets.load("/build/images/house.png");
   const building = new Sprite(building_texture);
   building.label = options.name;
-  building.interactive = true;
   building.cursor = "pointer";
+  building.eventMode = "static";
+  building.hitArea = new Rectangle(25, 25, 250, 250);
+  const description = options.description ?? options.name;
+  building.on("pointerover", (_2) => {
+    const tooltip = helpers_pixi_tooltip_create(description, new Point(building_container.x + building.width / 2, building_container.y + building.height / 2));
+    app_viewport_get()?.addChild(tooltip);
+    app_viewport_get()?.sortChildren();
+  });
+  building.on("pointerout", () => {
+    helpers_pixi_remove_container_by_label("tooltip");
+  });
   building_container.addChild(building);
   return building_container;
 }
@@ -34705,6 +34958,8 @@ var BuildingOptionsSchema;
 var init_building = __esm(() => {
   init_dist();
   init_lib();
+  init_helpers();
+  init_app();
   BuildingOptionsSchema = object({
     name: string(),
     description: optional(string()),
@@ -34760,6 +35015,7 @@ async function init2() {
 }
 async function m001_buildings_create(viewport) {
   const buildings_container = m001_container_create("buildings");
+  buildings_container.sortableChildren = true;
   const building_1 = await building_create({
     name: "building_1",
     x: 200,
@@ -34838,4 +35094,4 @@ export {
   init2 as init
 };
 
-//# debugId=3C134375B866EB1564756E2164756E21
+//# debugId=77B7D505387479C764756E2164756E21
