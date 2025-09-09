@@ -1,5 +1,5 @@
 import { should_never_happen } from "../../../lib/src/should";
-import { helpers_get_saved_obj } from "./helpers";
+import { helpers_get_saved_obj, helpers_set_saved_obj } from "./helpers";
 
 export function player_generate_random_attributes(
   min: number = 1,
@@ -52,6 +52,22 @@ export function player_generate_random_attributes(
 
 export function player_get_attributes(): PlayerAttributes {
   return helpers_get_saved_obj().player.attributes;
+}
+
+export function player_get_attribute(attribute: keyof PlayerAttributes): number {
+  return helpers_get_saved_obj().player.attributes[attribute];
+}
+
+export function player_set_attributes(attributes: PlayerAttributes): void {
+  const current_save_obj = helpers_get_saved_obj();
+  current_save_obj.player.attributes = attributes;
+  helpers_set_saved_obj(current_save_obj);
+}
+
+export function player_set_attribute(attribute: keyof PlayerAttributes, value: number): void {
+  const current_save_obj = helpers_get_saved_obj();
+  current_save_obj.player.attributes[attribute] = value;
+  helpers_set_saved_obj(current_save_obj);
 }
 
 export type PlayerAttributes = {
