@@ -159,6 +159,7 @@ body {
   padding-bottom: 8px;
 }
 
+.building-actions-title,
 .building-info-title {
   display: block;
   color: #dedede;
@@ -166,10 +167,22 @@ body {
   font-weight: bold;
 }
 
+.building-action-message,
+.building-action-progress {
+  display: none;
+}
+
 .building-info-story {
   font-weight: 100;
   font-size: 18px;
   line-height: 24px;
+}
+
+.building-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 20px;
 }
 
 .footer-close-button {

@@ -34702,6 +34702,9 @@ function time_message_show(message, disappear = 1000) {
     }, disappear);
   }
 }
+function time_is_paused() {
+  return paused;
+}
 function time_handlers_setup() {
   util_event_handler({
     event_name: "click",
@@ -34759,6 +34762,35 @@ function time_handlers_setup() {
       time_pause_toggle();
     }
   });
+}
+function time_callback_at_time(time, progress_callback, end_callback) {
+  const custom_ticker = new Ticker;
+  const start_time = current_date.getTime();
+  const end_time = time.getTime();
+  const total_duration = end_time - start_time;
+  if (total_duration <= 0) {
+    end_callback();
+    return;
+  }
+  let last_progress = 0;
+  custom_ticker.add(() => {
+    const now = current_date.getTime();
+    const elapsed = now - start_time;
+    const progress = Math.min(elapsed / total_duration, 1);
+    const current_interval = Math.floor(progress * 10) / 10;
+    if (current_interval > last_progress && current_interval <= 1) {
+      progress_callback(current_interval);
+      last_progress = current_interval;
+    }
+    if (now >= end_time) {
+      end_callback();
+      custom_ticker.stop();
+    }
+  });
+  custom_ticker.start();
+}
+function time_get_current_date() {
+  return current_date;
 }
 
 // src/lib/player.ts
@@ -34923,7 +34955,7 @@ function formulas_building_scout(building, player) {
   const success = (player.luck + player.agility / 2 + player.stealth / 2) * 10 - building.alertness * 4;
   const duration = 2 - player.agility / 3 + building.alertness / 5;
   return {
-    success: helpers_clamp(success, 50, 95),
+    success: helpers_clamp(success, 85, 95),
     duration: helpers_clamp(duration, 0.5, 3)
   };
 }
@@ -35000,20 +35032,26 @@ function building_selection_show(options) {
         </div>
       </div>
       <div class="column is-one-third">
-        <div class="building-actions">
-          <button id="building-extort-${options.id}" class="button is-dark is-danger is-large is-fullwidth mb-4">
+        <h3 class="building-actions-title mm-text-slab">Actions</h3>
+        <div id="building-action-message" class="building-action-message mt-3">
+        </div>
+        <div id="building-action-progress" class="building-action-progress">
+          <progress id="action-progress-bar" class="progress is-info" value="0" max="100"></progress>
+        </div>
+        <div id="building-actions" class="building-actions mt-2">
+          <button id="building-extort-${options.id}" class="button is-dark is-danger">
             <span class="icon">
               <i class="fa-solid fa-gun"></i>
             </span>
             <span>Extort</span>
           </button>
-          <button id="building-steal-${options.id}" class="button is-dark is-warning is-large is-fullwidth mb-4">
+          <button id="building-steal-${options.id}" class="button is-dark is-warning">
             <span class="icon">
               <i class="fa-solid fa-people-robbery"></i>
             </span>
             <span>Steal</span>
           </button>
-          <button id="building-scout-${options.id}" class="button is-dark is-info is-large is-fullwidth">
+          <button id="building-scout-${options.id}" class="button is-dark is-info">
             <span class="icon">
               <i class="fa-solid fa-user-secret"></i>
             </span>
@@ -35057,16 +35095,67 @@ function building_selection_show(options) {
   });
 }
 function building_handler_extort(options) {
+  const building_action_message = document.getElementById("building-action-message");
+  if (!building_action_message) {
+    should_never_happen("Building action message not found");
+    return;
+  }
+  const building_action_progress = document.getElementById("building-action-progress");
+  if (!building_action_progress) {
+    should_never_happen("Building action progress not found");
+    return;
+  }
+  const building_actions = document.getElementById("building-actions");
+  if (!building_actions) {
+    should_never_happen("Building actions not found");
+    return;
+  }
+  const progress_bar = document.getElementById("action-progress-bar");
+  if (!progress_bar) {
+    should_never_happen("Progress bar not found");
+    return;
+  }
+  progress_bar.value = 0;
+  building_action_message.style.display = "block";
+  building_action_progress.style.display = "block";
+  building_actions.style.display = "none";
   const result = formulas_building_extort(options, player_get_attributes());
-  console.log(`EXTORT - Success: ${result.success}% | Duration: ${Math.round(result.duration * 100) / 100}hours`);
+  const current_date2 = time_get_current_date();
+  time_callback_at_time(new Date(current_date2.getTime() + result.duration * 60 * 60 * 1000), (progress) => {
+    building_action_message.innerHTML = `Extorting: ${progress * 100}%`;
+    progress_bar.value = progress * 100;
+  }, () => {
+    building_action_progress.style.display = "none";
+    building_actions.style.display = "flex";
+    const was_success = Math.random() < result.success / 100;
+    building_action_message.innerHTML = was_success ? "Result: Success" : "Result: Failure";
+    if (!time_is_paused()) {
+      time_pause_toggle();
+    }
+  });
+  if (time_is_paused()) {
+    time_pause_toggle();
+  }
 }
 function building_handler_steal(options) {
   const result = formulas_building_steal(options, player_get_attributes());
-  console.log(`STEAL - Success: ${result.success}% | Duration: ${Math.round(result.duration * 100) / 100}hours`);
+  const current_date2 = time_get_current_date();
+  time_callback_at_time(new Date(current_date2.getTime() + result.duration * 60 * 60 * 1000), (progress) => {
+    console.log(`Current progress: ${progress * 100}%`);
+  }, () => {
+    const was_success = Math.random() < result.success / 100;
+    console.log("Result: ", was_success ? "Success" : "Failure");
+  });
 }
 function building_handler_scout(options) {
   const result = formulas_building_scout(options, player_get_attributes());
-  console.log(`SCOUT - Success: ${result.success}% | Duration: ${Math.round(result.duration * 100) / 100}hours`);
+  const current_date2 = time_get_current_date();
+  time_callback_at_time(new Date(current_date2.getTime() + result.duration * 60 * 60 * 1000), (progress) => {
+    console.log(`Current progress: ${progress * 100}%`);
+  }, () => {
+    const was_success = Math.random() < result.success / 100;
+    console.log("Result: ", was_success ? "Success" : "Failure");
+  });
 }
 var BuildingInfoSchema = object({
   id: number(),
@@ -35222,7 +35311,7 @@ async function init2() {
     The time has been paused!<br>
     You have one week to get $100 in cash.<br>
     <span style="color: red;">Good Luck!</span>
-    `);
+    `, "success", 5000);
   time_pause_toggle();
 }
 async function m001_buildings_create(viewport) {
@@ -35258,4 +35347,4 @@ export {
   init2 as init
 };
 
-//# debugId=3F14EB8ACC34C26164756E2164756E21
+//# debugId=8EB238298F453CAC64756E2164756E21

@@ -57,7 +57,9 @@ export async function init(): Promise<void> {
     The time has been paused!<br>
     You have one week to get $100 in cash.<br>
     <span style="color: red;">Good Luck!</span>
-    `
+    `,
+    "success",
+    5000
   );
 
   time_pause_toggle();

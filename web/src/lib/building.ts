@@ -6,6 +6,7 @@ import { should_never_happen } from "../../../lib/src/should";
 import { util_event_handler } from "./util";
 import { formulas_building_extort, formulas_building_scout, formulas_building_steal } from "./formulas";
 import { player_get_attributes } from "./player";
+import { time_callback_at_time, time_get_current_date, time_is_paused, time_pause_toggle } from "./time";
 
 export async function building_create(options: BuildingInfoType): Promise<PIXI.Container> {
   const building_container = new PIXI.Container();
@@ -95,20 +96,26 @@ function building_selection_show(options: BuildingInfoType): void {
         </div>
       </div>
       <div class="column is-one-third">
-        <div class="building-actions">
-          <button id="building-extort-${options.id}" class="button is-dark is-danger is-large is-fullwidth mb-4">
+        <h3 class="building-actions-title mm-text-slab">Actions</h3>
+        <div id="building-action-message" class="building-action-message mt-3">
+        </div>
+        <div id="building-action-progress" class="building-action-progress">
+          <progress id="action-progress-bar" class="progress is-info" value="0" max="100"></progress>
+        </div>
+        <div id="building-actions" class="building-actions mt-2">
+          <button id="building-extort-${options.id}" class="button is-dark is-danger">
             <span class="icon">
               <i class="fa-solid fa-gun"></i>
             </span>
             <span>Extort</span>
           </button>
-          <button id="building-steal-${options.id}" class="button is-dark is-warning is-large is-fullwidth mb-4">
+          <button id="building-steal-${options.id}" class="button is-dark is-warning">
             <span class="icon">
               <i class="fa-solid fa-people-robbery"></i>
             </span>
             <span>Steal</span>
           </button>
-          <button id="building-scout-${options.id}" class="button is-dark is-info is-large is-fullwidth">
+          <button id="building-scout-${options.id}" class="button is-dark is-info">
             <span class="icon">
               <i class="fa-solid fa-user-secret"></i>
             </span>
@@ -157,18 +164,85 @@ function building_selection_show(options: BuildingInfoType): void {
 }
 
 function building_handler_extort(options: BuildingInfoType): void {
+  const building_action_message = document.getElementById("building-action-message") as HTMLDivElement;
+  if (!building_action_message) {
+    should_never_happen("Building action message not found");
+    return;
+  }
+
+  const building_action_progress = document.getElementById("building-action-progress") as HTMLDivElement;
+  if (!building_action_progress) {
+    should_never_happen("Building action progress not found");
+    return;
+  }
+  const building_actions = document.getElementById("building-actions") as HTMLDivElement;
+  if (!building_actions) {
+    should_never_happen("Building actions not found");
+    return;
+  }
+
+  const progress_bar = document.getElementById("action-progress-bar") as HTMLProgressElement;
+  if (!progress_bar) {
+    should_never_happen("Progress bar not found");
+    return;
+  }
+  progress_bar.value = 0;
+
+  building_action_message.style.display = "block";
+  building_action_progress.style.display = "block";
+  building_actions.style.display = "none";
+
   const result = formulas_building_extort(options, player_get_attributes());
-  console.log(`EXTORT - Success: ${result.success}% | Duration: ${Math.round(result.duration*100)/100}hours`);
+  const current_date = time_get_current_date();
+  time_callback_at_time(
+    new Date(current_date.getTime() + result.duration*60*60*1000),
+    (progress: number) => {
+      building_action_message.innerHTML = `Extorting: ${progress*100}%`;
+      progress_bar.value = progress*100;
+    },
+    () => {
+      building_action_progress.style.display = "none";
+      building_actions.style.display = "flex";
+      const was_success = Math.random() < result.success / 100;
+      building_action_message.innerHTML = was_success ? "Result: Success" : "Result: Failure";
+      if (!time_is_paused()) {
+        time_pause_toggle();
+      }
+    }
+  );
+  if (time_is_paused()) {
+    time_pause_toggle();
+  }
 }
 
 function building_handler_steal(options: BuildingInfoType): void {
   const result = formulas_building_steal(options, player_get_attributes());
-  console.log(`STEAL - Success: ${result.success}% | Duration: ${Math.round(result.duration*100)/100}hours`);
+  const current_date = time_get_current_date();
+  time_callback_at_time(
+    new Date(current_date.getTime() + result.duration*60*60*1000),
+    (progress: number) => {
+      console.log(`Current progress: ${progress*100}%`);
+    },
+    () => {
+      const was_success = Math.random() < result.success / 100;
+      console.log("Result: ", was_success ? "Success" : "Failure");
+    }
+  )
 }
 
 function building_handler_scout(options: BuildingInfoType): void {
   const result = formulas_building_scout(options, player_get_attributes());
-  console.log(`SCOUT - Success: ${result.success}% | Duration: ${Math.round(result.duration*100)/100}hours`);
+  const current_date = time_get_current_date();
+  time_callback_at_time(
+    new Date(current_date.getTime() + result.duration*60*60*1000),
+    (progress: number) => {
+      console.log(`Current progress: ${progress*100}%`);
+    },
+    () => {
+      const was_success = Math.random() < result.success / 100;
+      console.log("Result: ", was_success ? "Success" : "Failure");
+    }
+  )
 }
 
 const BuildingInfoSchema = v.object({

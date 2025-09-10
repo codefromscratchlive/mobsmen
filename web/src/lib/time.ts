@@ -205,3 +205,46 @@ export function time_handlers_setup(): void {
     }
   });
 }
+
+export function time_callback_at_time(
+  time: Date,
+  progress_callback: (progress: number) => void,
+  end_callback: () => void
+) {
+  const custom_ticker = new PIXI.Ticker();
+  const start_time = current_date.getTime();
+  const end_time = time.getTime();
+  const total_duration = end_time - start_time;
+
+  // Ensure the end time is in the future relative to current_date
+  if (total_duration <= 0) {
+    end_callback();
+    return;
+  }
+
+  let last_progress = 0;
+
+  custom_ticker.add(() => {
+    const now = current_date.getTime();
+    const elapsed = now - start_time;
+    const progress = Math.min(elapsed / total_duration, 1); // Progress from 0 to 1
+
+    // Calculate the current 10% interval (e.g., 0.1, 0.2, ..., 1.0)
+    const current_interval = Math.floor(progress * 10) / 10;
+    if (current_interval > last_progress && current_interval <= 1) {
+      progress_callback(current_interval);
+      last_progress = current_interval;
+    }
+
+    if (now >= end_time) {
+      end_callback();
+      custom_ticker.stop();
+    }
+  });
+
+  custom_ticker.start();
+}
+
+export function time_get_current_date(): Date {
+  return current_date;
+}

@@ -45,7 +45,7 @@ export function formulas_building_scout(
   ) * 10 - building.alertness* 4;
   const duration = 2 - (player.agility / 3) + (building.alertness / 5);
   return { 
-    success: helpers_clamp(success, 50, 95),
+    success: helpers_clamp(success, 85, 95),
     duration: helpers_clamp(duration, 0.5, 3)
   };
 }
