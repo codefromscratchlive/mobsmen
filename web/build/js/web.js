@@ -33972,6 +33972,9 @@ function player_generate_random_attributes(min = 1, max = 4, min_total = 7, max_
 function player_get_attributes() {
   return helpers_get_saved_obj().player.attributes;
 }
+function player_get_attribute(attribute) {
+  return helpers_get_saved_obj().player.attributes[attribute];
+}
 
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
@@ -34089,4 +34092,4 @@ async function main() {
 }
 main();
 
-//# debugId=06F55AF64447FE6864756E2164756E21
+//# debugId=E82F4F3763BE048164756E2164756E21

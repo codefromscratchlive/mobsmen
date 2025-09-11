@@ -34833,6 +34833,9 @@ function player_generate_random_attributes(min = 1, max = 4, min_total = 7, max_
 function player_get_attributes() {
   return helpers_get_saved_obj().player.attributes;
 }
+function player_get_attribute(attribute) {
+  return helpers_get_saved_obj().player.attributes[attribute];
+}
 
 // src/lib/helpers.ts
 function helpers_pixi_tooltip_create(text, position) {
@@ -35264,14 +35267,88 @@ var m001_default = {
 
 // src/lib/profile.ts
 function profile_init() {
-  const resources_container = document.getElementById("hud-profile");
-  if (!resources_container) {
+  const profile_container = document.getElementById("hud-profile");
+  if (!profile_container) {
     should_never_happen("Resources container not found");
     return;
   }
-  resources_container.innerHTML = `
-    <i class="fa-solid fa-user"></i>&nbsp;-&nbsp;
+  profile_container.innerHTML = `
+    <i class="fa-solid fa-user"></i>&nbsp;
   `;
+  profile_handlers();
+}
+function profile_handlers() {
+  util_event_handler({
+    event_name: "click",
+    handler_id: "hud-profile",
+    id: "hud-profile",
+    handler: () => {
+      profile_visibility_toggle();
+    }
+  });
+}
+function profile_visibility_toggle() {
+  if (profile_is_visible()) {
+    profile_card_hide();
+  } else {
+    profile_card_show();
+  }
+}
+function profile_card_show() {
+  const app = document.getElementById("app");
+  if (!app) {
+    should_never_happen("Resources container not found");
+    return;
+  }
+  const profile_card = document.createElement("div");
+  profile_card.id = "profile-card";
+  profile_card.innerHTML = `
+    <div class="profile-card-header mb-4">
+      <h2 class="subtitle is-4">Profile</h2>
+    </div>
+    <div class="profile-card-content">
+      <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+        <tbody>
+          <tr>
+            <th><i class="fa-solid fa-hand-fist"></i> Strength: </th>
+            <td>${player_get_attribute("strength")}</td>
+          </tr>
+          <tr>
+            <th><i class="fa-solid fa-user-ninja"></i> Stealth: </th>
+            <td>${player_get_attribute("stealth")}</td>
+          </tr>
+          <tr>
+            <th><i class="fa-solid fa-user-tie"></i> Charisma: </th>
+            <td>${player_get_attribute("charisma")}</td>
+          </tr>
+          <tr>
+            <th><i class="fa-solid fa-person-running-fast"></i> Agility: </th>
+            <td>${player_get_attribute("agility")}</td>
+          </tr>
+          <tr>
+            <th><i class="fa-solid fa-pool-8-ball"></i> Luck: </th>
+            <td>${player_get_attribute("luck")}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+  app.appendChild(profile_card);
+}
+function profile_card_hide() {
+  const profile_card = document.getElementById("profile-card");
+  if (!profile_card) {
+    should_never_happen("Tried to hide profile card but it doesn't exist");
+    return;
+  }
+  profile_card.remove();
+}
+function profile_is_visible() {
+  const profile_card = document.getElementById("profile-card");
+  if (!profile_card) {
+    return false;
+  }
+  return true;
 }
 
 // src/missions/m001.ts
@@ -35347,4 +35424,4 @@ export {
   init2 as init
 };
 
-//# debugId=8EB238298F453CAC64756E2164756E21
+//# debugId=381A67BA417C2C1864756E2164756E21
