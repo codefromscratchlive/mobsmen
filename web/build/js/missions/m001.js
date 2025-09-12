@@ -35304,7 +35304,7 @@ function profile_card_show() {
   profile_card.id = "profile-card";
   profile_card.innerHTML = `
     <div class="profile-card-header mb-4">
-      <h2 class="subtitle is-4">Profile</h2>
+      <h2 class="subtitle is-4">Character</h2>
     </div>
     <div class="profile-card-content">
       <table class="table is-bordered is-striped is-hoverable is-fullwidth">
@@ -35424,4 +35424,4 @@ export {
   init2 as init
 };
 
-//# debugId=381A67BA417C2C1864756E2164756E21
+//# debugId=F066ED005D0B953364756E2164756E21

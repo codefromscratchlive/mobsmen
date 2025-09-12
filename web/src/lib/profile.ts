@@ -47,7 +47,7 @@ function profile_card_show(): void {
   profile_card.id = "profile-card";
   profile_card.innerHTML = `
     <div class="profile-card-header mb-4">
-      <h2 class="subtitle is-4">Profile</h2>
+      <h2 class="subtitle is-4">Character</h2>
     </div>
     <div class="profile-card-content">
       <table class="table is-bordered is-striped is-hoverable is-fullwidth">
